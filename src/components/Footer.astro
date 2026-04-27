@@ -1,0 +1,54 @@
+<footer class="bg-green min-padding h-80">
+
+  <div class="hook">
+    <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
+    <p>¡Escribíme!</p>
+  </div>
+  <div class="correo">
+    <a class="correo-link" href="mailto:hola@fatima.com.ar"><img alt="Texto fátima color negro" src="/correo-link.svg"></a>
+  </div>
+  <div class="redes">
+    <a class="btn btn-alt btn-green-alt" href="#"><span class="font-alt">instagram.com/</span>fatima.archivo</a>
+    <a class="btn btn-alt btn-green-alt" href="#"><span class="font-alt">behance.com/</span>fatimadaniela</a>
+  </div>
+
+</footer>
+
+<style>
+footer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-block: var(--space-48);
+    gap: var(--space-48);
+    justify-content: flex-end;
+}
+
+.correo-link {
+    width: 100%;
+}
+
+.hook {
+    font-family: var(--font-grotesk);
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl); 
+    flex-wrap: wrap;
+}
+
+.hook p {
+    max-width: 432px;
+}
+
+.hook, .redes {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-16);
+}
+
+.redes .btn {
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 1.063rem; /* 17px */
+}
+</style>

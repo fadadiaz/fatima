@@ -1,0 +1,55 @@
+---
+import MenuMobile from './MenuMobile.astro'
+---
+
+<header class="bg-pink header-alt min-padding">
+
+  <!-- MOBILE -->
+  <div class="nav-alt-mobile">
+    <a href="/"><img alt="Texto fátima color negro" src="/logo-fatima.svg"></a>
+    <MenuMobile bg="bg-pink" />
+  </div>
+
+  <!-- DESKTOP/TABLET -->
+  <nav class="nav-alt-full">
+    <a class="btn btn-pink-alt" href="/proyectos">Proyectos</a>
+    <a class="btn btn-pink-alt" href="/sobre-mi">Sobre mí</a>
+    <a href="/"><img alt="Texto fátima color negro" width="81" height="25" src="/logo-fatima.svg"></a>
+    <a class="btn btn-pink-alt" href="#">Contacto</a>
+    <a class="btn btn-pink-alt" href="#">CV/Portfolio<i class="fi fi-rs-download"></i></a>
+  </nav>
+
+</header>
+
+<style>
+  .header-alt {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-block: var(--space-32);
+    gap: var(--space-32);
+  }
+
+  /* MOBILE */
+  .nav-alt-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-alt-mobile img {
+    height: var(--space-16);
+  }
+
+  .nav-alt-full { display: none; }
+
+  /* TABLET+ */
+  @media (min-width: 768px) {
+    .nav-alt-mobile { display: none; }
+    .nav-alt-full {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+</style>

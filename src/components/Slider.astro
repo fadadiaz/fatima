@@ -1,0 +1,69 @@
+---
+import { getCollection } from 'astro:content'
+import fs from 'node:fs'
+import path from 'node:path'
+
+const proyectos = await getCollection('proyectos')
+
+const slides = proyectos.flatMap((proyecto) => {
+  if (!proyecto.data.carpeta) return []
+  
+  const carpeta = path.join('public', proyecto.data.carpeta)
+  if (!fs.existsSync(carpeta)) return []
+  
+  const archivos = fs.readdirSync(carpeta)
+    .filter((f: string) => /\.(png|jpg|jpeg|gif|webp)$/i.test(f))
+  
+  return archivos.map((archivo: string) => ({
+    src: `${proyecto.data.carpeta}/${archivo}`,
+    href: `/proyectos/${proyecto.id}`,
+    titulo: proyecto.data.titulo,
+  }))
+}).sort(() => Math.random() - 0.5)
+---
+
+<div class="slider-wrapper">
+  <div class="slider-track">
+    {[...slides, ...slides].map((slide) => (
+      <a href={slide.href} class="slide">
+        <img src={slide.src} alt={slide.titulo}>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .slider-wrapper {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .slider-track {
+    display: flex;
+    gap: var(--space-16);
+    width: max-content;
+    animation: slide-infinito 100s linear infinite;
+  }
+
+  .slider-wrapper:hover .slider-track {
+    animation-play-state: paused;
+  }
+
+  .slide {
+    flex-shrink: 0;
+    height: 428px;
+    display: block;
+  }
+
+  .slide img {
+    height: 100%;
+    width: auto;
+    object-fit: cover;
+    display: block;
+  }
+
+  @keyframes slide-infinito {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+</style>

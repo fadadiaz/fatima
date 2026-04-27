@@ -1,0 +1,309 @@
+:root {
+  --fa-white: #FCFDFE;
+  --fa-black: #1a1a1a;
+  --fa-orange: #FF8B55;
+  --fa-pink: #FFCCE5;
+  --fa-green: #C8E464;
+  --fa-orange-alt: #FF7E42;
+  --fa-pink-alt: #FFB8DC;
+  --fa-green-alt: #B3D929;
+  --fa-gray: #F4F4F5;
+  --color-none: transparent;
+
+  --font-grotesk: "Space Grotesk", sans-serif;
+  --font-mono: "Space Mono", monospace;
+  --font-body: "Work Sans", sans-serif;
+  --font-alt: "Schoolbell", "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.25rem;   /* 20px */
+  --text-xl:   1.5rem;    /* 24px */
+  --text-2xl:  2rem;      /* 32px */
+  --text-2-5xl:  2.5rem;      /* 40px */
+  --text-3xl:  3rem;      /* 48px */
+  --text-4xl:  4rem;      /* 64px  */
+  --text-5xl:  6rem;      /* 96px  */
+  --text-6xl:  9rem;      /* 144px */
+  --text-7xl:  10rem;     /* 160px */
+
+  --space-4:  4px;
+  --space-8:  8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+  
+  --max-width: 1392px;
+  --max-width-5-col: 552px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--fa-white);
+  color: var(--fa-black);
+  font-family: var(--font-body);
+  line-height: var(--text-lg);
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+p, span {
+  text-wrap-style: pretty;
+}
+
+i {
+    display: flex;
+    margin-left: var(--space-8);
+    align-items: flex-end;
+    height: stretch;
+}
+
+h1 { font-family: var(--font-grotesk); font-size: var(--text-3xl); font-weight: 600; line-height: 1.1; }
+h2 { font-family: var(--font-grotesk); font-size: var(--text-2xl); text-transform: lowercase; font-weight: 400; line-height: 1.1; }
+
+.font-grotesk { font-family: var(--font-grotesk); }
+.font-mono    { font-family: var(--font-mono); }
+.font-body    { font-family: var(--font-body); }
+.font-alt     { font-family: var(--font-alt); font-size: max(21px, 1em); }
+.minusculas { text-transform: lowercase; }
+
+.max-width { width: 100%; max-width: var(--max-width); }
+.max-width-5-col { width: 100%; max-width: var(--max-width-5-col); }
+.h-100 { height: 100vh; height: 100dvh; min-height: min-content; }
+.h-80  { height: 80vh; height: 80dvh; min-height: min-content; }
+
+.min-padding {
+  padding-inline: var(--space-48); 
+}
+
+@media (max-width: 768px) {
+  .min-padding {
+    padding-inline: var(--space-16);
+  }
+}
+
+.center-h {
+  display: flex;
+  align-items: center;
+  align-content: center;
+}
+
+.margin-main {
+  gap: var(--space-48);
+  margin-block: 136px;
+}
+
+@media (max-width: 768px) {
+  .margin-main {
+    margin-top: var(--space-24);
+    margin-bottom: var(--space-64);
+  }
+}
+
+/* ─── FONDOS DE COLORES ────────────────────── */
+.bg-pink {
+  background-color: var(--fa-pink);
+}
+
+.bg-orange {
+  background-color: var(--fa-orange);
+}
+
+.bg-green {
+  background-color: var(--fa-green);
+}
+
+/* ─── BOTONES ────────────────────── */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.btn {
+  color: var(--fa-black);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-style: normal;
+  font-weight: 400;
+  border: var(--space-4) solid var(--color-none);
+  text-transform: lowercase;
+  display: flex;
+  gap: var(--space-4);
+  line-height: var(--text-lg);
+  align-items: center;
+  width: fit-content;
+  height: fit-content;
+  white-space: nowrap;
+}
+
+.btn::before {
+  content: '[';
+  visibility: hidden;
+}
+
+.btn::after {
+  content: ']';
+  visibility: hidden;
+}
+
+.btn:hover::before,
+.btn:hover::after {
+  visibility: visible;
+}
+
+/* BOTON ALTERNATIVO */
+.btn-alt::before,
+.btn-alt::after,
+.btn-alt:hover::before,
+.btn-alt:hover::after{
+  content: none;
+  display: none;
+}
+
+.btn-alt{
+  gap: 0;
+  padding-inline: var(--space-4);
+}
+
+/* COLORER HOVER */
+
+.btn-orange:hover {
+  border-color: var(--fa-orange);
+  background-color: var(--fa-orange);
+}
+
+.btn-pink:hover {
+  border-color: var(--fa-pink);
+  background-color: var(--fa-pink);
+}
+
+.btn-green:hover {
+  border-color: var(--fa-green);
+  background-color: var(--fa-green);
+}
+
+.btn-orange-alt:hover {
+  border-color: var(--fa-orange-alt);
+  background-color: var(--fa-orange-alt);
+}
+
+.btn-pink-alt:hover {
+  border-color: var(--fa-pink-alt);
+  background-color: var(--fa-pink-alt);
+}
+
+.btn-green-alt:hover {
+  border-color: var(--fa-green-alt);
+  background-color: var(--fa-green-alt);
+}
+
+/* BOTONES TAG */
+
+.btn-tag {
+  color: var(--fa-black);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-style: normal;
+  font-weight: 400;
+  border: var(--space-4) solid var(--color-none);
+  display: flex;
+  gap: var(--space-4);
+  line-height: var(--text-lg);
+  align-items: center;
+  width: fit-content;
+  height: fit-content;
+  word-break: keep-all;
+}
+
+.btn-tag::before {
+  content: '[';
+}
+
+.btn-tag::after {
+  content: ']';
+}
+
+/* BOTONES LINK */
+
+.btn-link {
+  color: var(--fa-black);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-style: normal;
+  font-weight: 400;
+  display: flex;
+  gap: var(--space-4);
+  line-height: var(--text-lg);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+  text-underline-position: under;
+}
+
+/* ─── GRILLA ────────────────────── */
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--space-48);
+}
+
+@media (max-width: 1440px) { .grid-12 { column-gap: 40px; } }
+@media (max-width: 768px)  { 
+  .grid-12 {
+    display: flex;
+    flex-direction: column;
+    row-gap: var(--space-16);
+  } 
+}
+
+.col {
+  grid-column: var(--start, 1) / var(--end, -1);
+}
+
+/* ─── ENCABEZADO DE SECCIONES ────────────────────── */
+.subtitulo {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-block: var(--space-16);
+  border-bottom: 2px solid #FFCCE5;
+  width: 100%;
+  gap: var(--space-16);
+}
+
+.subtitulo h1 {
+  font-size: var(--text-2xl);
+  text-transform: lowercase;
+  font-weight: 400;
+}

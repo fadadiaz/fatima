@@ -1,0 +1,72 @@
+---
+import { getCollection } from 'astro:content'
+import type { CollectionEntry } from 'astro:content'
+import Layout from '../layouts/Layout.astro'
+import NavSecundario from '../components/NavSecundario.astro'
+import Footer from '../components/Footer.astro'
+
+const proyectos = await getCollection('proyectos')
+---
+
+<Layout titulo="Proyectos — Fátima">
+  <NavSecundario />
+  <main class="margin-main">
+    <header class="max-width min-padding">
+      <div class="subtitulo">
+        <h1>Proyectos</h1>
+        <a id="btn-azar" class="btn btn-pink" href="#">Al azar <i class="fi fi-rs-dice-alt"></i></a>
+      </div>
+    </header>
+    <section class="grilla-proyectos grid-12 max-width min-padding">
+      {proyectos.map((proyecto: CollectionEntry<'proyectos'>) => (
+        <a href={`/proyectos/${proyecto.id}`} class="proyecto-card col" style="--start: auto; --end: span 4;">
+          <div class="proyecto-cover">
+            <img src={proyecto.data.portada} alt={proyecto.data.titulo}>
+          </div>
+          <div class="proyecto-card-info">
+            <h3 class="btn-link">{proyecto.data.titulo}</h3>
+            <p class="font-mono">{proyecto.data.fecha}</p>
+          </div>
+        </a>
+      ))}
+    </section>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .proyecto-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-16);
+  }
+
+  .proyecto-cover {
+      padding: var(--space-24);
+      background: var(--fa-gray);
+  }
+
+  .proyecto-card img {
+      width: 100%;
+      max-height: 592px;
+      aspect-ratio: 1 / 1.414;
+      object-fit: cover;
+  }
+
+  .proyecto-card-info {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-8);
+    justify-content: space-between;
+    white-space: nowrap;
+  }
+</style>
+
+<script define:vars={{ proyectos: proyectos.map(p => p.id) }}>
+  const btn = document.getElementById('btn-azar')
+  btn.addEventListener('click', (e) => {
+    e.preventDefault()
+    const azar = proyectos[Math.floor(Math.random() * proyectos.length)]
+    window.location.href = `/proyectos/${azar}`
+  })
+</script>

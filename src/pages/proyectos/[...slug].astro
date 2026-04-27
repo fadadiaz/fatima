@@ -1,0 +1,141 @@
+---
+import { getCollection, render } from 'astro:content'
+import type { CollectionEntry } from 'astro:content'
+import Layout from '../../layouts/Layout.astro'
+import NavSecundario from '../../components/NavSecundario.astro'
+import Footer from '../../components/Footer.astro'
+
+export async function getStaticPaths() {
+  const proyectos = await getCollection('proyectos')
+  return proyectos.map((proyecto: CollectionEntry<'proyectos'>) => ({
+    params: { slug: proyecto.id },
+    props: { proyecto },
+  }))
+}
+
+const { proyecto } = Astro.props as { proyecto: CollectionEntry<'proyectos'> }
+const { Content } = await render(proyecto)
+---
+
+<Layout titulo={`${proyecto.data.titulo} — Fátima`}>
+  <NavSecundario />
+  <main class="margin-main">
+    <header class="proyecto-header max-width min-padding grid-12">
+      <p class="btn btn-alt bg-pink proyecto-categoria font-mono col" style="--start: 1; --end: 12;">{proyecto.data.categoria}</p>
+      <h1 class="proyecto-titulo col" style="--start: 1; --end: 12;">{proyecto.data.titulo}</h1>
+      <p class="proyecto-descripcion col" style="--start: 3; --end: 9;">{proyecto.data.descripcion}</p>
+      {proyecto.data.enlaces && (
+        <div class="proyecto-enlaces col" style="--start: 3; --end: 9;">
+          {proyecto.data.enlaces.map((enlace) => (
+            <a class="btn-link" href={enlace.href} target="_blank">{enlace.texto}</a>
+          ))}
+        </div>
+      )}
+    </header>
+    <section class="proyecto-body max-width min-padding">
+      <Content />
+    </section>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .proyecto-header {
+    width: 100%;
+    row-gap: var(--space-16);
+  }
+
+  .proyecto-categoria {
+    font-size: var(--text-sm);
+    text-transform: none;
+}
+
+  .proyecto-descripcion {
+    white-space: pre-line;
+}
+
+  .proyecto-enlaces {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: var(--space-16);
+}
+
+  .proyecto-body {
+      gap: var(--space-8);
+      display: flex;
+      flex-direction: column;
+  }
+
+  .proyecto-body :global(p) {
+    gap: var(--space-8);
+    display: flex;
+    flex-direction: column;
+    font-size: var(--text-base);
+  }
+
+  .proyecto-body :global(.agrupado) {
+  display: grid;
+  grid-template-columns: repeat(45, 1fr); 
+  gap: var(--space-8);
+  width: 100%;
+  align-items: stretch;
+}
+
+.proyecto-body :global(.agrupado .img-h) {
+  grid-column: span 35; 
+}
+
+.proyecto-body :global(.agrupado .img-v) {
+  grid-column: span 10;
+}
+
+.proyecto-body :global(.agrupado .img-h-30) {
+  grid-column: span 30; 
+}
+
+.proyecto-body :global(.agrupado .img-v-15) {
+  grid-column: span 15;
+}
+
+.proyecto-body :global(.agrupado img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.proyecto-body :global(.agrupado-50) {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.proyecto-body :global(.agrupado-50 img) {
+  flex: 1;
+  min-width: 0;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .proyecto-body :global(.agrupado) {
+    grid-template-columns: 1fr;
+  }
+
+  .proyecto-body :global(.agrupado-50) {
+    flex-direction: column;
+  }
+  
+  .proyecto-body :global(.agrupado .img-h),
+  .proyecto-body :global(.agrupado .img-v),
+  .proyecto-body :global(.agrupado .img-h-30),
+  .proyecto-body :global(.agrupado .img-v-15) {
+    grid-column: span 1;
+  }
+
+  .proyecto-body :global(.agrupado img),
+  .proyecto-body :global(.agrupado-50 img) {
+    height: auto;
+    width: 100%;
+  }
+}
+</style>

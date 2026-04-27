@@ -1,0 +1,100 @@
+<div class="cursor-imagen" id="cursor-personalizado">
+  <img id="cursor-img" src="" alt="">
+</div>
+
+<div class="cursor-mobile" id="cursor-mobile">
+  <img id="cursor-mobile-img" src="" alt="">
+</div>
+
+<script>
+  const cursor = document.getElementById('cursor-personalizado') as HTMLElement
+  const cursorImg = document.getElementById('cursor-img') as HTMLImageElement
+
+  document.addEventListener('mousemove', (e: MouseEvent) => {
+    cursor.style.left = e.clientX + 'px'
+    cursor.style.top = e.clientY + 'px'
+  })
+
+  const secciones = document.querySelectorAll('[data-cursor]')
+
+  secciones.forEach((seccion) => {
+    seccion.addEventListener('mouseenter', () => {
+      const imagen = seccion.getAttribute('data-cursor') as string
+      cursorImg.src = imagen
+      cursor.classList.add('visible')
+    })
+    seccion.addEventListener('mouseleave', () => {
+      cursor.classList.remove('visible')
+    })
+  })
+
+  const cursorMobile = document.getElementById('cursor-mobile') as HTMLElement
+  const cursorMobileImg = document.getElementById('cursor-mobile-img') as HTMLImageElement
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const imagen = (entry.target as HTMLElement).getAttribute('data-cursor')
+        if (imagen) {
+          cursorMobileImg.src = imagen
+          cursorMobile.classList.add('visible')
+        }
+      } else {
+        cursorMobile.classList.remove('visible')
+      }
+    })
+  }, { threshold: 0.3 })
+
+  secciones.forEach((seccion) => observer.observe(seccion))
+</script>
+
+<style>
+  .cursor-imagen {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transform: translate(16px, 16px);
+    transition: opacity 0.2s ease;
+  }
+
+  .cursor-imagen.visible {
+    opacity: 1;
+  }
+
+  .cursor-imagen img {
+    width: 120px;
+    height: auto;
+    display: block;
+  }
+
+  .cursor-mobile {
+    display: none;
+  }
+
+  @media (hover: none) {
+    .cursor-mobile {
+      display: block;
+      position: fixed;
+      bottom: var(--space-48);
+      right: var(--space-16);
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .cursor-mobile img {
+      width: 145px;
+      height: auto;
+    }
+
+    .cursor-mobile.visible {
+      opacity: 1;
+    }
+
+    .cursor-imagen {
+      display: none;
+    }
+  }
+</style>

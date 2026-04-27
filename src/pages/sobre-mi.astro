@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro'
+import NavSecundario from '../components/NavSecundario.astro'
+import Footer from '../components/Footer.astro'
+---
+
+<Layout titulo="Sobre mí — Fátima">
+  <NavSecundario />
+  <main class="margin-main">
+    <header class="max-width min-padding">
+      <div class="subtitulo">
+        <h1>Sobre mí</h1>
+      </div>
+    </header>
+    <section class="bio grid-12 max-width min-padding">
+        <img src="/public/fatima-bio.png" class="col" style="--start: 1; --end: 5; grid-row: 1 / 3;" alt="Foto de Fátima sonriendo con remera negra y pantalón rosa, en un patio cerrado, con un arbol rosa de fondo.">
+      <article class="col" style="--start: 5; --end: 13; display: contents;  ">
+        <h2 class="col" style="--start: 5; --end: 13; grid-row: 1;" >Soy Fátima, estudiante de Diseño y Comunicación Visual, estoy ubicada en Buenos Aires e iniciando mi recorrido profesional como diseñadora junior.</h2>
+        <p class="col" style="--start: 8; --end: 13; grid-row: 2;" >Me especializo en identidad visual, diseño web y aplicaciones, explorando cómo el diseño puede simplificar procesos, potenciar marcas y mejorar la experiencia de las personas. Mi pasión está en combinar lo estético con lo funcional para generar impacto.
+Con experiencia en desarrollo de sistemas administrativos y automatización de tareas, diseñé una aplicación para gestionar más de 200 cursos y 5000 estudiantes, integrando funciones de inscripción y toma de asistencia. Actualmente, soy ayudante de cátedra en Computación 3 (UNLa), que se centra en los conocimientos esenciales de HTML, CSS, GitHub y Figma.
+Creo firmemente que diseñar con empatía y atención al detalle permite construir soluciones que no solo son útiles, sino también significativas y accesibles.
+Si tenés un proyecto en mente, charlemos :)</p>
+      </article>
+    </section>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .bio article {
+    gap: var(--space-24);
+  }
+
+  .bio h2 {
+    text-transform: inherit;
+}
+</style>

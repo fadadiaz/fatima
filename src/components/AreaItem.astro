@@ -1,0 +1,71 @@
+---
+interface Tag {
+  texto: string
+  href: string
+}
+
+interface Props {
+  texto: string
+  href: string
+  tags: Tag[]
+}
+
+const { texto, href, tags } = Astro.props
+---
+
+<div class="areas-item h-100 center-h">
+  <div class="areas-trigger center-h" tabindex="0">
+    <a class="areas-categoria minusculas" href={href}>{texto}</a>
+    <div class="tag-item">
+      {tags.map((tag: Tag) => (
+        <a class="btn-tag bg-pink" href={tag.href}>{tag.texto}</a>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .areas-item {
+    font-size: clamp(var(--text-3xl), 10vw, var(--text-6xl));
+    text-align: center;
+    justify-content: center;
+    line-height: 1.2;
+  }
+
+  .areas-trigger {
+    width: 100%;
+    position: relative;
+    min-height: fit-content;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .tag-item {
+    position: absolute;
+    width: 100%;
+    max-width: 850px;
+    display: flex;
+    gap: var(--space-8);
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    flex-wrap: wrap;
+  }
+
+  .areas-trigger:hover .tag-item {
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    .areas-trigger {
+    gap: var(--space-24);
+    }
+    .tag-item {
+      opacity: 1;
+      position: static;
+    }
+    .tag-item a {
+      font-size: var(--text-sm);
+    }
+  }
+</style>

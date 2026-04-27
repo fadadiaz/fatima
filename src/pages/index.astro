@@ -1,0 +1,117 @@
+---
+import Layout from '../layouts/Layout.astro'
+import HeaderHome from '../components/HeaderHome.astro'
+import Footer from '../components/Footer.astro'
+import AreaItem from '../components/AreaItem.astro'
+import Slider from '../components/Slider.astro'
+
+const areas = [
+  { 
+    texto: "Identidad visual", 
+    href: "#",
+    tags: [
+      { texto: "Branding", href: "#" },
+      { texto: "Rediseño de marca", href: "#" },
+      { texto: "Kit para redes", href: "#" },
+      { texto: "Papelería corporativa", href: "#" },
+      { texto: "Etiquetas y packaging", href: "#" },
+      { texto: "Presentaciones", href: "#" },
+      { texto: "Manual de marca", href: "#" },
+      { texto: "Paleta de colores", href: "#" },
+    ]
+  },
+  { 
+    texto: "Diseño web", 
+    href: "#",
+    tags: [
+      { texto: "Landing pages", href: "#" },
+      { texto: "WordPress", href: "#" },
+      { texto: "Tiendas online", href: "#" },
+      { texto: "Notion", href: "#" },
+      { texto: "Portfolios", href: "#" },
+      { texto: "Menú digital", href: "#" },
+      { texto: "Figma a código", href: "#" },
+      { texto: "UI Design", href: "#" },
+      { texto: "Rediseño web", href: "#" },
+      { texto: "Mantenimiento web", href: "#" },
+    ]
+  },
+  { 
+    texto: "Integraciones digitales", 
+    href: "#",
+    tags: [
+      { texto: "Automatización", href: "#" },
+      { texto: "Formularios inteligentes", href: "#" },
+      { texto: "Apps a medida", href: "#" },
+      { texto: "Gestión de clientes", href: "#" },
+      { texto: "AppSheet", href: "#" },
+      { texto: "Apps Script", href: "#" },
+      { texto: "Google Workspace", href: "#" },
+      { texto: "Generación de documentos", href: "#" },
+      { texto: "Control de stock", href: "#" },
+    ]
+  },
+]
+---
+
+<Layout titulo="Fátima — Diseño Gráfico">
+  <HeaderHome />
+  <main>
+    <section id="hero" class="font-grotesk max-width min-padding h-100 center-h">
+      <p data-cursor="/cursor-yo.png">¡Hola! Soy Fátima, estudiante de 🎓 Diseño y Comunicación Visual. Estoy ubicada en 📍 Buenos Aires e iniciando mi recorrido profesional como 🐣 diseñadora junior.</p>
+      <a class="btn btn-pink" href="/sobre-mi">Más sobre mí</a>
+    </section>
+    <section id="areas" data-cursor="/cursor-proyectos.gif" class="font-grotesk max-width min-padding">
+      <div class="subtitulo">
+        <h2>Áreas de trabajo</h2>
+        <a class="btn btn-pink" href="#">Ver más<i class="fi fi-rs-eye"></i></a>
+      </div>
+      {areas.map((area) => (
+        <AreaItem texto={area.texto} href={area.href} tags={area.tags} />
+      ))}
+    </section>
+    <section id="slider-proyectos">
+      <div class="max-width min-padding">
+        <div class="subtitulo">
+          <h2>Proyectos</h2>
+          <a class="btn btn-pink" href="/proyectos">Ver todo<i class="fi fi-rs-eye"></i></a>
+        </div>
+      </div>
+      <Slider />
+    </section>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  #hero {
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-16);
+  }
+
+  #hero p {
+    font-size: var(--text-2-5xl);
+    line-height: var(--text-3xl);
+    text-align: center;
+  }
+
+  #slider-proyectos {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-48);
+    margin-bottom: var(--space-64);
+  }
+
+  @media (max-width: 768px) {
+    #hero p {
+      font-size: var(--text-2xl);
+      line-height: var(--text-2xl);
+    }
+    h2 {
+      font-size: var(--text-2xl);
+    }
+  }
+</style>

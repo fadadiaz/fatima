@@ -1,0 +1,101 @@
+---
+interface Props {
+  bg?: string
+}
+const { bg = 'bg-orange' } = Astro.props
+---
+
+<button class="btn btn-alt btn-pink btn-burger" aria-label="Abrir menú" aria-expanded="false">
+  Menú <i class="fi fi-rs-burger-menu"></i>
+</button>
+
+<nav class={`menu-mobile ${bg} min-padding h-100`} aria-hidden="true">
+  <div class="logo-menu">
+    <a href="/"><img alt="Texto fátima color negro" src="/logo-fatima.svg"></a>
+    <button class="btn btn-alt btn-pink btn-cerrar" aria-label="Cerrar menú">
+      Cerrar <i class="fi fi-rs-cross-small"></i>
+    </button>
+  </div>
+  <div class="content-nav">
+    <a class="btn btn-pink" href="/proyectos">Proyectos</a>
+    <a class="btn btn-pink" href="/sobre-mi">Sobre mí</a>
+    <a class="btn btn-pink" href="#">Contacto</a>
+    <a class="btn btn-pink" href="#">CV/Portfolio<i class="fi fi-rs-download"></i></a>
+  </div>
+</nav>
+
+<style>
+  .btn-burger {
+    display: flex;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .menu-mobile {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    flex-direction: column;
+    width: 100vw;
+    padding-block: var(--space-32);
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .menu-mobile.is-open {
+    display: flex;
+  }
+
+  .logo-menu {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo-menu img {
+    height: var(--space-16);
+  }
+
+  .content-nav {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-32);
+  }
+
+  .btn-cerrar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    align-self: flex-end;
+  }
+
+  @media (min-width: 768px) {
+    .btn-burger { display: none; }
+    .menu-mobile { display: none !important; }
+    }
+</style>
+
+<script>
+  const btnAbrir  = document.querySelector('.btn-burger')
+  const btnCerrar = document.querySelector('.btn-cerrar')
+  const menu      = document.querySelector('.menu-mobile')
+
+  if (btnAbrir && btnCerrar && menu) {
+    btnAbrir.addEventListener('click', () => {
+      menu.classList.add('is-open')
+      btnAbrir.setAttribute('aria-expanded', 'true')
+    })
+
+    btnCerrar.addEventListener('click', () => {
+      menu.classList.remove('is-open')
+      btnAbrir.setAttribute('aria-expanded', 'false')
+    })
+  }
+</script>

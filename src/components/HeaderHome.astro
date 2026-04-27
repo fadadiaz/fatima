@@ -1,0 +1,57 @@
+---
+import MenuMobile from './MenuMobile.astro'
+---
+
+<header class="bg-orange header-home min-padding h-100">
+
+  <div class="logo logo--desktop">
+    <img alt="Texto fátima color negro" src="/logo-fatima.svg">
+  </div>
+  <div class="logo logo--tablet">
+    <img alt="Texto fátima color negro" src="/logo-fatima.svg">
+  </div>
+
+  <MenuMobile />
+
+  <div class="logo logo--mobile">
+    <img alt="Texto fáti color negro" src="/logo-fati.svg">
+  </div>
+
+  <nav class="nav-full">
+    <a class="btn btn-pink" href="/proyectos">Proyectos</a>
+    <a class="btn btn-pink" href="/sobre-mi">Sobre mí</a>
+    <a class="btn btn-pink" href="#">Contacto</a>
+    <a class="btn btn-pink" href="#">CV/Portfolio<i class="fi fi-rs-download"></i></a>
+  </nav>
+
+</header>
+
+<style>
+  .header-home {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-block: var(--space-32);
+    gap: var(--space-48);
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .logo img { width: 100%; }
+  .logo--desktop, .logo--tablet { display: none; }
+  .logo--mobile { display: flex; }
+  .nav-full { display: none; }
+
+  @media (min-width: 768px) {
+    .header-home { justify-content: end; align-items: unset; }
+    .logo--mobile { display: none; }
+    .logo--tablet { display: flex; }
+    .logo--desktop { display: none; }
+    .nav-full { display: flex; justify-content: space-between; gap: 8px; }
+  }
+
+  @media (min-width: 1440px) {
+    .logo--tablet { display: none; }
+    .logo--desktop { display: flex; }
+  }
+</style>
