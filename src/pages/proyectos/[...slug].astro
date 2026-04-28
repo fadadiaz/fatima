@@ -139,3 +139,13 @@ const { Content } = await render(proyecto)
   }
 }
 </style>
+
+<script>
+  document.querySelectorAll('.proyecto-body img').forEach((img) => {
+    const src = img.getAttribute('src')
+    if (src && !src.startsWith('http')) {
+      img.setAttribute('src', `/.netlify/images?url=${src}&q=80`)
+    }
+    img.setAttribute('loading', 'lazy')
+  })
+</script>
