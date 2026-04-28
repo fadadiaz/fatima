@@ -9,17 +9,29 @@ const { titulo } = Astro.props
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Fátima | Portfolio" />
     <title>{titulo}</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <meta name="description" content="Diseñadora gráfica junior en Buenos Aires. Identidad visual, diseño web e integraciones digitales.">
+    <meta name="author" content="Fátima">
+    <meta property="og:title" content="Fátima — Diseño Gráfico">
+    <meta property="og:description" content="Diseñadora gráfica junior en Buenos Aires. Identidad visual, diseño web e integraciones digitales.">
+    <meta property="og:image" content="https://fatima.com.ar/og-image.jpg">
+    <meta property="og:image" content="https://fatima.com.ar/og-image-square.jpg">
+    <meta property="og:url" content="https://fatima.com.ar">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fátima — Diseño Gráfico">
+    <meta name="twitter:description" content="Diseñadora gráfica junior en Buenos Aires. Identidad visual, diseño web e integraciones digitales.">
+    <meta name="twitter:image" content="https://fatima.com.ar/og-image.jpg">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="preload" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-straight/fonts/uicons-regular-straight.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-straight/css/uicons-regular-straight.css">
   </head>
+  
   <body>
     <CursorPersonalizado />
     <slot />
