@@ -67,3 +67,12 @@ const slides = proyectos.flatMap((proyecto) => {
     to   { transform: translateX(-50%); }
   }
 </style>
+
+<script>
+  document.querySelectorAll('.slide img').forEach((img) => {
+    const src = img.getAttribute('src')
+    if (src && !src.startsWith('http')) {
+      img.setAttribute('src', `/.netlify/images?url=${src}&q=80`)
+    }
+  })
+</script>
