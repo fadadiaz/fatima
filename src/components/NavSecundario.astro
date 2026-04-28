@@ -1,24 +1,23 @@
 ---
 import MenuMobile from './MenuMobile.astro'
+const { flotante = false } = Astro.props
+const ruta = Astro.url.pathname
 ---
 
-<header class="bg-pink header-alt min-padding">
-
+<header class={`header-alt min-padding ${flotante ? 'nav-flotante' : 'bg-pink'}`}>
   <!-- MOBILE -->
   <div class="nav-alt-mobile">
     <a href="/"><img alt="Texto fátima color negro" src="/logo-fatima.svg"></a>
     <MenuMobile bg="bg-pink" />
   </div>
-
   <!-- DESKTOP/TABLET -->
   <nav class="nav-alt-full">
-    <a class="btn btn-pink-alt" href="/proyectos">Proyectos</a>
-    <a class="btn btn-pink-alt" href="/sobre-mi">Sobre mí</a>
+    <a class={`btn btn-pink-alt ${ruta.startsWith('/proyectos') ? 'activo' : ''}`} href="/proyectos">Proyectos</a>
+    <a class={`btn btn-pink-alt ${ruta === '/sobre-mi' ? 'activo' : ''}`} href="/sobre-mi">Sobre mí</a>
     <a href="/"><img alt="Texto fátima color negro" width="81" height="25" src="/logo-fatima.svg"></a>
     <a class="btn btn-pink-alt" href="#">Contacto</a>
     <a class="btn btn-pink-alt" href="#">CV/Portfolio<i class="fi fi-rs-download"></i></a>
   </nav>
-
 </header>
 
 <style>
@@ -28,6 +27,27 @@ import MenuMobile from './MenuMobile.astro'
     flex-direction: column;
     padding-block: var(--space-32);
     gap: var(--space-32);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    transition: background-color 0.3s ease;
+  }
+
+  .nav-flotante {
+    position: fixed;
+    background-color: transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .nav-flotante.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .header-alt.transparente {
+    background-color: transparent;
   }
 
   /* MOBILE */
@@ -37,13 +57,9 @@ import MenuMobile from './MenuMobile.astro'
     align-items: center;
   }
 
-  .nav-alt-mobile img {
-    height: var(--space-16);
-  }
-
+  .nav-alt-mobile img { height: var(--space-16); }
   .nav-alt-full { display: none; }
 
-  /* TABLET+ */
   @media (min-width: 768px) {
     .nav-alt-mobile { display: none; }
     .nav-alt-full {
@@ -53,3 +69,18 @@ import MenuMobile from './MenuMobile.astro'
     }
   }
 </style>
+
+<script>
+  const header = document.querySelector('.header-alt') as HTMLElement
+
+  // comportamiento scroll en páginas normales
+  if (!header.classList.contains('nav-flotante')) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('transparente')
+      } else {
+        header.classList.remove('transparente')
+      }
+    }, { passive: true })
+  }
+</script>
