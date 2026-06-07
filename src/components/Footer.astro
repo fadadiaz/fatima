@@ -1,11 +1,14 @@
-<footer class="bg-green min-padding h-80">
+<footer id="contacto" class="bg-green min-padding h-80">
 
   <div class="hook">
     <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
     <p>¡Escribíme!</p>
   </div>
   <div class="correo">
-    <a class="correo-link" href="mailto:hola@fatima.com.ar"><img alt="Texto fátima color negro" src="/correo-link.svg"></a>
+    <a class="correo-link" href="mailto:hola@fatima.com.ar">
+      <img class="correo-default" alt="hola@fatima.com.ar" src="/correo-link.svg">
+      <img class="correo-hover" alt="hola@fatima.com.ar" src="/correo-link-sub.svg">
+    </a>
   </div>
   <div class="redes">
     <a class="btn btn-alt btn-green-alt" href="#"><span class="font-alt">instagram.com/</span>fatima.archivo</a>
@@ -26,6 +29,18 @@ footer {
 
 .correo-link {
     width: 100%;
+}
+
+.correo-hover {
+  display: none;
+}
+
+.correo-link:hover .correo-default {
+  display: none;
+}
+
+.correo-link:hover .correo-hover {
+  display: block;
 }
 
 .hook {
