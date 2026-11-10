@@ -13,59 +13,55 @@ import emojiBirrete from '../assets/emojis/emoji_u1f393_3d.png'
 const areas = [
   { 
     texto: "Identidad visual", 
-    href: "#",
     tags: [
-      { texto: "Branding", href: "#" },
-      { texto: "Rediseño de marca", href: "#" },
-      { texto: "Kit para redes", href: "#" },
-      { texto: "Papelería corporativa", href: "#" },
-      { texto: "Etiquetas y packaging", href: "#" },
-      { texto: "Presentaciones", href: "#" },
-      { texto: "Manual de marca", href: "#" },
-      { texto: "Paleta de colores", href: "#" },
+      { texto: "Branding" },
+      { texto: "Rediseño de marca" },
+      { texto: "Kit para redes" },
+      { texto: "Papelería corporativa" },
+      { texto: "Etiquetas y packaging" },
+      { texto: "Presentaciones" },
+      { texto: "Manual de marca" },
+      { texto: "Paleta de colores" },
     ]
   },
   { 
     texto: "Diseño web", 
-    href: "#",
     tags: [
-      { texto: "Landing pages", href: "#" },
-      { texto: "WordPress", href: "#" },
-      { texto: "Tiendas online", href: "#" },
-      { texto: "Notion", href: "#" },
-      { texto: "Portfolios", href: "#" },
-      { texto: "Menú digital", href: "#" },
-      { texto: "Figma a código", href: "#" },
-      { texto: "UI Design", href: "#" },
-      { texto: "Rediseño web", href: "#" },
-      { texto: "Mantenimiento web", href: "#" },
+      { texto: "Landing pages" },
+      { texto: "WordPress" },
+      { texto: "Tiendas online" },
+      { texto: "Notion" },
+      { texto: "Portfolios" },
+      { texto: "Menú digital" },
+      { texto: "Figma a código" },
+      { texto: "UI Design" },
+      { texto: "Rediseño web" },
+      { texto: "Mantenimiento web" },
     ]
   },
   {
     texto: "Diseño editorial",
-    href: "#",
     tags: [
-      { texto: "Revistas", href: "#" },
-      { texto: "Libros", href: "#" },
-      { texto: "Afiches", href: "#" },
-      { texto: "Folletos", href: "#" },
-      { texto: "Maquetación", href: "#" },
-      { texto: "Preprensa", href: "#" },
+      { texto: "Revistas" },
+      { texto: "Libros" },
+      { texto: "Afiches" },
+      { texto: "Folletos" },
+      { texto: "Maquetación" },
+      { texto: "Preprensa" },
     ]
   },
   {
     texto: "Herramientas digitales",
-    href: "#",
     tags: [
-      { texto: "Automatización", href: "#" },
-      { texto: "Formularios inteligentes", href: "#" },
-      { texto: "Apps a medida", href: "#" },
-      { texto: "Gestión de clientes", href: "#" },
-      { texto: "AppSheet", href: "#" },
-      { texto: "Apps Script", href: "#" },
-      { texto: "Google Workspace", href: "#" },
-      { texto: "Generación de documentos", href: "#" },
-      { texto: "Control de stock", href: "#" },
+      { texto: "Automatización" },
+      { texto: "Formularios inteligentes" },
+      { texto: "Apps a medida" },
+      { texto: "Gestión de clientes" },
+      { texto: "AppSheet" },
+      { texto: "Apps Script" },
+      { texto: "Google Workspace" },
+      { texto: "Generación de documentos" },
+      { texto: "Control de stock" },
     ]
   },
 ]
@@ -84,7 +80,7 @@ const areas = [
         <h2>Especialidades</h2>
       </div>
       {areas.map((area) => (
-        <AreaItem texto={area.texto} href={area.href} tags={area.tags} />
+        <AreaItem texto={area.texto} tags={area.tags} />
       ))}
     </section>
     <section id="slider-proyectos">

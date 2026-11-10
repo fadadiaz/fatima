@@ -37,16 +37,16 @@ const configEtiquetasMovil = {
 
 interface Tag {
   texto: string
-  href: string
 }
 
 interface Props {
   texto: string
-  href: string
+  href?: string // con destino, el bloque completo del área pasa a ser un enlace
   tags: Tag[]
 }
 
 const { texto, href, tags } = Astro.props
+const Contenedor = href ? 'a' : 'div'
 ---
 
 <div
@@ -54,14 +54,14 @@ const { texto, href, tags } = Astro.props
   data-config={JSON.stringify(configEtiquetas)}
   data-config-movil={JSON.stringify(configEtiquetasMovil)}
 >
-  <div class="areas-trigger center-h" tabindex="0">
-    <a class="areas-categoria minusculas" href={href}>{texto}</a>
+  <Contenedor class="areas-trigger center-h" href={href} tabindex={href ? undefined : 0}>
+    <span class="areas-categoria minusculas">{texto}</span>
     <ul class="tag-item">
       {tags.map((tag: Tag, i: number) => (
-        <li style={`--i: ${i}`}><a class="btn-tag bg-pink" href={tag.href}>{tag.texto}</a></li>
+        <li style={`--i: ${i}`}><span class="btn-tag bg-pink">{tag.texto}</span></li>
       ))}
     </ul>
-  </div>
+  </Contenedor>
 </div>
 
 <style>
@@ -166,7 +166,7 @@ const { texto, href, tags } = Astro.props
       opacity: 1;
       position: static;
     }
-    .tag-item a {
+    .tag-item .btn-tag {
       font-size: var(--text-sm);
     }
   }
