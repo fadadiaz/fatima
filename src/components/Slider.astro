@@ -24,9 +24,15 @@ const slides = proyectos.flatMap((proyecto) => {
 
 <div class="slider-wrapper">
   <div class="slider-track">
-    {[...slides, ...slides].map((slide) => (
+    {slides.map((slide) => (
       <a href={slide.href} class="slide">
         <img src={slide.src} alt={slide.titulo}>
+      </a>
+    ))}
+    {/* Copia para el bucle, fuera del tabulado y de los lectores de pantalla */}
+    {slides.map((slide) => (
+      <a href={slide.href} class="slide slide-copia" aria-hidden="true" tabindex="-1">
+        <img src={slide.src} alt="">
       </a>
     ))}
   </div>
@@ -72,6 +78,10 @@ const slides = proyectos.flatMap((proyecto) => {
 
     .slider-track {
       animation: none;
+    }
+
+    .slide-copia {
+      display: none;
     }
   }
 

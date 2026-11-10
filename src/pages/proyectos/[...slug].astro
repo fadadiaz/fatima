@@ -15,9 +15,19 @@ export async function getStaticPaths() {
 
 const { proyecto } = Astro.props as { proyecto: CollectionEntry<'proyectos'> }
 const { Content } = await render(proyecto)
+
+// Descripción recortada a unos 160 caracteres para buscadores y redes
+const textoDescripcion = (proyecto.data.descripcion ?? '').replace(/\s+/g, ' ').trim()
+const descripcion = textoDescripcion.length > 160
+  ? textoDescripcion.slice(0, textoDescripcion.lastIndexOf(' ', 157)) + '…'
+  : textoDescripcion || `${proyecto.data.titulo}, proyecto de ${proyecto.data.categoria.toLowerCase()} de Fátima Díaz.`
 ---
 
-<Layout titulo={`${proyecto.data.titulo} — Fátima`}>
+<Layout
+  titulo={`${proyecto.data.titulo} — Fátima Díaz`}
+  descripcion={descripcion}
+  imagen={proyecto.data.portada}
+>
   <NavSecundario />
   <main class="margin-main">
     <header class="proyecto-header max-width min-padding grid-12">

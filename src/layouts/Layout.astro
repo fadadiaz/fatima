@@ -1,7 +1,21 @@
 ---
 import '../styles/global.css'
 import CursorPersonalizado from '../components/CursorPersonalizado.astro'
-const { titulo } = Astro.props
+
+interface Props {
+  titulo?: string
+  descripcion?: string
+  imagen?: string
+}
+
+const {
+  titulo = 'Fátima Díaz — Diseño gráfico, web y herramientas digitales',
+  descripcion = 'Diseñadora gráfica y web en Buenos Aires. Diseño marcas, publicaciones y páginas web, y automatizo tareas diarias para que el trabajo de otras personas sea más simple.',
+  imagen = '/og-image.jpg',
+} = Astro.props
+
+const url = new URL(Astro.url.pathname, Astro.site)
+const imagenUrl = new URL(imagen, Astro.site)
 ---
 
 <!doctype html>
@@ -11,19 +25,19 @@ const { titulo } = Astro.props
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{titulo}</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="canonical" href={url}>
 
-    <meta name="description" content="Diseñadora gráfica junior en Buenos Aires. Identidad visual, diseño web e integraciones digitales.">
+    <meta name="description" content={descripcion}>
     <meta name="author" content="Fátima">
-    <meta property="og:title" content="Fátima — Diseño Gráfico">
-    <meta property="og:description" content="Diseñadora gráfica junior en Buenos Aires. Identidad visual, diseño web e integraciones digitales.">
-    <meta property="og:image" content="https://fatima.com.ar/og-image.jpg">
-    <meta property="og:image" content="https://fatima.com.ar/og-image-square.jpg">
-    <meta property="og:url" content="https://fatima.com.ar">
+    <meta property="og:title" content={titulo}>
+    <meta property="og:description" content={descripcion}>
+    <meta property="og:image" content={imagenUrl}>
+    <meta property="og:url" content={url}>
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fátima — Diseño Gráfico">
-    <meta name="twitter:description" content="Diseñadora gráfica junior en Buenos Aires. Identidad visual, diseño web e integraciones digitales.">
-    <meta name="twitter:image" content="https://fatima.com.ar/og-image.jpg">
+    <meta name="twitter:title" content={titulo}>
+    <meta name="twitter:description" content={descripcion}>
+    <meta name="twitter:image" content={imagenUrl}>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +45,7 @@ const { titulo } = Astro.props
     <link rel="preload" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-straight/fonts/uicons-regular-straight.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-straight/css/uicons-regular-straight.css">
   </head>
-  
+
   <body>
     <CursorPersonalizado />
     <slot />

@@ -202,7 +202,9 @@ button {
 }
 
 .btn:hover::before,
-.btn:hover::after {
+.btn:hover::after,
+.btn:focus-visible::before,
+.btn:focus-visible::after {
   visibility: visible;
 }
 
