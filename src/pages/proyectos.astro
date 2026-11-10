@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
+import { Image } from 'astro:assets'
 import Layout from '../layouts/Layout.astro'
 import NavSecundario from '../components/NavSecundario.astro'
 import Footer from '../components/Footer.astro'
@@ -24,7 +25,13 @@ const proyectos = await getCollection('proyectos')
       {proyectos.map((proyecto: CollectionEntry<'proyectos'>) => (
         <a href={`/proyectos/${proyecto.id}`} class="proyecto-card col" style="--start: auto; --end: span 4;">
           <div class="proyecto-cover">
-            <img src={proyecto.data.portada} alt={proyecto.data.titulo}>
+            <Image
+              src={proyecto.data.portada}
+              alt={proyecto.data.titulo}
+              widths={[450, 900]}
+              sizes="(max-width: 768px) 100vw, 33vw"
+              loading="lazy"
+            />
           </div>
           <div class="proyecto-card-info">
             <h3 class="btn-link">{proyecto.data.titulo}</h3>
@@ -51,6 +58,7 @@ const proyectos = await getCollection('proyectos')
 
   .proyecto-card img {
       width: 100%;
+      height: auto;
       max-height: 592px;
       aspect-ratio: 1 / 1.414;
       object-fit: cover;
@@ -71,15 +79,5 @@ const proyectos = await getCollection('proyectos')
     e.preventDefault()
     const azar = proyectos[Math.floor(Math.random() * proyectos.length)]
     window.location.href = `/proyectos/${azar}`
-  })
-</script>
-
-<script>
-  document.querySelectorAll('.proyecto-cover img').forEach((img) => {
-    const src = img.getAttribute('src')
-    if (src && !src.startsWith('http')) {
-      img.setAttribute('src', `/.netlify/images?url=${src}&q=80`)
-    }
-    img.setAttribute('loading', 'lazy')
   })
 </script>

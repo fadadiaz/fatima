@@ -1,24 +1,28 @@
 ---
 import { getCollection } from 'astro:content'
-import fs from 'node:fs'
-import path from 'node:path'
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
 
 const proyectos = await getCollection('proyectos')
 
+// Solo el primer nivel de cada carpeta: las subcarpetas (otras/) quedan fuera del slider
+const imagenes = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/proyectos/*/*.{png,jpg,jpeg,gif,webp}',
+  { eager: true }
+)
+
 const slides = proyectos.flatMap((proyecto) => {
   if (!proyecto.data.carpeta) return []
-  
-  const carpeta = path.join('public', proyecto.data.carpeta)
-  if (!fs.existsSync(carpeta)) return []
-  
-  const archivos = fs.readdirSync(carpeta)
-    .filter((f: string) => /\.(png|jpg|jpeg|gif|webp)$/i.test(f))
-  
-  return archivos.map((archivo: string) => ({
-    src: `${proyecto.data.carpeta}/${archivo}`,
-    href: `/proyectos/${proyecto.id}`,
-    titulo: proyecto.data.titulo,
-  }))
+
+  const prefijo = `/src/assets${proyecto.data.carpeta}/`
+
+  return Object.entries(imagenes)
+    .filter(([ruta]) => ruta.startsWith(prefijo))
+    .map(([, modulo]) => ({
+      imagen: modulo.default,
+      href: `/proyectos/${proyecto.id}`,
+      titulo: proyecto.data.titulo,
+    }))
 }).sort(() => Math.random() - 0.5)
 ---
 
@@ -26,13 +30,13 @@ const slides = proyectos.flatMap((proyecto) => {
   <div class="slider-track">
     {slides.map((slide) => (
       <a href={slide.href} class="slide">
-        <img src={slide.src} alt={slide.titulo}>
+        <Image src={slide.imagen} alt={slide.titulo} height={428} densities={[1, 2]} loading="lazy" />
       </a>
     ))}
     {/* Copia para el bucle, fuera del tabulado y de los lectores de pantalla */}
     {slides.map((slide) => (
       <a href={slide.href} class="slide slide-copia" aria-hidden="true" tabindex="-1">
-        <img src={slide.src} alt="">
+        <Image src={slide.imagen} alt="" height={428} densities={[1, 2]} loading="lazy" />
       </a>
     ))}
   </div>
@@ -90,12 +94,3 @@ const slides = proyectos.flatMap((proyecto) => {
     to   { transform: translateX(-50%); }
   }
 </style>
-
-<script>
-  document.querySelectorAll('.slide img').forEach((img) => {
-    const src = img.getAttribute('src')
-    if (src && !src.startsWith('http')) {
-      img.setAttribute('src', `/.netlify/images?url=${src}&q=80`)
-    }
-  })
-</script>

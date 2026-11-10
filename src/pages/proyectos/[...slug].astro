@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
+import { getImage } from 'astro:assets'
 import Layout from '../../layouts/Layout.astro'
 import NavSecundario from '../../components/NavSecundario.astro'
 import Footer from '../../components/Footer.astro'
@@ -21,12 +22,22 @@ const textoDescripcion = (proyecto.data.descripcion ?? '').replace(/\s+/g, ' ').
 const descripcion = textoDescripcion.length > 160
   ? textoDescripcion.slice(0, textoDescripcion.lastIndexOf(' ', 157)) + '…'
   : textoDescripcion || `${proyecto.data.titulo}, proyecto de ${proyecto.data.categoria.toLowerCase()} de Fátima Díaz.`
+
+// Versión liviana de la portada para redes (1200×630)
+const ogImagen = await getImage({
+  src: proyecto.data.portada,
+  width: 1200,
+  height: 630,
+  fit: 'cover',
+  format: 'jpg',
+  quality: 75,
+})
 ---
 
 <Layout
   titulo={`${proyecto.data.titulo} — Fátima Díaz`}
   descripcion={descripcion}
-  imagen={proyecto.data.portada}
+  imagen={ogImagen.src}
 >
   <NavSecundario />
   <main class="margin-main">
@@ -75,6 +86,10 @@ const descripcion = textoDescripcion.length > 160
       gap: var(--space-8);
       display: flex;
       flex-direction: column;
+  }
+
+  .proyecto-body :global(img) {
+    height: auto;
   }
 
   .proyecto-body :global(p) {
@@ -149,13 +164,3 @@ const descripcion = textoDescripcion.length > 160
   }
 }
 </style>
-
-<script>
-  document.querySelectorAll('.proyecto-body img').forEach((img) => {
-    const src = img.getAttribute('src')
-    if (src && !src.startsWith('http')) {
-      img.setAttribute('src', `/.netlify/images?url=${src}&q=80`)
-    }
-    img.setAttribute('loading', 'lazy')
-  })
-</script>
