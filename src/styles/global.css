@@ -37,6 +37,8 @@
   
   --max-width: 1392px;
   --max-width-5-col: 552px;
+
+  --btn-height: 2rem;
 }
 
 *, *::before, *::after {
@@ -163,7 +165,12 @@ button {
   align-items: center;
   width: fit-content;
   height: fit-content;
+  min-height: var(--btn-height);
   white-space: nowrap;
+}
+
+.btn i {
+  align-items: center;
 }
 
 .btn::before {
@@ -193,6 +200,17 @@ button {
 .btn-alt{
   gap: 0;
   padding-inline: var(--space-4);
+  min-height: auto;
+}
+
+/* BOTON RELLENO */
+.btn-fill {
+  --btn-bg: var(--fa-black);
+  --btn-fg: var(--fa-white);
+  background-color: var(--btn-bg);
+  border-color: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: var(--text-sm);
 }
 
 /* COLORER HOVER */
