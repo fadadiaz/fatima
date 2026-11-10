@@ -9,26 +9,26 @@ carpeta: "/proyectos/vinilos"
 
 ---
 
-![Vinilos página 1](/proyectos/vinilos/vinilos-pag-1.gif)
-![Vinilos página 2](/proyectos/vinilos/vinilos-pag-2.png)
+![Doble página con texto manuscrito y un vinilo de Agnaldo Timoteo grabado a mano](/proyectos/vinilos/vinilos-pag-1.gif)
+![Vista general de las dobles páginas de la publicación, con vinilos y letras manuscritas](/proyectos/vinilos/vinilos-pag-2.png)
 
 <div class="agrupado">
-    <img src="/proyectos/vinilos/vinilos-pag-3.gif" class="img-v" alt="Vinilos página 3">
-    <img src="/proyectos/vinilos/vinilos-pag-4.png" class="img-h" alt="Vinilos página 4">
+    <img src="/proyectos/vinilos/vinilos-pag-3.gif" class="img-v" alt="Animación de etiquetas de vinilos junto a la firma manuscrita 'Nicolás'">
+    <img src="/proyectos/vinilos/vinilos-pag-4.png" class="img-h" alt="Doble página con un vinilo de José Larralde firmado en la etiqueta">
 </div>
 
-![Vinilos página 5](/proyectos/vinilos/vinilos-pag-5.png)
-![Vinilos página 6](/proyectos/vinilos/vinilos-pag-6.png)
-![Vinilos página 7](/proyectos/vinilos/vinilos-pag-7.gif)
-![Vinilos página 8](/proyectos/vinilos/vinilos-pag-8.png)
+![Doble página con tres etiquetas de vinilos gastadas, marcadas con 'Nico'](/proyectos/vinilos/vinilos-pag-5.png)
+![Doble página con tapas de cartón escritas a mano y una firma manuscrita en grande](/proyectos/vinilos/vinilos-pag-6.png)
+![Animación de una doble página con la tapa de un disco de Trío Rubí](/proyectos/vinilos/vinilos-pag-7.gif)
+![Cuatro piezas de la publicación: vinilo grabado, páginas interiores, letras manuscritas y contratapa](/proyectos/vinilos/vinilos-pag-8.png)
 
 <div class="agrupado">
-  <img src="/proyectos/vinilos/vinilos-pag-9.png" class="img-h" alt="Vinilos página 9">
-  <img src="/proyectos/vinilos/vinilos-pag-10.gif" class="img-v" alt="Vinilos página 10">
+  <img src="/proyectos/vinilos/vinilos-pag-9.png" class="img-h" alt="Doble página de apertura con la dedicatoria al abuelo">
+  <img src="/proyectos/vinilos/vinilos-pag-10.gif" class="img-v" alt="Animación de una tapa de vinilo rota y emparchada, con 'Tango' escrito a mano">
 </div>
 
-![Vinilos página 11](/proyectos/vinilos/vinilos-pag-11.png)
-![Vinilos página 12](/proyectos/vinilos/vinilos-pag-12.jpg)
-![Vinilos página 13](/proyectos/vinilos/vinilos-pag-alt-3.png)
-![Vinilos página 14](/proyectos/vinilos/vinilos-pag-alt-2.png)
-![Vinilos página 15](/proyectos/vinilos/vinilos-pag-alt-4.png)
+![Doble página con la tapa ilustrada de ¡Yo soy chamamé! y su contratapa](/proyectos/vinilos/vinilos-pag-11.png)
+![Afiche con dieciséis etiquetas de vinilos marcadas a mano y la firma del abuelo](/proyectos/vinilos/vinilos-pag-12.jpg)
+![Doble página con la tapa rota de un disco del Cuarteto Imperial](/proyectos/vinilos/vinilos-pag-alt-3.png)
+![Doble página con tres etiquetas de vinilos dedicadas a mano](/proyectos/vinilos/vinilos-pag-alt-2.png)
+![Doble página de cierre con una firma manuscrita y una breve biografía del abuelo](/proyectos/vinilos/vinilos-pag-alt-4.png)

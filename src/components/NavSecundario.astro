@@ -37,13 +37,22 @@ const ruta = Astro.url.pathname
     position: fixed;
     background-color: transparent;
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.15s ease, visibility 0.15s;
   }
 
   .nav-flotante.visible {
     opacity: 1;
+    visibility: visible;
     pointer-events: all;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header-alt,
+    .nav-flotante {
+      transition: none;
+    }
   }
 
   .header-alt.transparente {

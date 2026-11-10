@@ -9,9 +9,9 @@ carpeta: "/proyectos/normalizadas"
 
 ---
 
-![Imágenes normalizadas](/proyectos/normalizadas/otras/behance-etica-animal-01.png)
-![Imágenes normalizadas](/proyectos/normalizadas/behance-etica-animal-02.png)
-![Imágenes normalizadas](/proyectos/normalizadas/behance-etica-animal-03.png)
-![Imágenes normalizadas](/proyectos/normalizadas/behance-etica-animal-04.png)
-![Imágenes normalizadas](/proyectos/normalizadas/behance-etica-animal-05.png)
-![Imágenes normalizadas](/proyectos/normalizadas/behance-etica-animal-06.png) 
+![Portada de la colección Imágenes normalizadas](/proyectos/normalizadas/otras/behance-etica-animal-01.png)
+![Tapas de los tres libros de la colección, con fotos pixeladas de animales colgados](/proyectos/normalizadas/behance-etica-animal-02.png)
+![Cuatro dobles páginas interiores con el índice, el texto y las notas](/proyectos/normalizadas/behance-etica-animal-03.png)
+![Folleto plegado con las tres tapas pixeladas y la reseña de cada libro](/proyectos/normalizadas/behance-etica-animal-04.png)
+![Tapa y contratapa de Por qué amamos a los perros, con un cerdo colgado y pixelado](/proyectos/normalizadas/behance-etica-animal-05.png)
+![Persona leyendo uno de los libros junto a los lomos de los tres libros](/proyectos/normalizadas/behance-etica-animal-06.png) 

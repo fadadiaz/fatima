@@ -36,6 +36,9 @@ const slides = proyectos.flatMap((proyecto) => {
   .slider-wrapper {
     width: 100%;
     overflow: hidden;
+    /* Espacio para que el foco de las imágenes no quede recortado */
+    padding-block: 5px;
+    margin-block: -5px;
   }
 
   .slider-track {
@@ -60,6 +63,16 @@ const slides = proyectos.flatMap((proyecto) => {
     width: auto;
     object-fit: cover;
     display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slider-wrapper {
+      overflow-x: auto;
+    }
+
+    .slider-track {
+      animation: none;
+    }
   }
 
   @keyframes slide-infinito {

@@ -15,11 +15,13 @@ import Footer from '../components/Footer.astro'
     <section class="bio grid-12 max-width min-padding">
         <img src="/fatima-bio.png" class="col" style="--start: 1; --end: 5; grid-row: 1 / 3;" alt="Foto de Fátima sonriendo con remera negra y pantalón rosa, en un patio cerrado, con un arbol rosa de fondo.">
       <article class="col" style="--start: 5; --end: 13; display: contents;  ">
-        <h2 class="col" style="--start: 5; --end: 13; grid-row: 1;" >Soy Fátima, estudiante de Diseño y Comunicación Visual, estoy ubicada en Buenos Aires e iniciando mi recorrido profesional como diseñadora junior.</h2>
-        <p class="col" style="--start: 8; --end: 13; grid-row: 2;" >Me especializo en identidad visual, diseño web y aplicaciones, explorando cómo el diseño puede simplificar procesos, potenciar marcas y mejorar la experiencia de las personas. Mi pasión está en combinar lo estético con lo funcional para generar impacto.
-Con experiencia en desarrollo de sistemas administrativos y automatización de tareas, diseñé una aplicación para gestionar más de 200 cursos y 5000 estudiantes, integrando funciones de inscripción y toma de asistencia. Actualmente, soy ayudante de cátedra en Computación 3 (UNLa), que se centra en los conocimientos esenciales de HTML, CSS, GitHub y Figma.
-Creo firmemente que diseñar con empatía y atención al detalle permite construir soluciones que no solo son útiles, sino también significativas y accesibles.
-Si tenés un proyecto en mente, charlemos :)</p>
+        <h2 class="col" style="--start: 5; --end: 13; grid-row: 1;" >Soy Fátima, diseñadora gráfica y web en Buenos Aires, y estoy terminando Diseño y Comunicación Visual en la&nbsp;UNLa</h2>
+        <div class="bio-cuerpo col" style="--start: 8; --end: 13; grid-row: 2;">
+          <p>Me especializo en identidad visual, diseño web y herramientas digitales. Lo que más me gusta es encontrarle la vuelta a las cosas; que la información se entienda mejor, que una tarea del día a día sea más simple y saber que eso le facilitó el trabajo a alguien.</p>
+          <p>Diseño desde chica. Empecé haciendo fan edits en Photoscape y armando mis primeras páginas web en Palimpalem, y diseñando blogs en Blogger. Cada semana se me ocurría un proyecto nuevo, solo para tener una excusa de diseñar una página web, y después el proyecto quedaba ahí. Hoy sigo siendo la que siempre tiene una herramienta para todo y, si no existe, la creo.</p>
+          <p>No veo una película sin registrarla en Letterboxd, y sueño con conocer todas las provincias de Argentina. También estoy empezando una colección de etiquetas de frutas que no tuvo mucho éxito.</p>
+          <p>Si tenés un proyecto en mente, o buscás sumar a alguien a tu equipo, charlemos :)</p>
+        </div>
       </article>
     </section>
   </main>
@@ -29,6 +31,12 @@ Si tenés un proyecto en mente, charlemos :)</p>
 <style>
   .bio article {
     gap: var(--space-24);
+  }
+
+  .bio-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
   }
 
   .bio h2 {

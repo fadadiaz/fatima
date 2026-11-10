@@ -6,7 +6,7 @@ const proyectos = defineCollection({
   schema: z.object({
     titulo: z.string(),
     descripcion: z.string().optional(),
-    categoria: z.enum(['Identidad Visual', 'Diseño Web', 'Integraciones Digitales', 'Diseño editorial']),
+    categoria: z.enum(['Identidad Visual', 'Diseño Web', 'Integraciones Digitales', 'Herramientas Digitales', 'Diseño editorial']),
     fecha: z.string(),
     portada: z.string(),
     destacado: z.boolean().default(false),

@@ -56,6 +56,18 @@ const { texto, href, tags } = Astro.props
     opacity: 1;
   }
 
+  /* Etiquetas visibles con el foco del teclado */
+  .areas-trigger:focus-visible .tag-item,
+  .areas-trigger:has(:focus-visible) .tag-item {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tag-item {
+      transition: none;
+    }
+  }
+
   @media (max-width: 768px) {
     .areas-trigger {
     gap: var(--space-24);

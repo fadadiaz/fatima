@@ -51,6 +51,12 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   background-color: var(--fa-white);
   color: var(--fa-black);
@@ -75,8 +81,20 @@ a {
   text-decoration: none;
 }
 
-p, span {
+/* Foco visible con teclado */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--fa-black);
+  outline-offset: 3px;
+}
+
+h1, h2, h3, h4, h5, h6 {
   text-wrap-style: pretty;
+}
+
+p {
+  text-wrap-style: balance;
 }
 
 i {
