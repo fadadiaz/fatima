@@ -260,11 +260,10 @@ const Contenedor = href ? 'a' : 'div'
   const CRECIMIENTOS_MOVIL = 8
 
   // Lectura temporal de parámetros por URL para probar el experimento
-  function leerUrl(base: Config, movil: boolean): Config {
+  function leerUrl(base: Config): Config {
     const params = new URLSearchParams(window.location.search)
-    const prefijo = movil ? 'm_' : ''
     const numero = (clave: string) => {
-      const valor = params.get(prefijo + clave)
+      const valor = params.get(clave)
       if (valor === null || valor.trim() === '') return null
       const n = Number(valor)
       return Number.isFinite(n) ? n : null
@@ -282,35 +281,13 @@ const Contenedor = href ? 'a' : 'div'
     if (variacion !== null) config.variacion = entre0y1(variacion)
     const separacion = numero('separacion')
     if (separacion !== null) config.separacion = Math.max(0, separacion)
-    const nombre = params.get(prefijo + 'nombre')
+    const nombre = params.get('nombre')
     if (nombre !== null) config.nombreLibre = nombre === 'libre'
-
-    if (movil) {
-      const sangrado = numero('sangrado')
-      if (sangrado !== null) config.sangrado = entre0y1(sangrado)
-      const cortadas = numero('cortadas')
-      if (cortadas !== null) config.maxCortadas = Math.max(0, Math.floor(cortadas))
-      const alto = numero('alto')
-      if (alto !== null && alto > 0) config.alto = alto
-      const altoExtremos = numero('alto_extremos')
-      if (altoExtremos !== null && altoExtremos > 0) config.altoExtremos = altoExtremos
-      config.semillasArea = { ...base.semillasArea }
-      params.forEach((valor, clave) => {
-        const posicion = clave.match(/^m_semilla_(\d+)$/)?.[1]
-        const n = Number(valor)
-        if (posicion && valor.trim() !== '' && Number.isFinite(n)) {
-          config.semillasArea![posicion] = Math.floor(n)
-        }
-      })
-      const aparicion = params.get('m_aparicion')
-      if (aparicion !== null) config.aparicion = aparicion !== 'no' && aparicion !== '0'
-    } else {
-      if (params.get('etiquetas') === 'todas') config.maxEtiquetas = null
-      const etiquetas = numero('etiquetas')
-      if (etiquetas !== null && etiquetas > 0) config.maxEtiquetas = Math.floor(etiquetas)
-      const centro = numero('centro')
-      if (centro !== null) config.centro = entre0y1(centro)
-    }
+    if (params.get('etiquetas') === 'todas') config.maxEtiquetas = null
+    const etiquetas = numero('etiquetas')
+    if (etiquetas !== null && etiquetas > 0) config.maxEtiquetas = Math.floor(etiquetas)
+    const centro = numero('centro')
+    if (centro !== null) config.centro = entre0y1(centro)
 
     return config
   }
@@ -541,12 +518,12 @@ const Contenedor = href ? 'a' : 'div'
       area.classList.remove('esparcido', 'aparicion')
       area.style.removeProperty('--alto-movil')
       area.style.minHeight = ''
-      const config = leerUrl(JSON.parse(area.dataset.config ?? '{}') as Config, false)
+      const config = leerUrl(JSON.parse(area.dataset.config ?? '{}') as Config)
       repartir(area, indice, config, false)
       return
     }
 
-    const config = leerUrl(JSON.parse(area.dataset.configMovil ?? '{}') as Config, true)
+    const config = JSON.parse(area.dataset.configMovil ?? '{}') as Config
     const semillaPropia = config.semillasArea?.[indice + 1]
     if (semillaPropia !== undefined) config.semilla = semillaPropia
     area.classList.add('esparcido')

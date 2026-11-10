@@ -3,6 +3,11 @@ interface Props {
   bg?: string
 }
 const { bg = 'bg-orange' } = Astro.props
+const ruta = Astro.url.pathname.replace(/\/$/, '') || '/'
+
+// Página actual: 'page' en la página exacta, 'true' en sus subpáginas
+const actual = (destino: string) =>
+  ruta === destino ? 'page' : ruta.startsWith(`${destino}/`) ? 'true' : undefined
 ---
 
 <button class="btn btn-alt btn-pink btn-burger" aria-label="Abrir menú" aria-expanded="false">
@@ -17,9 +22,9 @@ const { bg = 'bg-orange' } = Astro.props
     </button>
   </div>
   <div class="content-nav">
-    <a class="btn btn-pink" href="/proyectos">Proyectos</a>
-    <a class="btn btn-pink" href="/sobre-mi">Sobre mí</a>
-    <a class="btn btn-pink" href="/recursos">Recursos</a>
+    <a class:list={['btn btn-pink', { activo: actual('/proyectos') }]} aria-current={actual('/proyectos')} href="/proyectos">Proyectos</a>
+    <a class:list={['btn btn-pink', { activo: actual('/sobre-mi') }]} aria-current={actual('/sobre-mi')} href="/sobre-mi">Sobre mí</a>
+    <a class:list={['btn btn-pink', { activo: actual('/recursos') }]} aria-current={actual('/recursos')} href="/recursos">Recursos</a>
     <a class="btn btn-fill" href="#contacto">Contacto<i class="fi fi-rs-arrow-up-right"></i></a>
   </div>
 </nav>

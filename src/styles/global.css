@@ -233,6 +233,12 @@ button {
   font-size: var(--text-sm);
 }
 
+/* Link de la página actual en el menú */
+.activo {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 /* COLORER HOVER */
 
 .btn-orange:hover {
