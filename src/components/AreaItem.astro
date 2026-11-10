@@ -1,4 +1,40 @@
 ---
+// Configuración de las etiquetas esparcidas en escritorio
+const configEtiquetas = {
+  maxEtiquetas: 5 as number | null, // null: todas
+  dispersion: 0.6, // de 0 a 1
+  rotacion: 6, // grados máximos
+  semilla: 1,
+  variacion: 0.5, // de 0 a 1, cambio de posición en cada hover
+  separacion: 24, // px mínimos entre etiquetas
+  centro: 0.3, // de 0 a 1, atracción vertical hacia el nombre
+  nombreLibre: false, // deja libre la zona del nombre
+  sangrado: 0.3, // parte del ancho que puede cortar el borde
+  maxCortadas: null as number | null, // null: sin límite
+  alto: null as number | null, // svh; null: alto actual
+  altoExtremos: null as number | null, // solo celular
+  aparicion: false, // solo celular
+}
+
+// Configuración de las etiquetas esparcidas en celular y pantallas sin hover
+const configEtiquetasMovil = {
+  maxEtiquetas: null as number | null,
+  dispersion: 0.6,
+  rotacion: 5,
+  semilla: 1,
+  // Semilla por posición del área: 1 identidad visual, 2 diseño web, 3 diseño editorial, 4 herramientas digitales
+  semillasArea: { 1: 31, 2: 52, 3: 29, 4: 9 } as Record<number, number>,
+  variacion: 0,
+  separacion: 12,
+  centro: 0.3,
+  nombreLibre: false,
+  sangrado: 0.25,
+  maxCortadas: 2 as number | null,
+  alto: 70 as number | null, // svh de las áreas intermedias
+  altoExtremos: 100 as number | null, // svh de la primera y la última área
+  aparicion: true, // las etiquetas aparecen y desaparecen al desplazarse
+}
+
 interface Tag {
   texto: string
   href: string
@@ -13,14 +49,18 @@ interface Props {
 const { texto, href, tags } = Astro.props
 ---
 
-<div class="areas-item h-100 center-h">
+<div
+  class="areas-item h-100 center-h"
+  data-config={JSON.stringify(configEtiquetas)}
+  data-config-movil={JSON.stringify(configEtiquetasMovil)}
+>
   <div class="areas-trigger center-h" tabindex="0">
     <a class="areas-categoria minusculas" href={href}>{texto}</a>
-    <div class="tag-item">
-      {tags.map((tag: Tag) => (
-        <a class="btn-tag bg-pink" href={tag.href}>{tag.texto}</a>
+    <ul class="tag-item">
+      {tags.map((tag: Tag, i: number) => (
+        <li style={`--i: ${i}`}><a class="btn-tag bg-pink" href={tag.href}>{tag.texto}</a></li>
       ))}
-    </div>
+    </ul>
   </div>
 </div>
 
@@ -50,6 +90,7 @@ const { texto, href, tags } = Astro.props
     opacity: 0;
     transition: opacity 0.2s ease;
     flex-wrap: wrap;
+    list-style: none;
   }
 
   .areas-trigger:hover .tag-item {
@@ -57,13 +98,62 @@ const { texto, href, tags } = Astro.props
   }
 
   /* Etiquetas visibles con el foco del teclado */
-  .areas-trigger:focus-visible .tag-item,
-  .areas-trigger:has(:focus-visible) .tag-item {
+  .areas-trigger:focus-within .tag-item {
     opacity: 1;
   }
 
-  @media (prefers-reduced-motion: reduce) {
+  /* Etiquetas repartidas por toda la pantalla del área */
+  @media (hover: hover) and (min-width: 769px) {
+    .areas-item {
+      position: relative;
+    }
+
+    .areas-trigger {
+      position: static;
+    }
+
     .tag-item {
+      inset: 0;
+      width: auto;
+      max-width: none;
+      display: block;
+      pointer-events: none;
+      opacity: 1;
+    }
+
+    /* Aparición escalonada de las etiquetas al pasar el cursor */
+    .tag-item li {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .areas-item:hover .tag-item li,
+    .areas-trigger:focus-within .tag-item li {
+      opacity: 1;
+      transition-delay: calc(var(--i) * 70ms);
+    }
+
+    .tag-item .btn-tag {
+      position: absolute;
+      left: var(--x, 50%);
+      top: var(--y, 50%);
+      transform: translate(-50%, -50%) rotate(var(--r, 0deg));
+      white-space: nowrap;
+    }
+
+    .areas-item:hover .btn-tag,
+    .areas-trigger:focus-within .btn-tag {
+      pointer-events: auto;
+    }
+
+    .tag-oculta {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tag-item,
+    .tag-item li {
       transition: none;
     }
   }
@@ -80,4 +170,439 @@ const { texto, href, tags } = Astro.props
       font-size: var(--text-sm);
     }
   }
+
+  /* Reparto en celular, activo cuando el script ya calculó las posiciones */
+  @media (max-width: 768px), (hover: none) {
+    .areas-item.esparcido {
+      position: relative;
+      height: auto;
+      min-height: var(--alto-movil, 100svh);
+    }
+
+    .areas-item.esparcido .areas-trigger {
+      position: static;
+    }
+
+    .areas-item.esparcido .tag-item {
+      position: absolute;
+      inset: 0;
+      width: auto;
+      max-width: none;
+      display: block;
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    .areas-item.esparcido .btn-tag {
+      position: absolute;
+      left: var(--x, 50%);
+      top: var(--y, 50%);
+      transform: translate(-50%, -50%) rotate(var(--r, 0deg));
+      white-space: nowrap;
+      pointer-events: auto;
+    }
+
+    .areas-item.esparcido .tag-oculta {
+      display: none;
+    }
+
+    /* Aparición escalonada de las etiquetas al entrar el área en pantalla */
+    .areas-item.esparcido.aparicion .tag-item li {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .areas-item.esparcido.aparicion.en-vista .tag-item li {
+      opacity: 1;
+      transition-delay: calc(var(--i) * 70ms);
+    }
+
+    .areas-item.esparcido.aparicion .areas-trigger:focus-within .tag-item li {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .areas-item.esparcido.aparicion .tag-item li {
+      transition: none;
+    }
+  }
 </style>
+
+<script>
+  interface Config {
+    maxEtiquetas: number | null
+    dispersion: number
+    rotacion: number
+    semilla: number
+    semillasArea?: Record<string, number>
+    variacion: number
+    separacion: number
+    centro: number
+    nombreLibre: boolean
+    sangrado: number
+    maxCortadas: number | null
+    alto: number | null
+    altoExtremos: number | null
+    aparicion: boolean
+  }
+
+  interface Caja {
+    x: number
+    y: number
+    mx: number // mitad del ancho ya rotado
+    my: number // mitad del alto ya rotado
+  }
+
+  const mediaEscritorio = window.matchMedia('(hover: hover) and (min-width: 769px)')
+  const NIVELES_Y = [1, 0.75, 0.5, 0.25, 0]
+  const REINTENTOS = 12
+  const CRECIMIENTOS_MOVIL = 8
+
+  // Lectura temporal de parámetros por URL para probar el experimento
+  function leerUrl(base: Config, movil: boolean): Config {
+    const params = new URLSearchParams(window.location.search)
+    const prefijo = movil ? 'm_' : ''
+    const numero = (clave: string) => {
+      const valor = params.get(prefijo + clave)
+      if (valor === null || valor.trim() === '') return null
+      const n = Number(valor)
+      return Number.isFinite(n) ? n : null
+    }
+    const entre0y1 = (n: number) => Math.min(1, Math.max(0, n))
+    const config = { ...base }
+
+    const dispersion = numero('dispersion')
+    if (dispersion !== null) config.dispersion = entre0y1(dispersion)
+    const rotacion = numero('rotacion')
+    if (rotacion !== null) config.rotacion = Math.abs(rotacion)
+    const semilla = numero('semilla')
+    if (semilla !== null) config.semilla = Math.floor(semilla)
+    const variacion = numero('variacion')
+    if (variacion !== null) config.variacion = entre0y1(variacion)
+    const separacion = numero('separacion')
+    if (separacion !== null) config.separacion = Math.max(0, separacion)
+    const nombre = params.get(prefijo + 'nombre')
+    if (nombre !== null) config.nombreLibre = nombre === 'libre'
+
+    if (movil) {
+      const sangrado = numero('sangrado')
+      if (sangrado !== null) config.sangrado = entre0y1(sangrado)
+      const cortadas = numero('cortadas')
+      if (cortadas !== null) config.maxCortadas = Math.max(0, Math.floor(cortadas))
+      const alto = numero('alto')
+      if (alto !== null && alto > 0) config.alto = alto
+      const altoExtremos = numero('alto_extremos')
+      if (altoExtremos !== null && altoExtremos > 0) config.altoExtremos = altoExtremos
+      config.semillasArea = { ...base.semillasArea }
+      params.forEach((valor, clave) => {
+        const posicion = clave.match(/^m_semilla_(\d+)$/)?.[1]
+        const n = Number(valor)
+        if (posicion && valor.trim() !== '' && Number.isFinite(n)) {
+          config.semillasArea![posicion] = Math.floor(n)
+        }
+      })
+      const aparicion = params.get('m_aparicion')
+      if (aparicion !== null) config.aparicion = aparicion !== 'no' && aparicion !== '0'
+    } else {
+      if (params.get('etiquetas') === 'todas') config.maxEtiquetas = null
+      const etiquetas = numero('etiquetas')
+      if (etiquetas !== null && etiquetas > 0) config.maxEtiquetas = Math.floor(etiquetas)
+      const centro = numero('centro')
+      if (centro !== null) config.centro = entre0y1(centro)
+    }
+
+    return config
+  }
+
+  // Generador pseudoaleatorio con semilla (mulberry32)
+  function crearAleatorio(semilla: number) {
+    let a = semilla >>> 0
+    return () => {
+      a = (a + 0x6d2b79f5) >>> 0
+      let t = a
+      t = Math.imul(t ^ (t >>> 15), t | 1)
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+  }
+
+  const limitar = (valor: number, min: number, max: number) =>
+    min > max ? (min + max) / 2 : Math.min(max, Math.max(min, valor))
+
+  // Reparte las etiquetas; devuelve false si alguna no entró
+  function repartir(area: HTMLElement, indice: number, config: Config, movil: boolean) {
+    const items = [...area.querySelectorAll<HTMLElement>('.tag-item li')]
+    const max = config.maxEtiquetas ?? items.length
+    items.forEach((li, i) => li.classList.toggle('tag-oculta', i >= max))
+
+    const visibles = items.slice(0, max).map((li) => li.querySelector<HTMLElement>('.btn-tag')!)
+    const n = visibles.length
+    if (!n) return true
+
+    const borde = movil ? 12 : 32
+    const ancho = area.clientWidth
+    const alto = area.clientHeight
+    const sep = config.separacion
+
+    // Base fija por semilla y variación de cada hover
+    const semilla = crearAleatorio(config.semilla * 9973 + indice * 101 + 1)
+    const azar = config.variacion > 0 ? Math.random : crearAleatorio(config.semilla * 7919 + indice)
+
+    // Tamaño real de cada etiqueta con su rotación
+    const datos = visibles.map((el) => {
+      const giroBase = (semilla() * 2 - 1) * config.rotacion
+      const giro = limitar(
+        giroBase + (azar() * 2 - 1) * config.rotacion * config.variacion,
+        -config.rotacion,
+        config.rotacion
+      )
+      const rad = (giro * Math.PI) / 180
+      const cos = Math.abs(Math.cos(rad))
+      const sin = Math.abs(Math.sin(rad))
+      const w = el.offsetWidth
+      const h = el.offsetHeight
+      return {
+        giro,
+        mx: (w * cos + h * sin) / 2,
+        my: (w * sin + h * cos) / 2,
+        jitX: semilla() - 0.5,
+        jitY: semilla() - 0.5,
+        varX: (azar() * 2 - 1) * config.variacion,
+        varY: (azar() * 2 - 1) * config.variacion,
+      }
+    })
+    const maxMx = Math.max(...datos.map((d) => d.mx))
+    const maxMy = Math.max(...datos.map((d) => d.my))
+
+    // La dispersión agranda la grilla desde el centro
+    const extension = 0.3 + 0.7 * config.dispersion
+    const bw = Math.max(0, (ancho - 2 * (borde + maxMx)) * extension)
+    const bh = Math.max(0, (alto - 2 * (borde + maxMy)) * extension)
+    const x0 = ancho / 2 - bw / 2
+    const y0 = alto / 2 - bh / 2
+
+    const base = area.getBoundingClientRect()
+    const nombre = area.querySelector('.areas-categoria')!.getBoundingClientRect()
+    const nombreY = nombre.top - base.top + nombre.height / 2
+
+    // Bordes del contenedor que recorta las etiquetas
+    const marco = (area.closest('section') ?? area).getBoundingClientRect()
+    const limIzq = marco.left - base.left
+    const limDer = marco.right - base.left
+
+    const enNombre = (c: Caja) =>
+      config.nombreLibre &&
+      c.x + c.mx + sep > nombre.left - base.left &&
+      c.x - c.mx - sep < nombre.right - base.left &&
+      c.y + c.my + sep > nombre.top - base.top &&
+      c.y - c.my - sep < nombre.bottom - base.top
+
+    // Grilla con celdas suficientes para todas las etiquetas
+    let columnas = Math.max(1, Math.round(Math.sqrt((n * bw) / Math.max(bh, 1))))
+    let filas = Math.max(1, Math.ceil(n / columnas))
+    let celdas: { x: number; y: number }[] = []
+    for (let intento = 0; intento < 40; intento++) {
+      celdas = []
+      for (let f = 0; f < filas; f++) {
+        for (let c = 0; c < columnas; c++) {
+          const x = x0 + (bw / columnas) * (c + 0.5)
+          const y = y0 + (bh / filas) * (f + 0.5)
+          if (!enNombre({ x, y, mx: maxMx, my: maxMy })) celdas.push({ x, y })
+        }
+      }
+      if (celdas.length >= n) break
+      if (bw / columnas > bh / filas) columnas++
+      else filas++
+    }
+    if (!celdas.length) celdas = [{ x: ancho / 2, y: alto / 2 }]
+
+    const celdaW = bw / columnas
+    const celdaH = bh / filas
+
+    for (let i = celdas.length - 1; i > 0; i--) {
+      const j = Math.floor(semilla() * (i + 1))
+      ;[celdas[i], celdas[j]] = [celdas[j], celdas[i]]
+    }
+
+    // Desplazamiento fijo de toda la grilla según la semilla
+    const desX = (semilla() - 0.5) * celdaW * 0.5 * config.dispersion
+    const desY = (semilla() - 0.5) * celdaH * 0.5 * config.dispersion
+
+    // Arriba y abajo nunca se corta; a los costados, solo con sangrado
+    const libre = (c: Caja, puestas: Caja[], sangra = false) => {
+      const margen = config.sangrado * 2 * c.mx
+      const horizontal = sangra
+        ? c.x - c.mx >= limIzq - margen - 0.5 && c.x + c.mx <= limDer + margen + 0.5
+        : c.x - c.mx >= borde && c.x + c.mx <= ancho - borde
+      return (
+        horizontal &&
+        c.y - c.my >= borde &&
+        c.y + c.my <= alto - borde &&
+        !enNombre(c) &&
+        !puestas.some(
+          (o) => Math.abs(c.x - o.x) < c.mx + o.mx + sep && Math.abs(c.y - o.y) < c.my + o.my + sep
+        )
+      )
+    }
+
+    // Posición buscada: celda, desvío por semilla y por hover, y atracción vertical hacia el nombre
+    const objetivo = (i: number, nivelY: number): Caja => {
+      const d = datos[i]
+      const celda = celdas[i % celdas.length]
+      const x = celda.x + desX + (d.jitX * config.dispersion + d.varX) * celdaW
+      let y = celda.y + desY + (d.jitY * config.dispersion + d.varY) * celdaH * nivelY
+      y = nombreY + (y - nombreY) * (1 - config.centro * 0.75)
+      return {
+        x: limitar(x, borde + d.mx, ancho - borde - d.mx),
+        y: limitar(y, borde + d.my, alto - borde - d.my),
+        mx: d.mx,
+        my: d.my,
+      }
+    }
+
+    // Una pasada completa; las etiquetas que no entran quedan en null
+    const ubicar = (nivelY: number) => {
+      const puestas: Caja[] = []
+      return datos.map((_, i) => {
+        const t = objetivo(i, nivelY)
+        let caja = t
+        for (let k = 0; k < REINTENTOS && !libre(caja, puestas); k++) {
+          caja = {
+            ...t,
+            x: limitar(t.x + (azar() - 0.5) * celdaW, borde + t.mx, ancho - borde - t.mx),
+            y: limitar(t.y + (azar() - 0.5) * celdaH * nivelY, borde + t.my, alto - borde - t.my),
+          }
+        }
+        if (!libre(caja, puestas)) return null
+        puestas.push(caja)
+        return caja
+      })
+    }
+
+    // Ante choques se reduce solo la dispersión vertical
+    let resultado: (Caja | null)[] = []
+    for (const nivelY of NIVELES_Y) {
+      resultado = ubicar(nivelY)
+      if (resultado.every(Boolean)) break
+    }
+
+    // Las que no entran prueban contra el borde lateral, con corte parcial si hace falta
+    if (!resultado.every(Boolean)) {
+      const puestas = resultado.filter((c): c is Caja => c !== null)
+      const cortada = (c: Caja) => c.x - c.mx < limIzq - 0.5 || c.x + c.mx > limDer + 0.5
+      let cortadas = puestas.filter(cortada).length
+      const pasos = [0, 1 / 3, 2 / 3, 1]
+
+      resultado = resultado.map((caja, i) => {
+        if (caja) return caja
+        const t = objetivo(i, 0)
+        const lados = t.x < ancho / 2 ? [-1, 1] : [1, -1]
+        const ys = [t.y]
+        for (let d = 8; d < alto; d += 8) ys.push(t.y - d, t.y + d)
+
+        for (const y of ys) {
+          for (const lado of lados) {
+            for (const paso of pasos) {
+              if (paso > 0 && config.maxCortadas !== null && cortadas >= config.maxCortadas) break
+              const corte = paso * config.sangrado * 2 * t.mx
+              const x = lado < 0 ? limIzq - corte + t.mx : limDer + corte - t.mx
+              const c = { ...t, x, y }
+              if (libre(c, puestas, true)) {
+                puestas.push(c)
+                if (cortada(c)) cortadas++
+                return c
+              }
+            }
+          }
+        }
+        return null
+      })
+    }
+
+    resultado.forEach((caja, i) => {
+      const el = visibles[i]
+      if (!caja) {
+        el.closest('li')?.classList.add('tag-oculta')
+        return
+      }
+      el.style.setProperty('--x', `${((caja.x / ancho) * 100).toFixed(2)}%`)
+      el.style.setProperty('--y', `${((caja.y / alto) * 100).toFixed(2)}%`)
+      el.style.setProperty('--r', `${datos[i].giro.toFixed(2)}deg`)
+    })
+
+    return resultado.every(Boolean)
+  }
+
+  function colocar(area: HTMLElement, indice: number) {
+    const movil = !mediaEscritorio.matches
+
+    if (!movil) {
+      area.classList.remove('esparcido', 'aparicion')
+      area.style.removeProperty('--alto-movil')
+      area.style.minHeight = ''
+      const config = leerUrl(JSON.parse(area.dataset.config ?? '{}') as Config, false)
+      repartir(area, indice, config, false)
+      return
+    }
+
+    const config = leerUrl(JSON.parse(area.dataset.configMovil ?? '{}') as Config, true)
+    const semillaPropia = config.semillasArea?.[indice + 1]
+    if (semillaPropia !== undefined) config.semilla = semillaPropia
+    area.classList.add('esparcido')
+    area.classList.toggle('aparicion', config.aparicion)
+    const extremo = indice === 0 || indice === areas.length - 1
+    const alto = (extremo ? config.altoExtremos : config.alto) ?? 100
+    area.style.setProperty('--alto-movil', `${alto}svh`)
+    area.style.minHeight = ''
+
+    // En celular todas las etiquetas se ven: si no entran, el área crece
+    for (let i = 0; i < CRECIMIENTOS_MOVIL; i++) {
+      if (repartir(area, indice, config, true)) break
+      area.style.minHeight = `${Math.ceil(area.clientHeight * 1.15)}px`
+    }
+  }
+
+  const areas = [...document.querySelectorAll<HTMLElement>('.areas-item')]
+
+  function actualizar() {
+    areas.forEach((area, indice) => colocar(area, indice))
+  }
+
+  // Posiciones nuevas cada vez que se muestran las etiquetas en escritorio
+  areas.forEach((area, indice) => {
+    area.addEventListener('mouseenter', () => {
+      if (mediaEscritorio.matches) colocar(area, indice)
+    })
+    area.addEventListener('focusin', (e) => {
+      if (mediaEscritorio.matches && !area.contains(e.relatedTarget as Node | null)) {
+        colocar(area, indice)
+      }
+    })
+  })
+
+  // Un área está en vista cuando cruza la franja central de la pantalla
+  const enVista = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => entry.target.classList.toggle('en-vista', entry.isIntersecting))
+    },
+    { rootMargin: '-35% 0px -35% 0px' }
+  )
+  areas.forEach((area) => enVista.observe(area))
+
+  actualizar()
+  document.fonts.ready.then(actualizar)
+  mediaEscritorio.addEventListener('change', actualizar)
+  window.addEventListener('orientationchange', actualizar)
+
+  // En celular solo se recalcula si cambia el ancho, no al ocultarse la barra del navegador
+  let ultimoAncho = window.innerWidth
+  let espera: number | undefined
+  window.addEventListener('resize', () => {
+    window.clearTimeout(espera)
+    espera = window.setTimeout(() => {
+      if (mediaEscritorio.matches || window.innerWidth !== ultimoAncho) actualizar()
+      ultimoAncho = window.innerWidth
+    }, 150)
+  })
+</script>

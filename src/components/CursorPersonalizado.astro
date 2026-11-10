@@ -31,19 +31,28 @@
   const cursorMobile = document.getElementById('cursor-mobile') as HTMLElement
   const cursorMobileImg = document.getElementById('cursor-mobile-img') as HTMLImageElement
 
+  // Una sección cuenta como visible si se ve el 30% de ella o si ocupa el 30% de la pantalla
+  const visibles = new Map<Element, boolean>()
+  const umbrales = Array.from({ length: 21 }, (_, i) => i / 20)
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const imagen = (entry.target as HTMLElement).getAttribute('data-cursor')
-        if (imagen) {
-          cursorMobileImg.src = imagen
-          cursorMobile.classList.add('visible')
-        }
-      } else {
-        cursorMobile.classList.remove('visible')
-      }
+      visibles.set(
+        entry.target,
+        entry.intersectionRatio >= 0.3 ||
+          entry.intersectionRect.height >= window.innerHeight * 0.3
+      )
     })
-  }, { threshold: 0.3 })
+
+    const activa = [...secciones].find((seccion) => visibles.get(seccion))
+    const imagen = activa?.getAttribute('data-cursor')
+    if (imagen) {
+      if (cursorMobileImg.getAttribute('src') !== imagen) cursorMobileImg.src = imagen
+      cursorMobile.classList.add('visible')
+    } else {
+      cursorMobile.classList.remove('visible')
+    }
+  }, { threshold: umbrales })
 
   secciones.forEach((seccion) => observer.observe(seccion))
 </script>
