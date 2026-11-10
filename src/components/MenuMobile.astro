@@ -8,23 +8,38 @@ const ruta = Astro.url.pathname.replace(/\/$/, '') || '/'
 // Página actual: 'page' en la página exacta, 'true' en sus subpáginas
 const actual = (destino: string) =>
   ruta === destino ? 'page' : ruta.startsWith(`${destino}/`) ? 'true' : undefined
+
+// Identificador propio: el componente puede aparecer más de una vez por página
+const id = `menu-${Math.random().toString(36).slice(2, 8)}`
 ---
 
-<button class="btn btn-alt btn-pink btn-burger" aria-label="Abrir menú" aria-expanded="false">
+<button
+  type="button"
+  class="btn btn-alt btn-pink btn-burger"
+  aria-label="Abrir menú"
+  aria-controls={id}
+  aria-expanded="false"
+>
   Menú <i class="fi fi-rs-burger-menu"></i>
 </button>
 
-<nav class={`menu-mobile ${bg} min-padding h-100`} aria-hidden="true">
+<nav id={id} class={`menu-mobile ${bg} min-padding h-100`} aria-hidden="true" inert>
   <div class="logo-menu">
     <a href="/"><img alt="Texto fátima color negro" src="/logo-fatima.svg"></a>
-    <button class="btn btn-alt btn-pink btn-cerrar" aria-label="Cerrar menú">
+    <button
+      type="button"
+      class="btn btn-alt btn-pink btn-cerrar"
+      aria-label="Cerrar menú"
+      aria-controls={id}
+      aria-expanded="false"
+    >
       Cerrar <i class="fi fi-rs-cross-small"></i>
     </button>
   </div>
   <div class="content-nav">
-    <a class:list={['btn btn-pink', { activo: actual('/proyectos') }]} aria-current={actual('/proyectos')} href="/proyectos">Proyectos</a>
-    <a class:list={['btn btn-pink', { activo: actual('/sobre-mi') }]} aria-current={actual('/sobre-mi')} href="/sobre-mi">Sobre mí</a>
-    <a class:list={['btn btn-pink', { activo: actual('/recursos') }]} aria-current={actual('/recursos')} href="/recursos">Recursos</a>
+    <a class:list={['btn btn-pink', { activo: actual('/proyectos') }]} aria-current={actual('/proyectos')} href="/proyectos"><span class="btn-texto">Proyectos</span></a>
+    <a class:list={['btn btn-pink', { activo: actual('/sobre-mi') }]} aria-current={actual('/sobre-mi')} href="/sobre-mi"><span class="btn-texto">Sobre mí</span></a>
+    <a class:list={['btn btn-pink', { activo: actual('/recursos') }]} aria-current={actual('/recursos')} href="/recursos"><span class="btn-texto">Recursos</span></a>
     <a class="btn btn-fill" href="#contacto">Contacto<i class="fi fi-rs-arrow-up-right"></i></a>
   </div>
 </nav>
@@ -88,19 +103,43 @@ const actual = (destino: string) =>
 </style>
 
 <script>
-  const btnAbrir  = document.querySelector('.btn-burger')
-  const btnCerrar = document.querySelector('.btn-cerrar')
-  const menu      = document.querySelector('.menu-mobile')
+  const escritorio = window.matchMedia('(min-width: 768px)')
 
-  if (btnAbrir && btnCerrar && menu) {
-    btnAbrir.addEventListener('click', () => {
-      menu.classList.add('is-open')
-      btnAbrir.setAttribute('aria-expanded', 'true')
+  document.querySelectorAll<HTMLButtonElement>('.btn-burger').forEach((btnAbrir) => {
+    const menu = document.getElementById(btnAbrir.getAttribute('aria-controls') ?? '')
+    const btnCerrar = menu?.querySelector<HTMLButtonElement>('.btn-cerrar')
+    if (!menu || !btnCerrar) return
+
+    // Estado accesible: cerrado queda oculto para lectores de pantalla y fuera del tabulado
+    const marcar = (abierto: boolean) => {
+      menu.classList.toggle('is-open', abierto)
+      menu.inert = !abierto
+      if (abierto) menu.removeAttribute('aria-hidden')
+      else menu.setAttribute('aria-hidden', 'true')
+      btnAbrir.setAttribute('aria-expanded', String(abierto))
+      btnCerrar.setAttribute('aria-expanded', String(abierto))
+    }
+
+    const abrir = () => {
+      marcar(true)
+      btnCerrar.focus()
+    }
+
+    const cerrar = (devolverFoco = true) => {
+      marcar(false)
+      if (devolverFoco) btnAbrir.focus()
+    }
+
+    btnAbrir.addEventListener('click', abrir)
+    btnCerrar.addEventListener('click', () => cerrar())
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.classList.contains('is-open')) cerrar()
     })
 
-    btnCerrar.addEventListener('click', () => {
-      menu.classList.remove('is-open')
-      btnAbrir.setAttribute('aria-expanded', 'false')
+    // En escritorio el menú plegable no se muestra: se cierra sin mover el foco
+    escritorio.addEventListener('change', (e) => {
+      if (e.matches && menu.classList.contains('is-open')) cerrar(false)
     })
-  }
+  })
 </script>

@@ -233,8 +233,8 @@ button {
   font-size: var(--text-sm);
 }
 
-/* Link de la página actual en el menú */
-.activo {
+/* Link de la página actual en el menú: solo el texto, sin corchetes ni íconos */
+.activo .btn-texto {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
