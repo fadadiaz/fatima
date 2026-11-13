@@ -45,21 +45,26 @@ const slides = proyectos.flatMap((proyecto) => {
 <style>
   .slider-wrapper {
     width: 100%;
-    overflow: hidden;
+    /* clip en lugar de hidden: el foco no desplaza el contenedor por su cuenta */
+    overflow: clip;
     /* Espacio para que el foco de las imágenes no quede recortado */
     padding-block: 5px;
     margin-block: -5px;
+    /* El gesto horizontal mueve el slider; el vertical sigue desplazando la página */
+    touch-action: pan-y;
+    cursor: grab;
+  }
+
+  .slider-wrapper.arrastrando {
+    cursor: grabbing;
   }
 
   .slider-track {
     display: flex;
     gap: var(--space-16);
     width: max-content;
-    animation: slide-infinito 100s linear infinite;
-  }
-
-  .slider-wrapper:hover .slider-track {
-    animation-play-state: paused;
+    will-change: transform;
+    user-select: none;
   }
 
   .slide {
@@ -73,24 +78,170 @@ const slides = proyectos.flatMap((proyecto) => {
     width: auto;
     object-fit: cover;
     display: block;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .slider-wrapper {
-      overflow-x: auto;
-    }
-
-    .slider-track {
-      animation: none;
-    }
-
-    .slide-copia {
-      display: none;
-    }
-  }
-
-  @keyframes slide-infinito {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
+    -webkit-user-drag: none;
   }
 </style>
+
+<script>
+  // Velocidad automática: media vuelta del carril cada 100 segundos, como la animación anterior
+  const SEGUNDOS_POR_VUELTA = 100
+  // Tiempo para pasar suavemente de una velocidad a otra (unos 600ms)
+  const SUAVIZADO_MS = 200
+  const UMBRAL_ARRASTRE = 5
+
+  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+  document.querySelectorAll<HTMLElement>('.slider-wrapper').forEach((contenedor) => {
+    const carril = contenedor.querySelector<HTMLElement>('.slider-track')
+    if (!carril) return
+    const primeras = carril.querySelectorAll<HTMLElement>('.slide:not(.slide-copia)')
+    const primeraCopia = carril.querySelector<HTMLElement>('.slide-copia')
+    if (!primeras.length || !primeraCopia) return
+
+    let posicion = 0
+    let velocidad = 0
+    let periodo = 1
+    let encima = false
+    let enfocado = false
+    let visible = true
+    let ultimoCuadro = performance.now()
+
+    // Arrastre
+    let arrastrando = false
+    let punteroId: number | null = null
+    let inicioX = 0
+    let ultimoX = 0
+    let ultimoTiempo = 0
+    let velocidadArrastre = 0
+    let recorrido = 0
+    let bloquearClic = false
+
+    // Largo de una vuelta: distancia entre la primera imagen y su copia
+    const medirPeriodo = () => {
+      periodo = Math.max(1, primeraCopia.offsetLeft - primeras[0].offsetLeft)
+    }
+
+    const velocidadAutomatica = () =>
+      movimientoReducido.matches ? 0 : -periodo / SEGUNDOS_POR_VUELTA
+
+    const envolver = () => {
+      posicion = ((posicion % periodo) - periodo) % periodo
+    }
+
+    const cuadro = (ahora: number) => {
+      const dt = Math.min(0.05, (ahora - ultimoCuadro) / 1000)
+      ultimoCuadro = ahora
+
+      if (!arrastrando) {
+        const objetivo = encima || enfocado ? 0 : velocidadAutomatica()
+        // Acercamiento exponencial: sin saltos al soltar, frenar o reanudar
+        velocidad += (objetivo - velocidad) * (1 - Math.exp((-dt * 1000) / SUAVIZADO_MS))
+        posicion += velocidad * dt
+      }
+
+      envolver()
+      carril.style.transform = `translateX(${posicion}px)`
+      if (visible) requestAnimationFrame(cuadro)
+    }
+
+    const arrancar = () => {
+      ultimoCuadro = performance.now()
+      requestAnimationFrame(cuadro)
+    }
+
+    // El bucle se detiene mientras el slider no está en pantalla
+    new IntersectionObserver(([entrada]) => {
+      const antes = visible
+      visible = entrada.isIntersecting
+      if (visible && !antes) arrancar()
+    }).observe(contenedor)
+
+    // Las imágenes cargan de a poco: el largo de la vuelta se recalcula
+    new ResizeObserver(medirPeriodo).observe(carril)
+    medirPeriodo()
+
+    // Hover: frena y se reanuda de forma suave
+    contenedor.addEventListener('pointerenter', (e) => {
+      if (e.pointerType === 'mouse') encima = true
+    })
+    contenedor.addEventListener('pointerleave', (e) => {
+      if (e.pointerType === 'mouse') encima = false
+    })
+
+    contenedor.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      arrastrando = true
+      punteroId = e.pointerId
+      inicioX = ultimoX = e.clientX
+      ultimoTiempo = performance.now()
+      velocidadArrastre = 0
+      recorrido = 0
+      bloquearClic = false
+    })
+
+    contenedor.addEventListener('pointermove', (e) => {
+      if (!arrastrando || e.pointerId !== punteroId) return
+      const ahora = performance.now()
+      const dx = e.clientX - ultimoX
+      const dt = Math.max(1, ahora - ultimoTiempo) / 1000
+      posicion += dx
+      // Velocidad del gesto, suavizada para que la inercia no dependa de un solo evento
+      velocidadArrastre = velocidadArrastre * 0.7 + (dx / dt) * 0.3
+      ultimoX = e.clientX
+      ultimoTiempo = ahora
+      recorrido = Math.abs(e.clientX - inicioX)
+
+      // La captura del puntero empieza recién al arrastrar, para no anular los clics
+      if (recorrido > UMBRAL_ARRASTRE && !contenedor.hasPointerCapture(e.pointerId)) {
+        contenedor.setPointerCapture(e.pointerId)
+        contenedor.classList.add('arrastrando')
+      }
+    })
+
+    const soltar = (e: PointerEvent) => {
+      if (!arrastrando || e.pointerId !== punteroId) return
+      arrastrando = false
+      punteroId = null
+      contenedor.classList.remove('arrastrando')
+      if (contenedor.hasPointerCapture(e.pointerId)) contenedor.releasePointerCapture(e.pointerId)
+      bloquearClic = recorrido > UMBRAL_ARRASTRE
+      // Si el gesto se detuvo antes de soltar, no hay inercia
+      velocidad = performance.now() - ultimoTiempo > 100 ? 0 : velocidadArrastre
+    }
+    contenedor.addEventListener('pointerup', soltar)
+    contenedor.addEventListener('pointercancel', soltar)
+
+    // Después de arrastrar, el clic no abre el enlace
+    contenedor.addEventListener(
+      'click',
+      (e) => {
+        if (!bloquearClic) return
+        e.preventDefault()
+        e.stopPropagation()
+        bloquearClic = false
+      },
+      true
+    )
+
+    contenedor.addEventListener('dragstart', (e) => e.preventDefault())
+
+    // El foco de teclado frena el carril y trae la imagen enfocada a la vista
+    contenedor.addEventListener('focusin', (e) => {
+      enfocado = true
+      const slide = (e.target as HTMLElement).closest<HTMLElement>('.slide')
+      if (!slide) return
+      const izquierda = slide.offsetLeft + posicion
+      const derecha = izquierda + slide.offsetWidth
+      if (izquierda < 0 || derecha > contenedor.clientWidth) {
+        // Alineada al borde izquierdo: la posición queda dentro de la primera vuelta
+        posicion = -slide.offsetLeft
+        velocidad = 0
+      }
+    })
+    contenedor.addEventListener('focusout', (e) => {
+      if (!contenedor.contains(e.relatedTarget as Node | null)) enfocado = false
+    })
+
+    arrancar()
+  })
+</script>
