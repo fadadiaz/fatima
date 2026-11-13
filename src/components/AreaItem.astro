@@ -123,13 +123,20 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     cursor: default;
   }
 
-  /* Cada línea se barre de abajo hacia arriba, todas a la vez */
+  /* Cada línea entra desde abajo y sale hacia arriba, todas a la vez */
   .areas-descripcion :global(.linea) {
     display: block;
+    width: fit-content;
+    overflow: clip;
+  }
+
+  .areas-descripcion :global(.linea-texto) {
+    display: block;
+    width: fit-content;
     white-space: nowrap;
     background-color: var(--fa-white);
-    clip-path: inset(100% 0 0 0);
-    transition: clip-path 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
   .areas-item.abierta .areas-descripcion {
@@ -137,8 +144,12 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     transition-delay: 0s;
   }
 
-  .areas-item.abierta .areas-descripcion :global(.linea) {
-    clip-path: inset(0 0 0 0);
+  .areas-item.abierta .areas-descripcion :global(.linea-texto) {
+    transform: translateY(0);
+  }
+
+  .areas-item.cerrando .areas-descripcion :global(.linea-texto) {
+    transform: translateY(-100%);
   }
 
   /* Espacio extra debajo del área cuando la descripción no entra */
@@ -222,7 +233,7 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     .tag-item li,
     .areas-item,
     .areas-descripcion,
-    .areas-descripcion :global(.linea) {
+    .areas-descripcion :global(.linea-texto) {
       transition: none;
     }
   }
@@ -690,7 +701,10 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
       ...lineas.map((linea) => {
         const elemento = document.createElement('span')
         elemento.className = 'linea'
-        elemento.textContent = linea.join(' ')
+        const texto = document.createElement('span')
+        texto.className = 'linea-texto'
+        texto.textContent = linea.join(' ')
+        elemento.append(texto)
         return elemento
       })
     )
@@ -703,8 +717,14 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     const descripcion = area.querySelector<HTMLElement>('.areas-descripcion')
     if (!boton || !descripcion) return
 
+    // Al cerrar, las líneas salen hacia arriba; al abrir se rearman y entran desde abajo
     const parrafo = descripcion.querySelector<HTMLElement>('p')
-    if (abrir && parrafo) partirEnLineas(parrafo)
+    if (abrir) {
+      area.classList.remove('cerrando')
+      if (parrafo) partirEnLineas(parrafo)
+    } else {
+      area.classList.add('cerrando')
+    }
 
     const altoAntes = area.style.marginBottom
     area.classList.toggle('abierta', abrir)
