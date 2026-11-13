@@ -9,7 +9,7 @@ const mailtoLlamada = `mailto:${correo}?subject=${asunto}&body=${cuerpo}`
 
   <div class="hook">
     <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
-    <a class="btn btn-fill btn-llamada" href={mailtoLlamada}>Agendá una llamada<i class="fi fi-rs-envelope"></i></a>
+    <a class="btn btn-fill" href={mailtoLlamada}>Agendá una llamada<i class="fi fi-rs-envelope"></i></a>
   </div>
   <div class="correo">
     <div class="correo-imagen" tabindex="0">
@@ -17,8 +17,8 @@ const mailtoLlamada = `mailto:${correo}?subject=${asunto}&body=${cuerpo}`
       <span class="correo-linea" aria-hidden="true"></span>
     </div>
     <div class="correo-opciones">
-      <a class="btn-tag bg-pink" href={`mailto:${correo}`}>enviar email</a>
-      <button type="button" class="btn-tag bg-pink correo-copiar" data-correo={correo}>copiar email</button>
+      <a class="btn btn-corchetes bg-pink" href={`mailto:${correo}`}>enviar email</a>
+      <button type="button" class="btn btn-corchetes bg-pink correo-copiar" data-correo={correo}>copiar email</button>
     </div>
     <span class="aviso-copiado" role="status"></span>
   </div>
@@ -92,11 +92,6 @@ footer {
     transition: opacity 0.2s ease;
 }
 
-/* Mismo alto que el resto de los botones */
-.correo-opciones .btn-tag {
-    min-height: var(--btn-height);
-}
-
 .correo:hover .correo-opciones,
 .correo:focus-within .correo-opciones {
     opacity: 1;
@@ -135,14 +130,6 @@ footer {
     justify-content: space-between;
     align-items: flex-end;
     gap: var(--space-16);
-}
-
-/* Botón de la llamada más grande en celular */
-@media (max-width: 768px) {
-  .btn-llamada {
-    --btn-height: 44px;
-    font-size: var(--text-base);
-  }
 }
 </style>
 

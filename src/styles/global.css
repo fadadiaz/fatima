@@ -230,7 +230,12 @@ button {
   background-color: var(--btn-bg);
   border-color: var(--btn-bg);
   color: var(--btn-fg);
-  font-size: var(--text-sm);
+}
+
+/* BOTON CON CORCHETES SIEMPRE VISIBLES */
+.btn-corchetes::before,
+.btn-corchetes::after {
+  visibility: visible;
 }
 
 /* Link de la página actual en el menú: solo el texto, sin corchetes ni íconos */
