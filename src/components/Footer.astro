@@ -12,13 +12,13 @@ const mailtoLlamada = `mailto:${correo}?subject=${asunto}&body=${cuerpo}`
     <a class="btn btn-fill" href={mailtoLlamada}>Agendá una llamada<i class="fi fi-rs-envelope"></i></a>
   </div>
   <div class="correo">
-    <div class="correo-imagen" tabindex="0">
+    <a class="correo-imagen" href={`mailto:${correo}`}>
       <img alt={correo} src="/correo-link.svg">
       <span class="correo-linea" aria-hidden="true"></span>
-    </div>
+    </a>
     <div class="correo-opciones">
-      <a class="btn btn-corchetes bg-pink" href={`mailto:${correo}`}>enviar email</a>
-      <button type="button" class="btn btn-corchetes bg-pink correo-copiar" data-correo={correo}>copiar email</button>
+      <a class="btn btn-corchetes bg-pink" href={`mailto:${correo}`} aria-label="Enviar email">enviar<span class="solo-escritorio"> email</span></a>
+      <button type="button" class="btn btn-corchetes bg-pink correo-copiar" data-correo={correo} aria-label="Copiar email">copiar<span class="solo-escritorio"> email</span></button>
     </div>
     <span class="aviso-copiado" role="status"></span>
   </div>
@@ -40,6 +40,7 @@ footer {
 }
 
 .correo-imagen {
+    display: block;
     position: relative;
 }
 
@@ -114,6 +115,21 @@ footer {
   }
 }
 
+/* Celular: opciones siempre visibles debajo del correo, con texto corto */
+@media (hover: none), (max-width: 768px) {
+  .correo-opciones {
+    position: static;
+    justify-content: flex-start;
+    margin-top: var(--space-16);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .correo-opciones :global(.solo-escritorio) {
+    display: none;
+  }
+}
+
 .hook {
     font-family: var(--font-grotesk);
     font-size: var(--text-2xl);
@@ -136,21 +152,21 @@ footer {
 <script>
   document.querySelectorAll<HTMLButtonElement>('.correo-copiar').forEach((boton) => {
     const aviso = boton.closest('.correo')?.querySelector('.aviso-copiado')
-    const textoOriginal = boton.textContent
+    const textoOriginal = boton.innerHTML
     let espera: number | undefined
 
     boton.addEventListener('click', async () => {
       const correo = boton.dataset.correo ?? ''
       try {
         await navigator.clipboard.writeText(correo)
-        boton.textContent = 'email copiado'
+        boton.innerHTML = '<span class="solo-escritorio">email </span>copiado'
         if (aviso) aviso.textContent = 'Email copiado'
       } catch {
         boton.textContent = 'no se pudo copiar'
       }
       window.clearTimeout(espera)
       espera = window.setTimeout(() => {
-        boton.textContent = textoOriginal
+        boton.innerHTML = textoOriginal
         if (aviso) aviso.textContent = ''
       }, 2000)
     })
