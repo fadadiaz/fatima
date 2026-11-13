@@ -21,16 +21,16 @@ const proyectos = await getCollection('proyectos')
         <button id="btn-azar" type="button" class="btn btn-pink">Al azar <i class="fi fi-rs-dice-alt"></i></button>
       </div>
     </header>
-    <section class="grilla-proyectos grid-12 max-width min-padding">
+    <section class="grilla-proyectos max-width min-padding">
       {proyectos.map((proyecto: CollectionEntry<'proyectos'>) => (
-        <a href={`/proyectos/${proyecto.id}`} class="proyecto-card col" style="--start: auto; --end: span 4;">
+        <a href={`/proyectos/${proyecto.id}`} class="proyecto-card">
           <div class="proyecto-cover">
             <div class="proyecto-foto">
               <Image
                 src={proyecto.data.portada}
                 alt={proyecto.data.titulo}
                 widths={[450, 900]}
-                sizes="(max-width: 599px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                sizes="(max-width: 768px) 100vw, (max-width: 1023px) 50vw, 33vw"
                 loading="lazy"
               />
             </div>
@@ -47,33 +47,36 @@ const proyectos = await getCollection('proyectos')
 </Layout>
 
 <style>
-  /* Grilla de tarjetas: 3 columnas en escritorio, 2 en tablet y 1 en celular.
-     El espacio entre columnas es el de .grid-12; entre filas, 56px desde 769px */
+  /* Grilla de tarjetas, declarada por franja sin depender de .grid-12 */
   .grilla-proyectos {
     --espacio-tarjetas: 56px;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
+    column-gap: 40px;
+    row-gap: var(--space-16);
   }
 
   @media (min-width: 769px) {
     .grilla-proyectos {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 40px;
       row-gap: var(--espacio-tarjetas);
     }
   }
 
-  .grilla-proyectos .proyecto-card {
-    grid-column: auto;
-  }
-
-  @media (max-width: 1023px) {
+  @media (min-width: 1024px) {
     .grilla-proyectos {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 40px;
+      row-gap: var(--espacio-tarjetas);
     }
   }
 
-  @media (max-width: 599px) {
+  @media (min-width: 1441px) {
     .grilla-proyectos {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: var(--space-48);
+      row-gap: var(--espacio-tarjetas);
     }
   }
 
