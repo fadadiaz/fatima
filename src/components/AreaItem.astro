@@ -99,17 +99,18 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     user-select: none;
   }
 
-  /* Descripción debajo del nombre, por encima de las etiquetas */
+  /* Descripción debajo del nombre, por encima de las etiquetas.
+     La separación crece con el tamaño del nombre y no baja de 8px */
   .areas-descripcion {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
     z-index: 2;
+    margin-top: max(var(--space-8), 0.1em);
     display: flex;
     justify-content: flex-end;
     visibility: hidden;
-    transition: visibility 0s linear 0.35s;
   }
 
   /* Mismo párrafo que el cuerpo de Sobre mí */
@@ -123,7 +124,7 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     cursor: default;
   }
 
-  /* Cada línea entra desde abajo y sale hacia arriba, todas a la vez */
+  /* Cada línea entra desde abajo y sale hacia arriba, con un escalonado corto */
   .areas-descripcion :global(.linea) {
     display: block;
     width: fit-content;
@@ -134,14 +135,18 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     display: block;
     width: fit-content;
     white-space: nowrap;
-    background-color: var(--fa-white);
     transform: translateY(100%);
-    transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: calc(var(--l, 0) * 50ms);
   }
 
-  .areas-item.abierta .areas-descripcion {
+  .areas-item.animando .areas-descripcion :global(.linea-texto) {
+    will-change: transform;
+  }
+
+  .areas-item.abierta .areas-descripcion,
+  .areas-item.cerrando .areas-descripcion {
     visibility: visible;
-    transition-delay: 0s;
   }
 
   .areas-item.abierta .areas-descripcion :global(.linea-texto) {
@@ -150,11 +155,37 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
 
   .areas-item.cerrando .areas-descripcion :global(.linea-texto) {
     transform: translateY(-100%);
+    transition-duration: 0.45s;
   }
 
   /* Espacio extra debajo del área cuando la descripción no entra */
   .areas-item {
-    transition: margin-bottom 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition: margin-bottom 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Etiquetas desenfocadas mientras la descripción del área está abierta */
+  .areas-item.abierta .tag-item {
+    filter: blur(6px);
+  }
+
+  /* Tablet y celular: descripción y texto centrados, nombre a todo el ancho */
+  @media (max-width: 799px) {
+    .areas-nombre,
+    .areas-boton {
+      width: 100%;
+    }
+
+    .areas-descripcion {
+      justify-content: center;
+    }
+
+    .areas-descripcion p {
+      text-align: center;
+    }
+
+    .areas-descripcion :global(.linea) {
+      margin-inline: auto;
+    }
   }
 
   .tag-item {
@@ -165,7 +196,7 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     gap: var(--space-8);
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, filter 0.5s ease;
     flex-wrap: wrap;
     list-style: none;
   }
@@ -625,7 +656,8 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
   function actualizar() {
     areas.forEach((area, indice) => {
       colocar(area, indice)
-      if (area === abierta) {
+      // Las líneas no se recalculan mientras se animan
+      if (area === abierta && !area.classList.contains('animando')) {
         const parrafo = area.querySelector<HTMLElement>('.areas-descripcion p')
         if (parrafo) partirEnLineas(parrafo)
         ajustarEspacio(area)
@@ -656,7 +688,9 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
 
   // Descripciones: una abierta a la vez
   const MARGEN_DESCRIPCION = 32
-  const DURACION_DESCRIPCION = 350
+  const DURACION_APERTURA = 700
+  const DURACION_CIERRE = 450
+  const ESCALONADO = 50
   const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
   let abierta: HTMLElement | null = null
 
@@ -698,46 +732,63 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     })
 
     parrafo.replaceChildren(
-      ...lineas.map((linea) => {
+      ...lineas.map((linea, i) => {
         const elemento = document.createElement('span')
         elemento.className = 'linea'
         const texto = document.createElement('span')
         texto.className = 'linea-texto'
+        texto.style.setProperty('--l', String(i))
         texto.textContent = linea.join(' ')
         elemento.append(texto)
         return elemento
       })
     )
-    // Fija el estado inicial antes de animar
-    void parrafo.offsetHeight
+    return lineas.length
+  }
+
+  // Duración total de la animación según la cantidad de líneas
+  const duracionTotal = (area: HTMLElement, base: number) => {
+    if (movimientoReducido.matches) return 0
+    const lineas = area.querySelectorAll('.linea').length
+    return base + Math.max(0, lineas - 1) * ESCALONADO
   }
 
   function marcarDescripcion(area: HTMLElement, abrir: boolean) {
     const boton = area.querySelector<HTMLButtonElement>('.areas-boton')
     const descripcion = area.querySelector<HTMLElement>('.areas-descripcion')
-    if (!boton || !descripcion) return
+    const parrafo = descripcion?.querySelector<HTMLElement>('p')
+    if (!boton || !descripcion || !parrafo) return
 
-    // Al cerrar, las líneas salen hacia arriba; al abrir se rearman y entran desde abajo
-    const parrafo = descripcion.querySelector<HTMLElement>('p')
-    if (abrir) {
-      area.classList.remove('cerrando')
-      if (parrafo) partirEnLineas(parrafo)
-    } else {
-      area.classList.add('cerrando')
-    }
-
-    const altoAntes = area.style.marginBottom
-    area.classList.toggle('abierta', abrir)
+    window.clearTimeout(Number(area.dataset.espera))
     descripcion.inert = !abrir
     boton.setAttribute('aria-expanded', String(abrir))
     abierta = abrir ? area : abierta === area ? null : abierta
-    ajustarEspacio(area)
+    const altoAntes = area.style.marginBottom
 
-    // Si cambió el alto, las etiquetas se reparten de nuevo al terminar la transición
-    if (area.style.marginBottom !== altoAntes) {
-      const espera = movimientoReducido.matches ? 0 : DURACION_DESCRIPCION
-      window.setTimeout(() => colocar(area, areas.indexOf(area)), espera)
+    if (abrir) {
+      // Las líneas se calculan antes de animar y quedan abajo, listas para subir
+      area.classList.remove('cerrando')
+      partirEnLineas(parrafo)
+      ajustarEspacio(area)
+      requestAnimationFrame(() => {
+        area.classList.add('animando', 'abierta')
+      })
+    } else {
+      // Las líneas salen hacia arriba y después se oculta el bloque
+      area.classList.add('animando', 'cerrando')
+      area.classList.remove('abierta')
+      ajustarEspacio(area)
     }
+
+    const espera = duracionTotal(area, abrir ? DURACION_APERTURA : DURACION_CIERRE)
+    area.dataset.espera = String(
+      window.setTimeout(() => {
+        area.classList.remove('animando')
+        if (!abrir) area.classList.remove('cerrando')
+        // Si cambió el alto, las etiquetas se reparten de nuevo al terminar
+        if (area.style.marginBottom !== altoAntes) colocar(area, areas.indexOf(area))
+      }, espera)
+    )
   }
 
   areas.forEach((area) => {
