@@ -12,7 +12,7 @@ const mailtoLlamada = `mailto:${correo}?subject=${asunto}&body=${cuerpo}`
     <a class="btn btn-fill btn-llamada" href={mailtoLlamada}>Agendá una llamada<i class="fi fi-rs-envelope"></i></a>
   </div>
   <div class="correo">
-    <div class="correo-imagen">
+    <div class="correo-imagen" tabindex="0">
       <img alt={correo} src="/correo-link.svg">
       <span class="correo-linea" aria-hidden="true"></span>
     </div>
@@ -98,18 +98,6 @@ footer {
   .correo-linea,
   .correo-opciones {
     transition: none;
-  }
-}
-
-/* Sin hover, las opciones quedan visibles debajo del correo */
-@media (hover: none), (max-width: 768px) {
-  .correo-opciones {
-    position: static;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    margin-top: var(--space-16);
-    opacity: 1;
-    pointer-events: auto;
   }
 }
 
