@@ -165,7 +165,12 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
 
   /* Etiquetas desenfocadas mientras la descripción del área está abierta */
   .areas-item.abierta .tag-item {
-    filter: blur(6px);
+    filter: blur(15px);
+  }
+
+  /* Las etiquetas también abren y cierran la descripción */
+  .tag-item .btn-tag {
+    cursor: pointer;
   }
 
   /* Tablet y celular: descripción y texto centrados, nombre a todo el ancho */
@@ -792,11 +797,13 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
   }
 
   areas.forEach((area) => {
-    area.querySelector('.areas-boton')?.addEventListener('click', () => {
+    const alternar = () => {
       const abrir = area !== abierta
       if (abierta && abierta !== area) marcarDescripcion(abierta, false)
       marcarDescripcion(area, abrir)
-    })
+    }
+    area.querySelector('.areas-boton')?.addEventListener('click', alternar)
+    area.querySelectorAll('.btn-tag').forEach((etiqueta) => etiqueta.addEventListener('click', alternar))
   })
 
   document.addEventListener('keydown', (e) => {
