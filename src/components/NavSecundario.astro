@@ -1,6 +1,6 @@
 ---
 import MenuMobile from './MenuMobile.astro'
-const { flotante = false } = Astro.props
+const { flotante = false, bg = 'bg-pink' } = Astro.props
 const ruta = Astro.url.pathname.replace(/\/$/, '') || '/'
 
 // Página actual: 'page' en la página exacta, 'true' en sus subpáginas
@@ -8,11 +8,11 @@ const actual = (destino: string) =>
   ruta === destino ? 'page' : ruta.startsWith(`${destino}/`) ? 'true' : undefined
 ---
 
-<header class={`header-alt min-padding ${flotante ? 'nav-flotante' : 'bg-pink'}`}>
+<header class={`header-alt min-padding ${flotante ? 'nav-flotante' : bg}`}>
   <!-- MOBILE -->
   <div class="nav-alt-mobile">
     <a href="/"><img alt="Texto fátima color negro" src="/logo-fatima.svg"></a>
-    <MenuMobile bg="bg-pink" />
+    <MenuMobile bg={bg} />
   </div>
   <!-- DESKTOP/TABLET -->
   <nav class="nav-alt-full">
@@ -20,7 +20,7 @@ const actual = (destino: string) =>
     <a class:list={['btn btn-pink-alt', { activo: actual('/sobre-mi') }]} aria-current={actual('/sobre-mi')} href="/sobre-mi"><span class="btn-texto">Sobre mí</span></a>
     <a href="/"><img alt="Texto fátima color negro" width="81" height="25" src="/logo-fatima.svg"></a>
     <a class:list={['btn btn-pink-alt', { activo: actual('/recursos') }]} aria-current={actual('/recursos')} href="/recursos"><span class="btn-texto">Recursos</span></a>
-    <a class="btn btn-fill" href="#contacto">Contacto<i class="fi fi-rs-arrow-up-right"></i></a>
+    <a class="btn btn-fill" aria-current={actual('/contacto')} href="/contacto">Contacto<i class="fi fi-rs-arrow-up-right"></i></a>
   </nav>
 </header>
 

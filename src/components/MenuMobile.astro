@@ -40,7 +40,7 @@ const id = `menu-${Math.random().toString(36).slice(2, 8)}`
     <a class:list={['btn btn-pink', { activo: actual('/proyectos') }]} aria-current={actual('/proyectos')} href="/proyectos"><span class="btn-texto">Proyectos</span></a>
     <a class:list={['btn btn-pink', { activo: actual('/sobre-mi') }]} aria-current={actual('/sobre-mi')} href="/sobre-mi"><span class="btn-texto">Sobre mí</span></a>
     <a class:list={['btn btn-pink', { activo: actual('/recursos') }]} aria-current={actual('/recursos')} href="/recursos"><span class="btn-texto">Recursos</span></a>
-    <a class="btn btn-fill" href="#contacto">Contacto<i class="fi fi-rs-arrow-up-right"></i></a>
+    <a class="btn btn-fill" aria-current={actual('/contacto')} href="/contacto">Contacto<i class="fi fi-rs-arrow-up-right"></i></a>
   </div>
 </nav>
 

@@ -25,13 +25,15 @@ const proyectos = await getCollection('proyectos')
       {proyectos.map((proyecto: CollectionEntry<'proyectos'>) => (
         <a href={`/proyectos/${proyecto.id}`} class="proyecto-card col" style="--start: auto; --end: span 4;">
           <div class="proyecto-cover">
-            <Image
-              src={proyecto.data.portada}
-              alt={proyecto.data.titulo}
-              widths={[450, 900]}
-              sizes="(max-width: 599px) 100vw, (max-width: 1023px) 50vw, 33vw"
-              loading="lazy"
-            />
+            <div class="proyecto-foto">
+              <Image
+                src={proyecto.data.portada}
+                alt={proyecto.data.titulo}
+                widths={[450, 900]}
+                sizes="(max-width: 599px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                loading="lazy"
+              />
+            </div>
           </div>
           <div class="proyecto-card-info">
             <h3 class="btn-link">{proyecto.data.titulo}</h3>
@@ -48,8 +50,10 @@ const proyectos = await getCollection('proyectos')
   /* Grilla de tarjetas: 3 columnas en escritorio, 2 en tablet y 1 en celular.
      Los espacios entre tarjetas son los de .grid-12 */
   .grilla-proyectos {
+    --espacio-tarjetas: 56px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
+    column-gap: var(--espacio-tarjetas);
   }
 
   .grilla-proyectos .proyecto-card {
@@ -85,6 +89,38 @@ const proyectos = await getCollection('proyectos')
       max-height: 592px;
       aspect-ratio: 1 / 1.414;
       object-fit: cover;
+      transform-origin: center;
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Zoom de la foto dentro de su marco: el marco gris no cambia */
+  .proyecto-foto {
+      overflow: hidden;
+  }
+
+  @media (hover: hover) {
+    .proyecto-card:hover img {
+      transform: scale(1.08);
+      will-change: transform;
+    }
+  }
+
+  @media (hover: none) {
+    .proyecto-card:active img {
+      transform: scale(1.08);
+      will-change: transform;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .proyecto-card img {
+      transition: none;
+    }
+
+    .proyecto-card:hover img,
+    .proyecto-card:active img {
+      transform: none;
+    }
   }
 
   .proyecto-card-info {

@@ -40,6 +40,8 @@
 
   --btn-height: 2rem;
   --btn-height-movil: 2.75rem; /* 44px, área táctil mínima */
+
+  --linea-encabezado: 0.75px; /* Línea divisoria de los encabezados de sección */
 }
 
 *, *::before, *::after {
@@ -358,7 +360,7 @@ button {
   justify-content: space-between;
   align-items: center;
   padding-block: var(--space-16);
-  border-bottom: 2px solid #FFCCE5;
+  border-bottom: var(--linea-encabezado) solid var(--fa-pink);
   width: 100%;
   gap: var(--space-16);
 }

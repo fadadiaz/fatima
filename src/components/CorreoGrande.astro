@@ -1,0 +1,206 @@
+---
+// Correo grande con subrayado y opciones de escribir y copiar (pie y contacto)
+
+// Textos de las acciones del correo
+const TEXTO_ESCRIBIR = 'escribir'
+const TEXTO_COPIAR = 'copiar'
+const TEXTO_COPIADO = 'copiado'
+
+const correo = 'hola@fatima.com.ar'
+
+// Subrayado en las medidas del SVG del correo (viewBox 1798 × 165), con el corte bajo la arroba
+const linea = { y: 146.8, alto: 9.5, corteInicio: 399.75, corteFin: 515.75, ancho: 1798 }
+
+// Identificador propio para vincular el correo con sus opciones
+const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
+---
+
+<div class="correo">
+  <a class="correo-imagen correo-enlace" href={`mailto:${correo}`}>
+    <img alt={correo} src="/correo-link.svg">
+  </a>
+  <button
+    type="button"
+    class="correo-imagen correo-boton"
+    aria-expanded="false"
+    aria-controls={idOpciones}
+  >
+    <img alt={correo} src="/correo-link.svg">
+    <svg class="correo-linea" viewBox="0 0 1798 165" aria-hidden="true">
+      <rect x="0" y={linea.y} width={linea.corteInicio} height={linea.alto} />
+      <rect x={linea.corteFin} y={linea.y} width={linea.ancho - linea.corteFin} height={linea.alto} />
+    </svg>
+  </button>
+  <div class="correo-opciones" id={idOpciones}>
+    <a
+      class="btn btn-corchetes bg-pink correo-escribir"
+      href={`mailto:${correo}`}
+      aria-label={`Escribir un correo a ${correo}`}
+    >{TEXTO_ESCRIBIR}</a>
+    <button
+      type="button"
+      class="btn btn-corchetes bg-pink correo-copiar"
+      aria-label="Copiar el correo"
+      data-correo={correo}
+      data-copiado={TEXTO_COPIADO}
+    >{TEXTO_COPIAR}</button>
+  </div>
+  <span class="aviso-copiado" role="status"></span>
+</div>
+
+<style>
+.correo {
+    position: relative;
+}
+
+/* El contenedor toma el tamaño del SVG para que el subrayado coincida siempre */
+.correo-imagen {
+    display: block;
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+}
+
+/* Subrayado superpuesto al SVG, revelado con una máscara de izquierda a derecha */
+.correo-linea {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: var(--fa-black);
+    pointer-events: none;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 0.5s ease;
+}
+
+.correo-boton:hover .correo-linea,
+.correo-boton:focus-visible .correo-linea,
+.correo.abierto .correo-linea {
+    clip-path: inset(0 0 0 0);
+}
+
+/* Opciones del correo superpuestas en el centro */
+.correo-opciones {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-8);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.correo.abierto .correo-opciones {
+    opacity: 1;
+}
+
+.correo.abierto .correo-opciones .btn {
+    pointer-events: auto;
+}
+
+.aviso-copiado {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* Escritorio: el correo es un botón que abre las opciones */
+@media (hover: hover) and (min-width: 769px) {
+  .correo-enlace {
+    display: none;
+  }
+}
+
+/* Celular: el correo es un enlace y las opciones quedan visibles debajo */
+@media (max-width: 768px), (hover: none) {
+  .correo-boton {
+    display: none;
+  }
+
+  .correo-opciones {
+    position: static;
+    justify-content: flex-start;
+    margin-top: var(--space-16);
+    gap: 12px;
+    opacity: 1;
+  }
+
+  .correo-opciones .btn {
+    pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .correo-linea,
+  .correo-opciones {
+    transition: none;
+  }
+}
+</style>
+
+<script>
+  // Escritorio: hover y más de 768px, igual que en AreaItem
+  const escritorio = window.matchMedia('(hover: hover) and (min-width: 769px)')
+
+  document.querySelectorAll<HTMLElement>('.correo').forEach((bloque) => {
+    const boton = bloque.querySelector<HTMLButtonElement>('.correo-boton')
+    const escribir = bloque.querySelector<HTMLAnchorElement>('.correo-escribir')
+    const copiar = bloque.querySelector<HTMLButtonElement>('.correo-copiar')
+    const aviso = bloque.querySelector('.aviso-copiado')
+    if (!boton || !escribir || !copiar) return
+
+    const textoCopiar = copiar.textContent
+    let espera: number | undefined
+
+    const abierto = () => bloque.classList.contains('abierto')
+
+    const marcar = (abrir: boolean) => {
+      bloque.classList.toggle('abierto', abrir)
+      boton.setAttribute('aria-expanded', String(abrir))
+    }
+
+    boton.addEventListener('click', () => marcar(!abierto()))
+
+    // Se cierra con Escape, con un clic fuera o al elegir una opción
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && abierto()) {
+        marcar(false)
+        boton.focus()
+      }
+    })
+
+    document.addEventListener('click', (e) => {
+      if (abierto() && !bloque.contains(e.target as Node)) marcar(false)
+    })
+
+    escribir.addEventListener('click', () => {
+      if (escritorio.matches) marcar(false)
+    })
+
+    // Al pasar a celular, las opciones dejan de depender del estado abierto
+    escritorio.addEventListener('change', (e) => {
+      if (!e.matches) marcar(false)
+    })
+
+    copiar.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(copiar.dataset.correo ?? '')
+        copiar.textContent = copiar.dataset.copiado ?? ''
+        if (aviso) aviso.textContent = 'Correo copiado'
+      } catch {
+        copiar.textContent = 'no se pudo copiar'
+      }
+      window.clearTimeout(espera)
+      espera = window.setTimeout(() => {
+        copiar.textContent = textoCopiar
+        if (aviso) aviso.textContent = ''
+        if (escritorio.matches) marcar(false)
+      }, 2000)
+    })
+  })
+</script>

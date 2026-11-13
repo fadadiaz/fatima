@@ -1,0 +1,91 @@
+---
+import Layout from '../layouts/Layout.astro'
+import NavSecundario from '../components/NavSecundario.astro'
+import CorreoGrande from '../components/CorreoGrande.astro'
+import BotonLlamada from '../components/BotonLlamada.astro'
+---
+
+<Layout
+  titulo="Contacto - Fátima Díaz"
+  descripcion="Contactá a Fátima Díaz, diseñadora en Buenos Aires: por correo, llamada, videollamada o audios de WhatsApp."
+>
+  <div class="pantalla-contacto bg-green">
+    <NavSecundario bg="bg-green" />
+    <main class="contacto min-padding">
+      <div class="contacto-intro">
+        <h1 class="font-alt">¡Hablemos!</h1>
+        <p>Escribime, o hablemos por llamada, videollamada o audios de WhatsApp.</p>
+      </div>
+      <div class="contacto-cierre">
+        <div class="contacto-hook">
+          <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
+          <BotonLlamada />
+        </div>
+        <CorreoGrande />
+        <p class="contacto-ciudad">Buenos Aires</p>
+      </div>
+    </main>
+  </div>
+</Layout>
+
+<style>
+  /* Pantalla única en verde, con el menú incluido */
+  .pantalla-contacto {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .contacto {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: var(--space-64);
+    padding-block: var(--space-48);
+  }
+
+  .contacto-intro,
+  .contacto-hook {
+    font-family: var(--font-grotesk);
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl);
+  }
+
+  .contacto-intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24);
+  }
+
+  /* Mismo estilo que el texto manuscrito del pie */
+  .contacto-intro h1 {
+    font-size: var(--text-2xl);
+    font-weight: 400;
+    line-height: var(--text-2xl);
+  }
+
+  .contacto-intro p,
+  .contacto-hook p {
+    max-width: 432px;
+  }
+
+  .contacto-cierre {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-48);
+  }
+
+  .contacto-hook {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-16);
+  }
+
+  .contacto-ciudad {
+    font-family: var(--font-mono);
+  }
+</style>

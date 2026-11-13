@@ -1,0 +1,9 @@
+---
+// Botón para agendar una llamada por correo (pie y contacto)
+const correo = 'hola@fatima.com.ar'
+const asunto = encodeURIComponent('Quiero agendar una llamada')
+const cuerpo = encodeURIComponent('Hola Fátima, me gustaría agendar una llamada.')
+const mailtoLlamada = `mailto:${correo}?subject=${asunto}&body=${cuerpo}`
+---
+
+<a class="btn btn-fill" href={mailtoLlamada}>Agendá una llamada<i class="fi fi-rs-envelope"></i></a>
