@@ -9,7 +9,66 @@ import { Image } from 'astro:assets'
 import emojiPin from '../assets/emojis/emoji_u1f4cd_3d.png'
 import emojiComputadora from '../assets/emojis/emoji_u1f4bb_3d.png'
 import emojiBirrete from '../assets/emojis/emoji_u1f393_3d.png'
-import { especialidades } from '../data/especialidades'
+
+const areas = [
+  { 
+    texto: "Identidad visual", 
+    descripcion: "Construimos juntos la imagen de tu marca, desde cero o a partir de la identidad que ya tenés. Me enfoco en que sea coherente, genuina y lista para usarse en cualquier contexto, digital o impreso. Diseño para que se vea bien y funcione.",
+    tags: [
+      { texto: "Branding" },
+      { texto: "Rediseño de marca" },
+      { texto: "Kit para redes" },
+      { texto: "Papelería corporativa" },
+      { texto: "Etiquetas y packaging" },
+      { texto: "Presentaciones" },
+      { texto: "Manual de marca" },
+      { texto: "Paleta de colores" },
+    ]
+  },
+  { 
+    texto: "Diseño web", 
+    descripcion: "Tu página web no debería ser un dolor de cabeza, ni para vos ni para quienes la usan. Diseño según las necesidades reales de cada proyecto, ya sea que arranques desde cero o quieras mejorar lo que ya tenés.",
+    tags: [
+      { texto: "Landing pages" },
+      { texto: "WordPress" },
+      { texto: "Tiendas online" },
+      { texto: "Notion" },
+      { texto: "Portfolios" },
+      { texto: "Menú digital" },
+      { texto: "Figma a código" },
+      { texto: "UI Design" },
+      { texto: "Rediseño web" },
+      { texto: "Mantenimiento web" },
+    ]
+  },
+  {
+    texto: "Diseño editorial",
+    descripcion: "Revistas, libros, afiches y folletos pensados como un conjunto: el concepto, la tipografía, el ritmo de cada página y cómo va a imprimirse. Me ocupo desde la idea hasta la maquetación y la preprensa.",
+    tags: [
+      { texto: "Revistas" },
+      { texto: "Libros" },
+      { texto: "Afiches" },
+      { texto: "Folletos" },
+      { texto: "Maquetación" },
+      { texto: "Preprensa" },
+    ]
+  },
+  {
+    texto: "Herramientas digitales",
+    descripcion: "Más allá del diseño, te ayudo a automatizar tareas repetitivas y a crear herramientas a medida que simplifican cómo trabajás. Formularios inteligentes, documentos que se generan solos, aplicaciones de gestión para el celular: soluciones que te ahorran tiempo real.",
+    tags: [
+      { texto: "Automatización" },
+      { texto: "Formularios inteligentes" },
+      { texto: "Apps a medida" },
+      { texto: "Gestión de clientes" },
+      { texto: "AppSheet" },
+      { texto: "Apps Script" },
+      { texto: "Google Workspace" },
+      { texto: "Generación de documentos" },
+      { texto: "Control de stock" },
+    ]
+  },
+]
 ---
 
 <Layout>
@@ -23,14 +82,9 @@ import { especialidades } from '../data/especialidades'
     <section id="areas" data-cursor="/cursor-proyectos.gif" class="font-grotesk max-width min-padding">
       <div class="subtitulo">
         <h2>Especialidades</h2>
-        <a class="btn btn-pink" href="/especialidades">Ver todas<i class="fi fi-rs-eye"></i></a>
       </div>
-      {especialidades.map((area) => (
-        <AreaItem
-          texto={area.nombre}
-          href={`/especialidades#${area.id}`}
-          tags={area.etiquetas.map((texto) => ({ texto }))}
-        />
+      {areas.map((area) => (
+        <AreaItem texto={area.texto} descripcion={area.descripcion} tags={area.tags} />
       ))}
     </section>
     <section id="slider-proyectos">
@@ -76,6 +130,8 @@ import { especialidades } from '../data/especialidades'
   /* Las etiquetas cortadas por el borde no generan scroll horizontal */
   #areas {
     overflow-x: clip;
+    /* Flecha estándar en toda la sección; el nombre de cada área usa la manito */
+    cursor: default;
   }
 
   #slider-proyectos {

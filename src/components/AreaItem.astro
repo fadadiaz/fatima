@@ -41,12 +41,14 @@ interface Tag {
 
 interface Props {
   texto: string
-  href?: string // con destino, el bloque completo del área pasa a ser un enlace
+  descripcion: string
   tags: Tag[]
 }
 
-const { texto, href, tags } = Astro.props
-const Contenedor = href ? 'a' : 'div'
+const { texto, descripcion, tags } = Astro.props
+
+// Identificador propio para vincular el nombre con su descripción
+const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
 ---
 
 <div
@@ -54,19 +56,21 @@ const Contenedor = href ? 'a' : 'div'
   data-config={JSON.stringify(configEtiquetas)}
   data-config-movil={JSON.stringify(configEtiquetasMovil)}
 >
-  <Contenedor
-    class="areas-trigger center-h"
-    href={href}
-    tabindex={href ? undefined : 0}
-    aria-label={href ? `${texto.toLowerCase()}, ver detalle en especialidades` : undefined}
-  >
-    <span class="areas-categoria minusculas">{texto}</span>
+  <div class="areas-trigger center-h">
+    <div class="areas-nombre">
+      <button type="button" class="areas-boton" aria-expanded="false" aria-controls={idDescripcion}>
+        <span class="areas-categoria minusculas">{texto}</span>
+      </button>
+      <div class="areas-descripcion" id={idDescripcion} inert>
+        <p>{descripcion}</p>
+      </div>
+    </div>
     <ul class="tag-item">
       {tags.map((tag: Tag, i: number) => (
         <li style={`--i: ${i}`}><span class="btn-tag bg-pink">{tag.texto}</span></li>
       ))}
     </ul>
-  </Contenedor>
+  </div>
 </div>
 
 <style>
@@ -85,9 +89,54 @@ const Contenedor = href ? 'a' : 'div'
     flex-direction: column;
   }
 
-  /* Con enlace, toda el área es clickeable */
-  .areas-trigger[href] {
-    align-self: stretch;
+  .areas-nombre {
+    position: relative;
+  }
+
+  .areas-boton {
+    color: inherit;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Descripción debajo del nombre, por encima de las etiquetas */
+  .areas-descripcion {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(var(--space-8));
+    transition:
+      opacity 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+      visibility 0s linear 0.35s;
+  }
+
+  .areas-descripcion p {
+    width: min(22rem, 100%);
+    font-family: var(--font-grotesk);
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl);
+    text-align: left;
+    background-color: var(--fa-white);
+    cursor: default;
+  }
+
+  .areas-item.abierta .areas-descripcion {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+
+  /* Espacio extra debajo del área cuando la descripción no entra */
+  .areas-item {
+    transition: margin-bottom 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
   .tag-item {
@@ -163,7 +212,9 @@ const Contenedor = href ? 'a' : 'div'
 
   @media (prefers-reduced-motion: reduce) {
     .tag-item,
-    .tag-item li {
+    .tag-item li,
+    .areas-item,
+    .areas-descripcion {
       transition: none;
     }
   }
@@ -553,7 +604,10 @@ const Contenedor = href ? 'a' : 'div'
   const areas = [...document.querySelectorAll<HTMLElement>('.areas-item')]
 
   function actualizar() {
-    areas.forEach((area, indice) => colocar(area, indice))
+    areas.forEach((area, indice) => {
+      colocar(area, indice)
+      if (area === abierta) ajustarEspacio(area)
+    })
   }
 
   // Posiciones nuevas cada vez que se muestran las etiquetas en escritorio
@@ -576,6 +630,58 @@ const Contenedor = href ? 'a' : 'div'
     { rootMargin: '-35% 0px -35% 0px' }
   )
   areas.forEach((area) => enVista.observe(area))
+
+  // Descripciones: una abierta a la vez
+  const MARGEN_DESCRIPCION = 32
+  const DURACION_DESCRIPCION = 350
+  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
+  let abierta: HTMLElement | null = null
+
+  // Si la descripción no entra en el alto del área, se suma espacio debajo sin mover el nombre
+  function ajustarEspacio(area: HTMLElement) {
+    const texto = area.querySelector('.areas-descripcion p')
+    if (!texto || area !== abierta) {
+      area.style.marginBottom = ''
+      return
+    }
+    const sobrante = texto.getBoundingClientRect().bottom - area.getBoundingClientRect().bottom
+    const extra = Math.ceil(sobrante + MARGEN_DESCRIPCION)
+    area.style.marginBottom = extra > 0 ? `${extra}px` : ''
+  }
+
+  function marcarDescripcion(area: HTMLElement, abrir: boolean) {
+    const boton = area.querySelector<HTMLButtonElement>('.areas-boton')
+    const descripcion = area.querySelector<HTMLElement>('.areas-descripcion')
+    if (!boton || !descripcion) return
+
+    const altoAntes = area.style.marginBottom
+    area.classList.toggle('abierta', abrir)
+    descripcion.inert = !abrir
+    boton.setAttribute('aria-expanded', String(abrir))
+    abierta = abrir ? area : abierta === area ? null : abierta
+    ajustarEspacio(area)
+
+    // Si cambió el alto, las etiquetas se reparten de nuevo al terminar la transición
+    if (area.style.marginBottom !== altoAntes) {
+      const espera = movimientoReducido.matches ? 0 : DURACION_DESCRIPCION
+      window.setTimeout(() => colocar(area, areas.indexOf(area)), espera)
+    }
+  }
+
+  areas.forEach((area) => {
+    area.querySelector('.areas-boton')?.addEventListener('click', () => {
+      const abrir = area !== abierta
+      if (abierta && abierta !== area) marcarDescripcion(abierta, false)
+      marcarDescripcion(area, abrir)
+    })
+  })
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !abierta) return
+    const area = abierta
+    marcarDescripcion(area, false)
+    area.querySelector<HTMLButtonElement>('.areas-boton')?.focus()
+  })
 
   actualizar()
   document.fonts.ready.then(actualizar)
