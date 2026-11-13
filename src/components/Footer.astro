@@ -43,27 +43,40 @@ footer {
     position: relative;
 }
 
-/* Subrayado dibujado sobre el SVG, con el corte bajo la arroba */
+/* Subrayado dibujado sobre el SVG, revelado con una máscara de izquierda a derecha */
 .correo-linea {
     position: absolute;
     left: 0;
     top: 88.65%;
     width: 94.75%;
     height: 5.45%;
-    background: linear-gradient(
-      to right,
-      var(--fa-black) 22.26%,
-      transparent 22.26% 28.04%,
-      var(--fa-black) 28.04%
-    );
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.5s ease;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 0.5s ease;
+}
+
+/* Dos tramos sólidos, con el corte bajo la arroba */
+.correo-linea::before,
+.correo-linea::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background-color: var(--fa-black);
+}
+
+.correo-linea::before {
+    left: 0;
+    width: 22.26%;
+}
+
+.correo-linea::after {
+    left: 28.04%;
+    right: 0;
 }
 
 .correo:hover .correo-linea,
 .correo:focus-within .correo-linea {
-    transform: scaleX(1);
+    clip-path: inset(0 0 0 0);
 }
 
 /* Opciones del correo superpuestas en el centro */
@@ -77,6 +90,11 @@ footer {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
+}
+
+/* Mismo alto que el resto de los botones */
+.correo-opciones .btn-tag {
+    min-height: var(--btn-height);
 }
 
 .correo:hover .correo-opciones,
