@@ -7,22 +7,20 @@ import BotonLlamada from '../components/BotonLlamada.astro'
 
 <Layout
   titulo="Contacto - Fátima Díaz"
-  descripcion="Contactá a Fátima Díaz, diseñadora en Buenos Aires: por correo, llamada, videollamada o audios de WhatsApp."
+  descripcion="Contactá a Fátima Díaz, diseñadora en Buenos Aires: por correo, llamada o videollamada."
 >
   <div class="pantalla-contacto bg-green">
     <NavSecundario bg="bg-green" />
     <main class="contacto min-padding">
       <div class="contacto-intro">
         <h1 class="font-alt">¡Hablemos!</h1>
-        <p>Escribime, o hablemos por llamada, videollamada o audios de WhatsApp.</p>
       </div>
       <div class="contacto-cierre">
         <div class="contacto-hook">
-          <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
+          <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time. Escribime, o hablemos por llamada o videollamada.</p>
           <BotonLlamada />
         </div>
         <CorreoGrande />
-        <p class="contacto-ciudad">Buenos Aires</p>
       </div>
     </main>
   </div>
@@ -66,7 +64,6 @@ import BotonLlamada from '../components/BotonLlamada.astro'
     line-height: var(--text-2xl);
   }
 
-  .contacto-intro p,
   .contacto-hook p {
     max-width: 432px;
   }
@@ -83,9 +80,4 @@ import BotonLlamada from '../components/BotonLlamada.astro'
     justify-content: space-between;
     align-items: flex-end;
     gap: var(--space-16);
-  }
-
-  .contacto-ciudad {
-    font-family: var(--font-mono);
-  }
-</style>
+  }</style>

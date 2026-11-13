@@ -48,12 +48,18 @@ const proyectos = await getCollection('proyectos')
 
 <style>
   /* Grilla de tarjetas: 3 columnas en escritorio, 2 en tablet y 1 en celular.
-     Los espacios entre tarjetas son los de .grid-12 */
+     En escritorio, el mismo espacio entre filas que entre columnas */
   .grilla-proyectos {
     --espacio-tarjetas: 56px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     column-gap: var(--espacio-tarjetas);
+  }
+
+  @media (min-width: 1024px) {
+    .grilla-proyectos {
+      row-gap: var(--espacio-tarjetas);
+    }
   }
 
   .grilla-proyectos .proyecto-card {
@@ -129,6 +135,13 @@ const proyectos = await getCollection('proyectos')
     gap: var(--space-8);
     justify-content: space-between;
     white-space: nowrap;
+  }
+
+  /* El título se parte en líneas dentro del ancho de la tarjeta */
+  .proyecto-card-info h3 {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 </style>
 
