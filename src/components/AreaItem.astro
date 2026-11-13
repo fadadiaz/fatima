@@ -108,30 +108,37 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     z-index: 2;
     display: flex;
     justify-content: flex-end;
-    opacity: 0;
     visibility: hidden;
-    transform: translateY(var(--space-8));
-    transition:
-      opacity 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
-      transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
-      visibility 0s linear 0.35s;
+    transition: visibility 0s linear 0.35s;
   }
 
+  /* Mismo párrafo que el cuerpo de Sobre mí */
   .areas-descripcion p {
     width: min(22rem, 100%);
-    font-family: var(--font-grotesk);
-    font-size: var(--text-2xl);
-    line-height: var(--text-2xl);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: 400;
+    line-height: var(--text-lg);
     text-align: left;
-    background-color: var(--fa-white);
     cursor: default;
   }
 
+  /* Cada línea se barre de abajo hacia arriba, todas a la vez */
+  .areas-descripcion :global(.linea) {
+    display: block;
+    white-space: nowrap;
+    background-color: var(--fa-white);
+    clip-path: inset(100% 0 0 0);
+    transition: clip-path 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
   .areas-item.abierta .areas-descripcion {
-    opacity: 1;
     visibility: visible;
-    transform: none;
     transition-delay: 0s;
+  }
+
+  .areas-item.abierta .areas-descripcion :global(.linea) {
+    clip-path: inset(0 0 0 0);
   }
 
   /* Espacio extra debajo del área cuando la descripción no entra */
@@ -214,7 +221,8 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     .tag-item,
     .tag-item li,
     .areas-item,
-    .areas-descripcion {
+    .areas-descripcion,
+    .areas-descripcion :global(.linea) {
       transition: none;
     }
   }
@@ -606,7 +614,11 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
   function actualizar() {
     areas.forEach((area, indice) => {
       colocar(area, indice)
-      if (area === abierta) ajustarEspacio(area)
+      if (area === abierta) {
+        const parrafo = area.querySelector<HTMLElement>('.areas-descripcion p')
+        if (parrafo) partirEnLineas(parrafo)
+        ajustarEspacio(area)
+      }
     })
   }
 
@@ -649,10 +661,50 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     area.style.marginBottom = extra > 0 ? `${extra}px` : ''
   }
 
+  // Separa el párrafo en sus líneas reales para animarlas una por una
+  function partirEnLineas(parrafo: HTMLElement) {
+    const texto = parrafo.dataset.texto ?? parrafo.textContent?.trim() ?? ''
+    parrafo.dataset.texto = texto
+
+    const palabras = texto.split(/\s+/)
+    parrafo.replaceChildren()
+    const marcas = palabras.map((palabra, i) => {
+      const marca = document.createElement('span')
+      marca.textContent = palabra
+      parrafo.append(marca)
+      if (i < palabras.length - 1) parrafo.append(' ')
+      return marca
+    })
+
+    const lineas: string[][] = []
+    let arriba: number | null = null
+    marcas.forEach((marca, i) => {
+      if (marca.offsetTop !== arriba) {
+        lineas.push([])
+        arriba = marca.offsetTop
+      }
+      lineas[lineas.length - 1].push(palabras[i])
+    })
+
+    parrafo.replaceChildren(
+      ...lineas.map((linea) => {
+        const elemento = document.createElement('span')
+        elemento.className = 'linea'
+        elemento.textContent = linea.join(' ')
+        return elemento
+      })
+    )
+    // Fija el estado inicial antes de animar
+    void parrafo.offsetHeight
+  }
+
   function marcarDescripcion(area: HTMLElement, abrir: boolean) {
     const boton = area.querySelector<HTMLButtonElement>('.areas-boton')
     const descripcion = area.querySelector<HTMLElement>('.areas-descripcion')
     if (!boton || !descripcion) return
+
+    const parrafo = descripcion.querySelector<HTMLElement>('p')
+    if (abrir && parrafo) partirEnLineas(parrafo)
 
     const altoAntes = area.style.marginBottom
     area.classList.toggle('abierta', abrir)
