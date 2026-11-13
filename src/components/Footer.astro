@@ -1,23 +1,26 @@
 ---
+const correo = 'hola@fatima.com.ar'
 const asunto = encodeURIComponent('Quiero agendar una llamada')
 const cuerpo = encodeURIComponent('Hola Fátima, me gustaría agendar una llamada.')
-const mailtoLlamada = `mailto:hola@fatima.com.ar?subject=${asunto}&body=${cuerpo}`
+const mailtoLlamada = `mailto:${correo}?subject=${asunto}&body=${cuerpo}`
 ---
 
 <footer id="contacto" class="bg-green min-padding h-80">
 
   <div class="hook">
-    <div class="hook-texto">
-      <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
-      <a class="btn btn-fill" href={mailtoLlamada}>Agendá una llamada</a>
-    </div>
-    <p class="font-alt">¡Hablemos!</p>
+    <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
+    <a class="btn btn-fill btn-llamada" href={mailtoLlamada}>Agendá una llamada<i class="fi fi-rs-envelope"></i></a>
   </div>
   <div class="correo">
-    <a class="correo-link" href="mailto:hola@fatima.com.ar">
-      <img class="correo-default" alt="hola@fatima.com.ar" src="/correo-link.svg">
-      <img class="correo-hover" alt="" aria-hidden="true" src="/correo-link-sub.svg">
-    </a>
+    <div class="correo-imagen">
+      <img alt={correo} src="/correo-link.svg">
+      <span class="correo-linea" aria-hidden="true"></span>
+    </div>
+    <div class="correo-opciones">
+      <a class="btn-tag bg-pink" href={`mailto:${correo}`}>enviar email</a>
+      <button type="button" class="btn-tag bg-pink correo-copiar" data-correo={correo}>copiar email</button>
+    </div>
+    <span class="aviso-copiado" role="status"></span>
   </div>
 
 </footer>
@@ -32,29 +35,81 @@ footer {
     justify-content: flex-end;
 }
 
-.correo-link {
-    display: block;
+.correo {
     position: relative;
-    width: 100%;
 }
 
-/* Subrayado que se revela de izquierda a derecha sobre el correo */
-.correo-hover {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  clip-path: inset(0 100% 0 0);
-  transition: clip-path 0.5s ease;
+.correo-imagen {
+    position: relative;
 }
 
-.correo-link:hover .correo-hover,
-.correo-link:focus-visible .correo-hover {
-  clip-path: inset(0 0 0 0);
+/* Subrayado dibujado sobre el SVG, con el corte bajo la arroba */
+.correo-linea {
+    position: absolute;
+    left: 0;
+    top: 88.65%;
+    width: 94.75%;
+    height: 5.45%;
+    background: linear-gradient(
+      to right,
+      var(--fa-black) 22.26%,
+      transparent 22.26% 28.04%,
+      var(--fa-black) 28.04%
+    );
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s ease;
+}
+
+.correo:hover .correo-linea,
+.correo:focus-within .correo-linea {
+    transform: scaleX(1);
+}
+
+/* Opciones del correo superpuestas en el centro */
+.correo-opciones {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-8);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.correo:hover .correo-opciones,
+.correo:focus-within .correo-opciones {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.aviso-copiado {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .correo-hover {
+  .correo-linea,
+  .correo-opciones {
     transition: none;
+  }
+}
+
+/* Sin hover, las opciones quedan visibles debajo del correo */
+@media (hover: none), (max-width: 768px) {
+  .correo-opciones {
+    position: static;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-top: var(--space-16);
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
@@ -76,10 +131,35 @@ footer {
     gap: var(--space-16);
 }
 
-.hook-texto {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-16);
+/* Botón de la llamada más grande en celular */
+@media (max-width: 768px) {
+  .btn-llamada {
+    --btn-height: 44px;
+    font-size: var(--text-base);
+  }
 }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.correo-copiar').forEach((boton) => {
+    const aviso = boton.closest('.correo')?.querySelector('.aviso-copiado')
+    const textoOriginal = boton.textContent
+    let espera: number | undefined
+
+    boton.addEventListener('click', async () => {
+      const correo = boton.dataset.correo ?? ''
+      try {
+        await navigator.clipboard.writeText(correo)
+        boton.textContent = 'email copiado'
+        if (aviso) aviso.textContent = 'Email copiado'
+      } catch {
+        boton.textContent = 'no se pudo copiar'
+      }
+      window.clearTimeout(espera)
+      espera = window.setTimeout(() => {
+        boton.textContent = textoOriginal
+        if (aviso) aviso.textContent = ''
+      }, 2000)
+    })
+  })
+</script>
