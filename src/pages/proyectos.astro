@@ -53,14 +53,13 @@ const proyectos = await getCollection('proyectos')
     display: grid;
     grid-template-columns: 1fr;
     column-gap: 40px;
-    row-gap: var(--space-16);
+    row-gap: var(--espacio-tarjetas);
   }
 
   @media (min-width: 769px) {
     .grilla-proyectos {
       grid-template-columns: repeat(2, 1fr);
       column-gap: 40px;
-      row-gap: var(--espacio-tarjetas);
     }
   }
 
@@ -68,7 +67,6 @@ const proyectos = await getCollection('proyectos')
     .grilla-proyectos {
       grid-template-columns: repeat(3, 1fr);
       column-gap: 40px;
-      row-gap: var(--espacio-tarjetas);
     }
   }
 
@@ -76,7 +74,6 @@ const proyectos = await getCollection('proyectos')
     .grilla-proyectos {
       grid-template-columns: repeat(3, 1fr);
       column-gap: var(--space-48);
-      row-gap: var(--espacio-tarjetas);
     }
   }
 
