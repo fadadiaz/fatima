@@ -1,0 +1,75 @@
+---
+import Layout from '../layouts/Layout.astro'
+import NavSecundario from '../components/NavSecundario.astro'
+import Footer from '../components/Footer.astro'
+import { especialidades } from '../data/especialidades'
+---
+
+<Layout
+  titulo="Especialidades - Fátima Díaz"
+  descripcion="Identidad visual, diseño web, diseño editorial y herramientas digitales. Disponible para trabajo full-time, remoto o híbrido."
+>
+  <NavSecundario />
+  <main class="margin-main">
+    <header class="max-width min-padding">
+      <div class="subtitulo">
+        <h1>especialidades</h1>
+      </div>
+    </header>
+    <div class="especialidades max-width min-padding">
+      {especialidades.map((especialidad) => (
+        <section id={especialidad.id} class="especialidad grid-12" aria-labelledby={`${especialidad.id}-titulo`}>
+          <h2 id={`${especialidad.id}-titulo`} class="col" style="--start: 1; --end: 6;">
+            {especialidad.nombre.toLowerCase()}
+          </h2>
+          <div class="especialidad-contenido col" style="--start: 6; --end: 13;">
+            <p>{especialidad.descripcion}</p>
+            <p>Por ejemplo: {especialidad.ejemplo}</p>
+            <ul class="especialidad-etiquetas">
+              {especialidad.etiquetas.map((etiqueta) => (
+                <li><span class="btn-tag bg-pink">{etiqueta}</span></li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ))}
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .especialidades {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-64);
+  }
+
+  /* Las anclas quedan debajo del menú fijo */
+  .especialidad {
+    scroll-margin-top: 136px;
+  }
+
+  .especialidad h2 {
+    font-size: clamp(var(--text-2-5xl), 5vw, var(--text-4xl));
+  }
+
+  .especialidad-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+  }
+
+  .especialidad-etiquetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+    list-style: none;
+  }
+
+  @media (max-width: 768px) {
+    .especialidades {
+      gap: var(--space-48);
+    }
+  }
+</style>

@@ -9,62 +9,7 @@ import { Image } from 'astro:assets'
 import emojiPin from '../assets/emojis/emoji_u1f4cd_3d.png'
 import emojiComputadora from '../assets/emojis/emoji_u1f4bb_3d.png'
 import emojiBirrete from '../assets/emojis/emoji_u1f393_3d.png'
-
-const areas = [
-  { 
-    texto: "Identidad visual", 
-    tags: [
-      { texto: "Branding" },
-      { texto: "Rediseño de marca" },
-      { texto: "Kit para redes" },
-      { texto: "Papelería corporativa" },
-      { texto: "Etiquetas y packaging" },
-      { texto: "Presentaciones" },
-      { texto: "Manual de marca" },
-      { texto: "Paleta de colores" },
-    ]
-  },
-  { 
-    texto: "Diseño web", 
-    tags: [
-      { texto: "Landing pages" },
-      { texto: "WordPress" },
-      { texto: "Tiendas online" },
-      { texto: "Notion" },
-      { texto: "Portfolios" },
-      { texto: "Menú digital" },
-      { texto: "Figma a código" },
-      { texto: "UI Design" },
-      { texto: "Rediseño web" },
-      { texto: "Mantenimiento web" },
-    ]
-  },
-  {
-    texto: "Diseño editorial",
-    tags: [
-      { texto: "Revistas" },
-      { texto: "Libros" },
-      { texto: "Afiches" },
-      { texto: "Folletos" },
-      { texto: "Maquetación" },
-      { texto: "Preprensa" },
-    ]
-  },
-  {
-    texto: "Herramientas digitales",
-    tags: [
-      { texto: "Automatización" },
-      { texto: "Formularios inteligentes" },
-      { texto: "Apps a medida" },
-      { texto: "Gestión de clientes" },
-      { texto: "AppSheet" },
-      { texto: "Apps Script" },
-      { texto: "Google Workspace" },
-      { texto: "Generación de documentos" },
-      { texto: "Control de stock" },
-    ]
-  },
-]
+import { especialidades } from '../data/especialidades'
 ---
 
 <Layout>
@@ -78,9 +23,14 @@ const areas = [
     <section id="areas" data-cursor="/cursor-proyectos.gif" class="font-grotesk max-width min-padding">
       <div class="subtitulo">
         <h2>Especialidades</h2>
+        <a class="btn btn-pink" href="/especialidades">Ver todas<i class="fi fi-rs-eye"></i></a>
       </div>
-      {areas.map((area) => (
-        <AreaItem texto={area.texto} tags={area.tags} />
+      {especialidades.map((area) => (
+        <AreaItem
+          texto={area.nombre}
+          href={`/especialidades#${area.id}`}
+          tags={area.etiquetas.map((texto) => ({ texto }))}
+        />
       ))}
     </section>
     <section id="slider-proyectos">

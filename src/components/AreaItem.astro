@@ -54,7 +54,12 @@ const Contenedor = href ? 'a' : 'div'
   data-config={JSON.stringify(configEtiquetas)}
   data-config-movil={JSON.stringify(configEtiquetasMovil)}
 >
-  <Contenedor class="areas-trigger center-h" href={href} tabindex={href ? undefined : 0}>
+  <Contenedor
+    class="areas-trigger center-h"
+    href={href}
+    tabindex={href ? undefined : 0}
+    aria-label={href ? `${texto.toLowerCase()}, ver detalle en especialidades` : undefined}
+  >
     <span class="areas-categoria minusculas">{texto}</span>
     <ul class="tag-item">
       {tags.map((tag: Tag, i: number) => (
@@ -78,6 +83,11 @@ const Contenedor = href ? 'a' : 'div'
     min-height: fit-content;
     justify-content: center;
     flex-direction: column;
+  }
+
+  /* Con enlace, toda el área es clickeable */
+  .areas-trigger[href] {
+    align-self: stretch;
   }
 
   .tag-item {
