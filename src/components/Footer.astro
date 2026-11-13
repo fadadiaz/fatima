@@ -125,14 +125,14 @@ footer {
 }
 
 /* Escritorio: el correo es un botón que abre las opciones */
-@media (hover: hover) {
+@media (hover: hover) and (min-width: 769px) {
   .correo-enlace {
     display: none;
   }
 }
 
 /* Celular: el correo es un enlace y las opciones quedan visibles debajo */
-@media (hover: none) {
+@media (max-width: 768px), (hover: none) {
   .correo-boton {
     display: none;
   }
@@ -176,6 +176,9 @@ footer {
 </style>
 
 <script>
+  // Escritorio: hover y más de 768px, igual que en AreaItem
+  const escritorio = window.matchMedia('(hover: hover) and (min-width: 769px)')
+
   document.querySelectorAll<HTMLElement>('.correo').forEach((bloque) => {
     const boton = bloque.querySelector<HTMLButtonElement>('.correo-boton')
     const escribir = bloque.querySelector<HTMLAnchorElement>('.correo-escribir')
@@ -207,7 +210,14 @@ footer {
       if (abierto() && !bloque.contains(e.target as Node)) marcar(false)
     })
 
-    escribir.addEventListener('click', () => marcar(false))
+    escribir.addEventListener('click', () => {
+      if (escritorio.matches) marcar(false)
+    })
+
+    // Al pasar a celular, las opciones dejan de depender del estado abierto
+    escritorio.addEventListener('change', (e) => {
+      if (!e.matches) marcar(false)
+    })
 
     copiar.addEventListener('click', async () => {
       try {
@@ -221,7 +231,7 @@ footer {
       espera = window.setTimeout(() => {
         copiar.textContent = textoCopiar
         if (aviso) aviso.textContent = ''
-        marcar(false)
+        if (escritorio.matches) marcar(false)
       }, 2000)
     })
   })
