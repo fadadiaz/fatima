@@ -29,7 +29,7 @@ const proyectos = await getCollection('proyectos')
               src={proyecto.data.portada}
               alt={proyecto.data.titulo}
               widths={[450, 900]}
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width: 599px) 100vw, (max-width: 1023px) 50vw, 33vw"
               loading="lazy"
             />
           </div>
@@ -45,6 +45,29 @@ const proyectos = await getCollection('proyectos')
 </Layout>
 
 <style>
+  /* Grilla de tarjetas: 3 columnas en escritorio, 2 en tablet y 1 en celular.
+     Los espacios entre tarjetas son los de .grid-12 */
+  .grilla-proyectos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grilla-proyectos .proyecto-card {
+    grid-column: auto;
+  }
+
+  @media (max-width: 1023px) {
+    .grilla-proyectos {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 599px) {
+    .grilla-proyectos {
+      grid-template-columns: 1fr;
+    }
+  }
+
   .proyecto-card {
       display: flex;
       flex-direction: column;

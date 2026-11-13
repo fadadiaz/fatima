@@ -96,6 +96,27 @@ const id = `menu-${Math.random().toString(36).slice(2, 8)}`
     align-self: flex-end;
   }
 
+  /* Área táctil de 44px sin cambiar el aspecto: .btn-alt no usa corchetes,
+     así que el ::before queda libre para ampliar la zona que recibe el toque */
+  .btn-burger,
+  .btn-cerrar {
+    position: relative;
+  }
+
+  .btn-alt.btn-burger::before,
+  .btn-alt.btn-burger:hover::before,
+  .btn-alt.btn-cerrar::before,
+  .btn-alt.btn-cerrar:hover::before {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: var(--btn-height-movil);
+    transform: translateY(-50%);
+  }
+
   @media (min-width: 768px) {
     .btn-burger { display: none; }
     .menu-mobile { display: none !important; }

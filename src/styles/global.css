@@ -39,6 +39,7 @@
   --max-width-5-col: 552px;
 
   --btn-height: 2rem;
+  --btn-height-movil: 2.75rem; /* 44px, área táctil mínima */
 }
 
 *, *::before, *::after {
@@ -221,6 +222,13 @@ button {
   gap: 0;
   padding-inline: var(--space-4);
   min-height: auto;
+}
+
+/* Alto táctil de los botones en celular; .btn-alt conserva su alto */
+@media (max-width: 768px), (hover: none) {
+  .btn:not(.btn-alt) {
+    min-height: var(--btn-height-movil);
+  }
 }
 
 /* BOTON RELLENO */
