@@ -1,13 +1,22 @@
+---
+const asunto = encodeURIComponent('Quiero agendar una llamada')
+const cuerpo = encodeURIComponent('Hola Fátima, me gustaría agendar una llamada.')
+const mailtoLlamada = `mailto:hola@fatima.com.ar?subject=${asunto}&body=${cuerpo}`
+---
+
 <footer id="contacto" class="bg-green min-padding h-80">
 
   <div class="hook">
-    <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
-    <p class="font-alt">¡Escribime!</p>
+    <div class="hook-texto">
+      <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
+      <a class="btn btn-fill" href={mailtoLlamada}>Agendá una llamada</a>
+    </div>
+    <p class="font-alt">¡Hablemos!</p>
   </div>
   <div class="correo">
     <a class="correo-link" href="mailto:hola@fatima.com.ar">
       <img class="correo-default" alt="hola@fatima.com.ar" src="/correo-link.svg">
-      <img class="correo-hover" alt="hola@fatima.com.ar" src="/correo-link-sub.svg">
+      <img class="correo-hover" alt="" aria-hidden="true" src="/correo-link-sub.svg">
     </a>
   </div>
 
@@ -24,25 +33,35 @@ footer {
 }
 
 .correo-link {
+    display: block;
+    position: relative;
     width: 100%;
 }
 
+/* Subrayado que se revela de izquierda a derecha sobre el correo */
 .correo-hover {
-  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.5s ease;
 }
 
-.correo-link:hover .correo-default {
-  display: none;
+.correo-link:hover .correo-hover,
+.correo-link:focus-visible .correo-hover {
+  clip-path: inset(0 0 0 0);
 }
 
-.correo-link:hover .correo-hover {
-  display: block;
+@media (prefers-reduced-motion: reduce) {
+  .correo-hover {
+    transition: none;
+  }
 }
 
 .hook {
     font-family: var(--font-grotesk);
     font-size: var(--text-2xl);
-    line-height: var(--text-2xl); 
+    line-height: var(--text-2xl);
     flex-wrap: wrap;
 }
 
@@ -54,6 +73,13 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    gap: var(--space-16);
+}
+
+.hook-texto {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     gap: var(--space-16);
 }
 </style>
