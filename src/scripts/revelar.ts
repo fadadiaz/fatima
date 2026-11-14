@@ -2,13 +2,17 @@
 // Todos los párrafos del bloque comparten un único progreso: las palabras se
 // revelan en una sola secuencia, en orden de lectura. Con data-reveal="intro",
 // al entrar en pantalla se revelan solas y después el scroll toma el control.
+// Con data-reveal-salida, además se atenúan al salir por el borde superior.
 
 const OPACIDAD_MINIMA = 0.15
 // Cuántas palabras abarca la transición de atenuada a visible
 const SUAVIDAD = 4
-// El progreso arranca cuando el bloque llega al 85% de la ventana y termina cuando su final llega al 55%
+// Entrada: arranca cuando el bloque llega al 85% de la ventana y termina cuando su final llega al 55%
 const INICIO = 0.85
 const FIN = 0.55
+// Salida: arranca cuando el bloque sube al 35% de la ventana y termina cuando su final llega al 5%
+const SALIDA_INICIO = 0.35
+const SALIDA_FIN = 0.05
 const DURACION_INTRO = 1500
 
 interface Adjunto {
@@ -21,10 +25,11 @@ interface Bloque {
   palabras: HTMLElement[]
   adjuntos: Adjunto[]
   intro: boolean
+  salida: boolean
   introPendiente: boolean
   inicioIntro: number | null
-  // Final del bloque cuando su sección ocupa la pantalla: en esa posición cuenta como revelado
-  finEnReposo: number
+  // Sección del bloque: cuando ocupa la pantalla, el bloque está en reposo y se ve completo
+  seccion: Element
 }
 
 // Divide el texto en palabras sin tocar los elementos internos (imágenes, enlaces)
@@ -73,9 +78,15 @@ function partir(contenedor: HTMLElement) {
 const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
 const bloques: Bloque[] = []
 
-function opacidad(avance: number, i: number) {
-  const parte = Math.min(1, Math.max(0, (avance - i) / SUAVIDAD))
-  return OPACIDAD_MINIMA + (1 - OPACIDAD_MINIMA) * parte
+// Cuánto avanzó la palabra i en una secuencia (0 a 1), con transición entre vecinas
+const parte = (avance: number, i: number) => Math.min(1, Math.max(0, (avance - i) / SUAVIDAD))
+
+const limitar = (valor: number) => Math.min(1, Math.max(0, valor))
+
+// La opacidad final es la más baja entre la entrada por abajo y la salida por arriba
+function opacidad(entrada: number, salida: number, i: number) {
+  const visible = Math.min(parte(entrada, i), 1 - parte(salida, i))
+  return OPACIDAD_MINIMA + (1 - OPACIDAD_MINIMA) * visible
 }
 
 let pendiente = false
@@ -87,9 +98,22 @@ function actualizar(ahora: number) {
 
   bloques.forEach((bloque) => {
     const caja = bloque.contenedor.getBoundingClientRect()
+    const seccion = bloque.seccion.getBoundingClientRect()
+    // Posición del bloque cuando su sección ocupa la pantalla
+    const arribaEnReposo = caja.top - seccion.top
+    const abajoEnReposo = caja.bottom - seccion.top
+
     const inicio = alto * INICIO
-    const fin = bloque.intro ? Math.max(alto * FIN, bloque.finEnReposo) : alto * FIN
-    let progreso = Math.min(1, Math.max(0, (inicio - caja.top) / (inicio - fin + caja.height)))
+    const fin = bloque.intro ? Math.max(alto * FIN, abajoEnReposo) : alto * FIN
+    let progreso = limitar((inicio - caja.top) / (inicio - fin + caja.height))
+
+    // Salida por arriba; nunca empieza antes de dejar la posición de reposo
+    let progresoSalida = 0
+    if (bloque.salida) {
+      const inicioSalida = Math.min(alto * SALIDA_INICIO, arribaEnReposo)
+      const finSalida = alto * SALIDA_FIN
+      progresoSalida = limitar((inicioSalida - caja.top) / (inicioSalida - finSalida + caja.height))
+    }
 
     // Revelado automático al entrar en pantalla; después manda el scroll
     if (bloque.introPendiente && caja.top < alto) {
@@ -104,17 +128,19 @@ function actualizar(ahora: number) {
       else bloque.inicioIntro = null
     }
 
-    const avance = progreso * (bloque.palabras.length + SUAVIDAD)
+    const largo = bloque.palabras.length + SUAVIDAD
+    const avance = progreso * largo
+    const avanceSalida = progresoSalida * largo
     bloque.palabras.forEach((palabra, i) => {
-      palabra.style.opacity = String(opacidad(avance, i))
+      palabra.style.opacity = String(opacidad(avance, avanceSalida, i))
     })
     bloque.adjuntos.forEach(({ elemento, indice }) => {
-      elemento.style.opacity = String(opacidad(avance, indice))
+      elemento.style.opacity = String(opacidad(avance, avanceSalida, indice))
     })
 
     bloque.contenedor.classList.toggle(
       'revelado',
-      progreso >= 1 && bloque.inicioIntro === null && !bloque.introPendiente
+      progreso >= 1 && progresoSalida <= 0 && bloque.inicioIntro === null && !bloque.introPendiente
     )
   })
 
@@ -131,16 +157,15 @@ if (!movimientoReducido.matches) {
   document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((contenedor) => {
     const { palabras, adjuntos } = partir(contenedor)
     const intro = contenedor.dataset.reveal === 'intro'
-    const seccion = contenedor.closest('section') ?? contenedor
     bloques.push({
       contenedor,
       palabras,
       adjuntos,
       intro,
+      salida: contenedor.hasAttribute('data-reveal-salida'),
       introPendiente: intro,
       inicioIntro: null,
-      finEnReposo:
-        contenedor.getBoundingClientRect().bottom - seccion.getBoundingClientRect().top,
+      seccion: contenedor.closest('section') ?? contenedor,
     })
     contenedor.classList.add('reveal-activo')
   })
