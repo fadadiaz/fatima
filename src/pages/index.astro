@@ -76,8 +76,8 @@ const areas = [
   <NavSecundario flotante={true} />
   <main>
     <section id="hero" class="font-grotesk max-width min-padding h-100 center-h">
-      <p data-cursor="/cursor-yo.png">¡Hola! Soy Fátima, diseñadora en <Image class="emoji emoji-pin" src={emojiPin} width={42} height={42} densities={[1, 2]} loading="eager" alt="" aria-hidden="true" /> Buenos Aires. Diseño marcas, publicaciones, páginas web y <Image class="emoji" src={emojiComputadora} width={42} height={42} densities={[1, 2]} loading="eager" alt="" aria-hidden="true" /> automatizo tareas diarias. Estoy terminando <Image class="emoji" src={emojiBirrete} width={42} height={42} densities={[1, 2]} loading="eager" alt="" aria-hidden="true" /> Diseño y Comunicación Visual.</p>
-      <a class="btn btn-pink" href="/sobre-mi">Más sobre mí</a>
+      <p data-cursor="/cursor-yo.png" data-reveal="intro">¡Hola! Soy Fátima, diseñadora en <Image class="emoji emoji-pin" src={emojiPin} width={42} height={42} densities={[1, 2]} loading="eager" alt="" aria-hidden="true" /> Buenos Aires. Diseño marcas, publicaciones, páginas web y <Image class="emoji" src={emojiComputadora} width={42} height={42} densities={[1, 2]} loading="eager" alt="" aria-hidden="true" /> automatizo tareas diarias. Estoy terminando <Image class="emoji" src={emojiBirrete} width={42} height={42} densities={[1, 2]} loading="eager" alt="" aria-hidden="true" /> Diseño y Comunicación Visual.</p>
+      <a class="btn btn-pink hero-boton" href="/sobre-mi">Más sobre mí</a>
     </section>
     <section id="areas" data-cursor="/cursor-proyectos.gif" class="font-grotesk max-width min-padding">
       <div class="subtitulo">
@@ -127,6 +127,19 @@ const areas = [
     vertical-align: 0.1em;
   }
 
+  /* "Más sobre mí" aparece cuando la presentación terminó de revelarse */
+  .hero-boton {
+    transition: opacity 0.4s ease, visibility 0s linear 0s;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) #hero p:not(.revelado) + .hero-boton {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+    }
+  }
+
   /* Las etiquetas cortadas por el borde no generan scroll horizontal */
   #areas {
     overflow-x: clip;
@@ -155,6 +168,8 @@ const areas = [
 </style>
 
 <script>
+  import '../scripts/revelar'
+
   const headerHome = document.querySelector('.header-home') as HTMLElement
   const navFlotante = document.querySelector('.nav-flotante') as HTMLElement
 

@@ -166,6 +166,9 @@ const slides = proyectos.flatMap((proyecto) => {
     })
     contenedor.addEventListener('pointerleave', (e) => {
       if (e.pointerType === 'mouse') encima = false
+      // Un arrastre corto que termina afuera no recibe pointerup: se da por terminado
+      if (arrastrando && !contenedor.hasPointerCapture(e.pointerId)) soltar(e)
+      enfocado = false
     })
 
     contenedor.addEventListener('pointerdown', (e) => {
@@ -198,7 +201,9 @@ const slides = proyectos.flatMap((proyecto) => {
       }
     })
 
-    const soltar = (e: PointerEvent) => {
+    function soltar(e: PointerEvent) {
+      // El foco que deja el clic o el toque no pausa el slider
+      enfocado = false
       if (!arrastrando || e.pointerId !== punteroId) return
       arrastrando = false
       punteroId = null
@@ -225,10 +230,12 @@ const slides = proyectos.flatMap((proyecto) => {
 
     contenedor.addEventListener('dragstart', (e) => e.preventDefault())
 
-    // El foco de teclado frena el carril y trae la imagen enfocada a la vista
+    // Solo el foco de teclado frena el carril y trae la imagen enfocada a la vista
     contenedor.addEventListener('focusin', (e) => {
+      const objetivo = e.target as HTMLElement
+      if (!objetivo.matches(':focus-visible')) return
       enfocado = true
-      const slide = (e.target as HTMLElement).closest<HTMLElement>('.slide')
+      const slide = objetivo.closest<HTMLElement>('.slide')
       if (!slide) return
       const izquierda = slide.offsetLeft + posicion
       const derecha = izquierda + slide.offsetWidth

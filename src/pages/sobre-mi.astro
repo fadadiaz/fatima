@@ -19,7 +19,7 @@ import Footer from '../components/Footer.astro'
         <img src="/fatima-bio.png" class="col" style="--start: 1; --end: 5; grid-row: 1 / 3;" alt="Foto de Fátima sonriendo con remera negra y pantalón rosa, en un patio cerrado, con un arbol rosa de fondo.">
       <article class="col" style="--start: 5; --end: 13; display: contents;  ">
         <h2 class="col" style="--start: 5; --end: 13; grid-row: 1;" >Soy Fátima, diseñadora gráfica y web en Buenos Aires, y estoy terminando Diseño y Comunicación Visual en la&nbsp;UNLa</h2>
-        <div class="bio-cuerpo col" style="--start: 8; --end: 13; grid-row: 2;">
+        <div class="bio-cuerpo col" style="--start: 8; --end: 13; grid-row: 2;" data-reveal>
           <p>Me especializo en identidad visual, diseño web y herramientas digitales. Lo que más me gusta es encontrarle la vuelta a las cosas; que la información se entienda mejor, que una tarea del día a día sea más simple y saber que eso le facilitó el trabajo a alguien.</p>
           <p>Diseño desde chica. Empecé haciendo fan edits en Photoscape y armando mis primeras páginas web en Palimpalem, y diseñando blogs en Blogger. Cada semana se me ocurría un proyecto nuevo, solo para tener una excusa de diseñar una página web, y después el proyecto quedaba ahí. Hoy sigo siendo la que siempre tiene una herramienta para todo y, si no existe, la creo.</p>
           <p>No veo una película sin registrarla en Letterboxd, y sueño con conocer todas las provincias de Argentina. También estoy empezando una colección de etiquetas de frutas que no tuvo mucho éxito.</p>
@@ -42,10 +42,6 @@ import Footer from '../components/Footer.astro'
     gap: var(--space-16);
   }
 
-  .bio-cuerpo :global(.palabra) {
-    transition: opacity 0.15s linear;
-  }
-
   .bio h2 {
     text-transform: inherit;
     bottom: var(--space-32);
@@ -53,56 +49,5 @@ import Footer from '../components/Footer.astro'
 </style>
 
 <script>
-  // Las palabras de cada párrafo se revelan en orden de lectura según su avance en pantalla
-  const OPACIDAD_MINIMA = 0.15
-  // Cuántas palabras abarca la transición de atenuada a visible
-  const SUAVIDAD = 4
-
-  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
-
-  if (!movimientoReducido.matches) {
-    const parrafos = [...document.querySelectorAll<HTMLElement>('.bio-cuerpo p')].map((parrafo) => {
-      const palabras = (parrafo.textContent ?? '').trim().split(/\s+/)
-      parrafo.replaceChildren()
-      const marcas = palabras.map((palabra, i) => {
-        const marca = document.createElement('span')
-        marca.className = 'palabra'
-        marca.textContent = palabra
-        parrafo.append(marca)
-        if (i < palabras.length - 1) parrafo.append(' ')
-        return marca
-      })
-      return { parrafo, marcas }
-    })
-
-    let pendiente = false
-
-    const actualizar = () => {
-      pendiente = false
-      const alto = window.innerHeight
-      // Empieza cuando el párrafo entra por abajo y termina cuando su final pasa la mitad de la pantalla
-      const inicio = alto * 0.85
-      const fin = alto * 0.45
-
-      parrafos.forEach(({ parrafo, marcas }) => {
-        const caja = parrafo.getBoundingClientRect()
-        const progreso = Math.min(1, Math.max(0, (inicio - caja.top) / (inicio - fin + caja.height)))
-        const avance = progreso * (marcas.length + SUAVIDAD)
-        marcas.forEach((marca, i) => {
-          const parte = Math.min(1, Math.max(0, (avance - i) / SUAVIDAD))
-          marca.style.opacity = String(OPACIDAD_MINIMA + (1 - OPACIDAD_MINIMA) * parte)
-        })
-      })
-    }
-
-    const pedir = () => {
-      if (pendiente) return
-      pendiente = true
-      requestAnimationFrame(actualizar)
-    }
-
-    window.addEventListener('scroll', pedir, { passive: true })
-    window.addEventListener('resize', pedir)
-    actualizar()
-  }
+  import '../scripts/revelar'
 </script>

@@ -60,6 +60,13 @@ html {
   }
 }
 
+/* Texto con data-reveal: atenuado hasta que el script divide las palabras, sin destello al cargar */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal]:not(.reveal-activo) {
+    opacity: 0.15;
+  }
+}
+
 body {
   background-color: var(--fa-white);
   color: var(--fa-black);

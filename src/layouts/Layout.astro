@@ -22,6 +22,8 @@ const imagenUrl = new URL(imagen, Astro.site)
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <!-- Marca que hay JavaScript, para preparar efectos sin destellos al cargar -->
+    <script is:inline>document.documentElement.classList.add('js')</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{titulo}</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
