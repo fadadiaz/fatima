@@ -170,9 +170,9 @@ const areas = [
 <script>
   import '../scripts/revelar'
 
-  // Al bajar, el flotante entra con el borde inferior del encabezado en este valor o menos, en px
+  // Borde inferior del encabezado para la entrada al bajar, en px
   const ENTRADA = 80
-  // Al subir, el flotante sale con el borde inferior del encabezado por encima de este valor, en px
+  // Borde inferior del encabezado para la salida al subir, en px
   const SALIDA = -160
 
   const headerHome = document.querySelector<HTMLElement>('.header-home')
@@ -205,7 +205,7 @@ const areas = [
     aplicar(anterior <= ENTRADA)
     requestAnimationFrame(() => requestAnimationFrame(() => navFlotante.classList.remove('sin-transicion')))
 
-    // Histéresis por dirección: entre SALIDA y ENTRADA se mantiene el estado
+    // Histéresis según la dirección del scroll
     const actualizar = () => {
       pendiente = false
       const borde = headerHome.getBoundingClientRect().bottom

@@ -57,7 +57,7 @@ const actual = (destino: string) =>
     pointer-events: none;
   }
 
-  /* Orden de entrada; la salida va al revés */
+  /* Orden de entrada */
   .nav-flotante .nav-alt-full { --n: 5; }
   .nav-flotante .nav-alt-full > a[href="/proyectos"] { --i: 0; }
   .nav-flotante .nav-alt-full > a[href="/sobre-mi"] { --i: 1; }
@@ -68,7 +68,7 @@ const actual = (destino: string) =>
   .nav-flotante .nav-alt-mobile > a[href="/"] { --i: 0; }
   .nav-flotante .nav-alt-mobile > :global(.btn-burger) { --i: 1; }
 
-  /* Salida: sube y se desvanece; al terminar vuelve abajo, listo para entrar */
+  /* Salida */
   .nav-flotante .nav-alt-full > a,
   .nav-flotante .nav-alt-mobile > a,
   .nav-flotante .nav-alt-mobile > :global(.btn-burger) {
@@ -82,7 +82,7 @@ const actual = (destino: string) =>
       transform 0s linear calc(var(--demora-salida) + var(--duracion-salida));
   }
 
-  /* Entrada: sube desde abajo y aparece */
+  /* Entrada */
   .nav-flotante.is-visible .nav-alt-full > a,
   .nav-flotante.is-visible .nav-alt-mobile > a,
   .nav-flotante.is-visible .nav-alt-mobile > :global(.btn-burger) {
