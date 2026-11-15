@@ -170,20 +170,76 @@ const areas = [
 <script>
   import '../scripts/revelar'
 
-  const headerHome = document.querySelector('.header-home') as HTMLElement
-  const navFlotante = document.querySelector('.nav-flotante') as HTMLElement
+  // Curva de todas las variantes de entrada del menú flotante
+  const CURVA = 'cubic-bezier(0.22, 1, 0.36, 1)'
+  // 1, caída suave: duración de la entrada, en ms
+  const CAIDA_ENTRADA = 450
+  // 1, caída suave: duración de la salida, en ms
+  const CAIDA_SALIDA = 250
+  // 1, caída suave: distancia desde la que baja (100% es el alto del menú)
+  const CAIDA_DISTANCIA = '100%'
+  // 2, persiana: duración de la entrada, en ms
+  const PERSIANA_ENTRADA = 450
+  // 2, persiana: duración de la salida, en ms
+  const PERSIANA_SALIDA = 250
+  // 3, links escalonados: duración de la entrada de cada link, en ms
+  const LINKS_ENTRADA = 400
+  // 3, links escalonados: duración de la salida, en ms
+  const LINKS_SALIDA = 200
+  // 3, links escalonados: distancia desde la que sube cada link
+  const LINKS_DISTANCIA = '8px'
+  // 3, links escalonados: retraso entre un link y el siguiente, en ms
+  const LINKS_RETRASO = 60
+
+  const VARIANTES: Record<string, { entrada: number; salida: number; distancia: string; retraso: number }> = {
+    '1': { entrada: CAIDA_ENTRADA, salida: CAIDA_SALIDA, distancia: CAIDA_DISTANCIA, retraso: 0 },
+    '2': { entrada: PERSIANA_ENTRADA, salida: PERSIANA_SALIDA, distancia: '0px', retraso: 0 },
+    '3': { entrada: LINKS_ENTRADA, salida: LINKS_SALIDA, distancia: LINKS_DISTANCIA, retraso: LINKS_RETRASO },
+  }
+
+  const headerHome = document.querySelector<HTMLElement>('.header-home')
+  const navFlotante = document.querySelector<HTMLElement>('.nav-flotante')
+  // Menú del hero: los links en escritorio, el botón del menú plegable en celular
+  const menusHero = document.querySelectorAll<HTMLElement>('.header-home .nav-full, .header-home .btn-burger')
+  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // Menú inaccesible: fuera del tabulado y oculto para lectores de pantalla
+  const ocultar = (elemento: HTMLElement, oculto: boolean) => {
+    elemento.inert = oculto
+    if (oculto) elemento.setAttribute('aria-hidden', 'true')
+    else elemento.removeAttribute('aria-hidden')
+  }
 
   if (headerHome && navFlotante) {
-    window.addEventListener('scroll', () => {
-      const headerBottom = headerHome.getBoundingClientRect().bottom
-      
-      if (headerBottom > 0) {
-        // header visible — ocultar nav flotante
-        navFlotante.classList.remove('visible')
-      } else {
-        // header fuera de pantalla — mostrar nav flotante
-        navFlotante.classList.add('visible')
-      }
-    }, { passive: true })
+    // Temporal: variante de entrada elegida con ?menu=1, 2 o 3; sin parámetro, la original
+    const id = new URLSearchParams(location.search).get('menu') ?? ''
+    const variante = VARIANTES[id]
+    if (variante && !movimientoReducido) {
+      navFlotante.dataset.animacion = id
+      navFlotante.style.setProperty('--nav-entrada', `${variante.entrada}ms`)
+      navFlotante.style.setProperty('--nav-salida', `${variante.salida}ms`)
+      navFlotante.style.setProperty('--nav-distancia', variante.distancia)
+      navFlotante.style.setProperty('--nav-retraso', `${variante.retraso}ms`)
+      navFlotante.style.setProperty('--nav-curva', CURVA)
+
+      // Orden de entrada del logo y los links en cada fila (escritorio y celular)
+      navFlotante.querySelectorAll('.nav-alt-full, .nav-alt-mobile').forEach((fila) => {
+        const items = [...fila.querySelectorAll<HTMLElement>(':scope > a, :scope > .btn-burger')]
+        items.forEach((item, i) => {
+          item.classList.add('nav-item')
+          item.style.setProperty('--i', String(i))
+        })
+      })
+    }
+
+    // El flotante aparece solo cuando el encabezado completo salió por arriba
+    const actualizar = () => {
+      const visible = headerHome.getBoundingClientRect().bottom <= 0
+      navFlotante.classList.toggle('visible', visible)
+      ocultar(navFlotante, !visible)
+      menusHero.forEach((menu) => ocultar(menu, visible))
+    }
+
+    new IntersectionObserver(actualizar).observe(headerHome)
   }
 </script>

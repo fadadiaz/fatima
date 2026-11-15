@@ -8,7 +8,11 @@ const actual = (destino: string) =>
   ruta === destino ? 'page' : ruta.startsWith(`${destino}/`) ? 'true' : undefined
 ---
 
-<header class={`header-alt min-padding ${flotante ? 'nav-flotante' : bg}`}>
+<header
+  class={`header-alt min-padding ${flotante ? 'nav-flotante' : bg}`}
+  aria-hidden={flotante ? 'true' : undefined}
+  inert={flotante}
+>
   <!-- MOBILE -->
   <div class="nav-alt-mobile">
     <a href="/"><img alt="Texto fátima color negro" src="/logo-fatima.svg"></a>
@@ -37,19 +41,79 @@ const actual = (destino: string) =>
     transition: background-color 0.3s ease;
   }
 
+  /* Menú flotante del inicio: aparece cuando el encabezado sale de la pantalla */
   .nav-flotante {
     position: fixed;
     background-color: transparent;
     opacity: 0;
     visibility: hidden;
-    pointer-events: none;
     transition: opacity 0.15s ease, visibility 0.15s;
   }
 
   .nav-flotante.visible {
     opacity: 1;
     visibility: visible;
-    pointer-events: all;
+  }
+
+  /* Variantes de entrada en prueba (data-animacion); tiempos, distancias y curva vienen del script del inicio */
+
+  /* 1: caída suave */
+  .nav-flotante[data-animacion="1"] {
+    transform: translateY(calc(-1 * var(--nav-distancia)));
+    transition:
+      opacity var(--nav-salida) var(--nav-curva),
+      transform var(--nav-salida) var(--nav-curva),
+      visibility 0s linear var(--nav-salida);
+  }
+
+  .nav-flotante[data-animacion="1"].visible {
+    transform: none;
+    transition:
+      opacity var(--nav-entrada) var(--nav-curva),
+      transform var(--nav-entrada) var(--nav-curva),
+      visibility 0s;
+  }
+
+  /* 2: persiana */
+  .nav-flotante[data-animacion="2"] {
+    opacity: 1;
+    clip-path: inset(0 0 100% 0);
+    transition:
+      clip-path var(--nav-salida) var(--nav-curva),
+      visibility 0s linear var(--nav-salida);
+  }
+
+  .nav-flotante[data-animacion="2"].visible {
+    clip-path: inset(0);
+    transition:
+      clip-path var(--nav-entrada) var(--nav-curva),
+      visibility 0s;
+  }
+
+  /* 3: links escalonados; la barra aparece al instante */
+  .nav-flotante[data-animacion="3"] {
+    opacity: 1;
+    transition: visibility 0s linear var(--nav-salida);
+  }
+
+  .nav-flotante[data-animacion="3"].visible {
+    transition: visibility 0s;
+  }
+
+  .nav-flotante[data-animacion="3"] :global(.nav-item) {
+    opacity: 0;
+    transform: translateY(var(--nav-distancia));
+    transition:
+      opacity var(--nav-salida) var(--nav-curva),
+      transform 0s linear var(--nav-salida);
+  }
+
+  .nav-flotante[data-animacion="3"].visible :global(.nav-item) {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--nav-entrada) var(--nav-curva) calc(var(--i) * var(--nav-retraso)),
+      transform var(--nav-entrada) var(--nav-curva) calc(var(--i) * var(--nav-retraso));
   }
 
   @media (prefers-reduced-motion: reduce) {
