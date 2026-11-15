@@ -3,16 +3,37 @@
 // revelan en una sola secuencia, en orden de lectura. Con data-reveal="intro",
 // al entrar en pantalla se revelan solas y después el scroll toma el control.
 // Con data-reveal-salida, además se atenúan al salir por el borde superior.
+// data-reveal-umbrales elige un juego de umbrales de UMBRALES (por defecto, "general").
+
+// Umbrales de la animación de palabras, en porcentaje de la altura de la ventana (0 arriba, 100 abajo)
+// Valores originales: entradaInicio 85, entradaFin 55, salidaInicio 35, salidaFin 5
+const UMBRALES = {
+  general: {
+    // Parte superior del bloque: empieza a revelarse
+    entradaInicio: 85,
+    // Parte inferior del bloque: termina de revelarse
+    entradaFin: 55,
+    // Parte superior del bloque: empieza a atenuarse
+    salidaInicio: 35,
+    // Parte inferior del bloque: termina de atenuarse
+    salidaFin: 5,
+  },
+  // Presentación del inicio, valores de prueba
+  presentacion: {
+    entradaInicio: 85,
+    entradaFin: 80,
+    salidaInicio: 15,
+    salidaFin: -10,
+  },
+}
+
+type Umbrales = (typeof UMBRALES)['general']
 
 const OPACIDAD_MINIMA = 0.15
 // Cuántas palabras abarca la transición de atenuada a visible
 const SUAVIDAD = 4
-// Entrada: arranca cuando el bloque llega al 85% de la ventana y termina cuando su final llega al 55%
-const INICIO = 0.85
-const FIN = 0.55
-// Salida: arranca cuando el bloque sube al 35% de la ventana y termina cuando su final llega al 5%
-const SALIDA_INICIO = 0.35
-const SALIDA_FIN = 0.05
+// Desde qué visibilidad una palabra cuenta como completa para mostrar los elementos que dependen del texto
+const VISIBLE = 0.99
 const DURACION_INTRO = 1500
 
 interface Adjunto {
@@ -26,6 +47,7 @@ interface Bloque {
   adjuntos: Adjunto[]
   intro: boolean
   salida: boolean
+  umbrales: Umbrales
   introPendiente: boolean
   inicioIntro: number | null
   // Sección del bloque: cuando ocupa la pantalla, el bloque está en reposo y se ve completo
@@ -103,15 +125,17 @@ function actualizar(ahora: number) {
     const arribaEnReposo = caja.top - seccion.top
     const abajoEnReposo = caja.bottom - seccion.top
 
-    const inicio = alto * INICIO
-    const fin = bloque.intro ? Math.max(alto * FIN, abajoEnReposo) : alto * FIN
+    const u = bloque.umbrales
+    const inicio = (alto * u.entradaInicio) / 100
+    const finBase = (alto * u.entradaFin) / 100
+    const fin = bloque.intro ? Math.max(finBase, abajoEnReposo) : finBase
     let progreso = limitar((inicio - caja.top) / (inicio - fin + caja.height))
 
     // Salida por arriba; nunca empieza antes de dejar la posición de reposo
     let progresoSalida = 0
     if (bloque.salida) {
-      const inicioSalida = Math.min(alto * SALIDA_INICIO, arribaEnReposo)
-      const finSalida = alto * SALIDA_FIN
+      const inicioSalida = Math.min((alto * u.salidaInicio) / 100, arribaEnReposo)
+      const finSalida = (alto * u.salidaFin) / 100
       progresoSalida = limitar((inicioSalida - caja.top) / (inicioSalida - finSalida + caja.height))
     }
 
@@ -138,9 +162,12 @@ function actualizar(ahora: number) {
       elemento.style.opacity = String(opacidad(avance, avanceSalida, indice))
     })
 
+    // Revelado: todas las palabras completas (la última por la entrada, la primera por la salida)
+    const ultima = bloque.palabras.length - 1
+    const completo = Math.min(parte(avance, ultima), 1 - parte(avanceSalida, 0)) >= VISIBLE
     bloque.contenedor.classList.toggle(
       'revelado',
-      progreso >= 1 && progresoSalida <= 0 && bloque.inicioIntro === null && !bloque.introPendiente
+      completo && bloque.inicioIntro === null && !bloque.introPendiente
     )
   })
 
@@ -163,6 +190,7 @@ if (!movimientoReducido.matches) {
       adjuntos,
       intro,
       salida: contenedor.hasAttribute('data-reveal-salida'),
+      umbrales: UMBRALES[contenedor.dataset.revealUmbrales as keyof typeof UMBRALES] ?? UMBRALES.general,
       introPendiente: intro,
       inicioIntro: null,
       seccion: contenedor.closest('section') ?? contenedor,
