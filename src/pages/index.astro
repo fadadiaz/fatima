@@ -170,17 +170,22 @@ const areas = [
 <script>
   import '../scripts/revelar'
 
-  // Distancia que el encabezado tiene que haber pasado por arriba para mostrar el flotante, en px
-  const ADELANTO = 160
+  // Píxeles que el borde del encabezado pasa por arriba antes de mostrar el flotante
+  const ADELANTO_ENTRADA = 0
+  // Píxeles por arriba en los que el flotante empieza a ocultarse al subir
+  const ADELANTO_SALIDA = 0
+  // Margen contra parpadeos en el límite, en px
+  const TOLERANCIA = 4
   // Duración de la entrada de cada link, en ms
   const DURACION_ENTRADA = 400
+  // Retraso entre links en la entrada, en ms
+  const RETRASO_ENTRADA = 60
   // Duración de la salida de cada link, en ms
-  const DURACION_SALIDA = 400
-  // Retraso entre un link y el siguiente, en ms
-  const RETRASO = 60
+  const DURACION_SALIDA = 100
+  // Retraso entre links en la salida, en ms
+  const RETRASO_SALIDA = 15
   // Distancia desde la que sube cada link
   const DISTANCIA = '8px'
-  // Curva de la entrada y la salida
   const CURVA = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
   const headerHome = document.querySelector<HTMLElement>('.header-home')
@@ -199,15 +204,15 @@ const areas = [
   if (headerHome && navFlotante) {
     const ms = (valor: number) => `${movimientoReducido ? 0 : valor}ms`
 
-    // Logo y links de cada fila (escritorio y celular): entran en orden y salen en orden inverso
+    // Entrada en orden, salida en orden inverso
     let maxItems = 0
     navFlotante.querySelectorAll('.nav-alt-full, .nav-alt-mobile').forEach((fila) => {
       const items = [...fila.querySelectorAll<HTMLElement>(':scope > a, :scope > .btn-burger')]
       maxItems = Math.max(maxItems, items.length)
       items.forEach((item, i) => {
         item.classList.add('nav-item')
-        item.style.setProperty('--retraso-entrada', ms(i * RETRASO))
-        item.style.setProperty('--retraso-salida', ms((items.length - 1 - i) * RETRASO))
+        item.style.setProperty('--retraso-entrada', ms(i * RETRASO_ENTRADA))
+        item.style.setProperty('--retraso-salida', ms((items.length - 1 - i) * RETRASO_SALIDA))
       })
     })
 
@@ -215,22 +220,23 @@ const areas = [
     navFlotante.style.setProperty('--nav-salida', ms(DURACION_SALIDA))
     navFlotante.style.setProperty('--nav-distancia', DISTANCIA)
     navFlotante.style.setProperty('--nav-curva', CURVA)
-    // La barra se oculta cuando terminó de salir el último link
-    navFlotante.style.setProperty('--nav-fin-salida', ms(DURACION_SALIDA + (maxItems - 1) * RETRASO))
+    navFlotante.style.setProperty('--nav-fin-salida', ms(DURACION_SALIDA + (maxItems - 1) * RETRASO_SALIDA))
 
     let visible: boolean | null = null
     let pendiente = false
 
-    // Estado según la posición del borde inferior del encabezado naranja
     const actualizar = () => {
       pendiente = false
       const borde = headerHome.getBoundingClientRect().bottom
-      const mostrar = borde < -ADELANTO
+      let mostrar = visible ?? false
+      if (borde <= -(ADELANTO_ENTRADA + TOLERANCIA)) mostrar = true
+      else if (borde > -ADELANTO_SALIDA) mostrar = false
 
-      // El flotante nunca se dibuja sobre el encabezado: solo se ve lo que queda por debajo de su borde
+      // Recorte a la parte por debajo del encabezado
       navFlotante.style.clipPath = borde > 0 ? `inset(${borde}px 0 0 0)` : ''
-      // Con el encabezado a la vista, oculto de inmediato
-      navFlotante.classList.toggle('forzado', borde > 0)
+      // Oculto de inmediato si el menú del hero ya asoma
+      const menuHero = [...menusHero].find((menu) => menu.getClientRects().length > 0)
+      navFlotante.classList.toggle('forzado', (menuHero?.getBoundingClientRect().bottom ?? borde) > 0)
 
       if (mostrar === visible) return
       visible = mostrar
