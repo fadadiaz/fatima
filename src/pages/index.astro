@@ -179,12 +179,14 @@ const areas = [
   // Retraso entre links en la entrada, en ms
   const RETRASO_ENTRADA = 60
   // Duración de la salida de cada link, en ms
-  const DURACION_SALIDA = 100
+  const DURACION_SALIDA = 200
   // Retraso entre links en la salida, en ms
-  const RETRASO_SALIDA = 15
+  const RETRASO_SALIDA = 40
   // Distancia desde la que sube cada link
   const DISTANCIA = '8px'
   const CURVA = 'cubic-bezier(0.22, 1, 0.36, 1)'
+  // Orden de entrada; la salida va al revés
+  const ORDEN = ['a[href="/proyectos"]', 'a[href="/sobre-mi"]', 'a[href="/"]', 'a[href="/recursos"]', 'a[href="/contacto"]', '.btn-burger']
 
   const headerHome = document.querySelector<HTMLElement>('.header-home')
   const navFlotante = document.querySelector<HTMLElement>('.nav-flotante')
@@ -202,14 +204,12 @@ const areas = [
   if (headerHome && navFlotante) {
     const ms = (valor: number) => `${movimientoReducido ? 0 : valor}ms`
 
-    // Entra primero el logo en escritorio y el botón del menú en celular; la salida va en orden inverso
     let maxItems = 0
-    navFlotante.querySelectorAll('.nav-alt-full, .nav-alt-mobile').forEach((fila) => {
-      const todos = [...fila.querySelectorAll<HTMLElement>(':scope > a, :scope > .btn-burger')]
-      const primero = fila.classList.contains('nav-alt-full')
-        ? todos.find((item) => item.querySelector('img'))
-        : todos.find((item) => item.classList.contains('btn-burger'))
-      const items = primero ? [primero, ...todos.filter((item) => item !== primero)] : todos
+    const filas = [...navFlotante.querySelectorAll<HTMLElement>('.nav-alt-full, .nav-alt-mobile')]
+    filas.forEach((fila) => {
+      const items = ORDEN
+        .map((selector) => fila.querySelector<HTMLElement>(`:scope > ${selector}`))
+        .filter((item): item is HTMLElement => item !== null)
       maxItems = Math.max(maxItems, items.length)
       items.forEach((item, i) => {
         item.classList.add('nav-item')
@@ -254,10 +254,12 @@ const areas = [
       }
 
       navFlotante.classList.toggle('visible', visible)
-      // Recorte a la parte por debajo del encabezado
+      // Recorte solo de la franja que ya tapa el naranja
       navFlotante.style.clipPath = borde > 0 ? `inset(${borde}px 0 0 0)` : ''
-      // Salida cortada de inmediato si el menú del hero ya asoma
-      navFlotante.classList.toggle('forzado', !visible && bordeMenuHero > 0)
+      // Oculto de golpe solo cuando el naranja ya tapó la fila entera
+      const fila = filas.find((f) => f.getClientRects().length > 0)
+      const bordeFila = fila?.getBoundingClientRect().bottom ?? 0
+      navFlotante.classList.toggle('forzado', !visible && borde >= bordeFila)
 
       // Accesible el menú que se ve: el flotante recién cuando el del hero salió
       const flotanteActivo = visible && bordeMenuHero <= 0
