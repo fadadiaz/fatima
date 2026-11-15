@@ -10,119 +10,44 @@ import MenuMobile from './MenuMobile.astro'
   <div class="logo logo--tablet">
     <img alt="Texto fátima color negro" src="/logo-fatima.svg">
   </div>
+
+  <MenuMobile />
+
   <div class="logo logo--mobile">
     <img alt="fátima" src="/logo-fati.svg">
   </div>
 
+  <nav class="nav-full">
+    <a class="btn btn-pink" href="/proyectos">Proyectos</a>
+    <a class="btn btn-pink" href="/sobre-mi">Sobre mí</a>
+    <a class="btn btn-pink" href="/recursos">Recursos</a>
+    <a class="btn btn-fill" href="/contacto">Contacto<i class="fi fi-rs-arrow-up-right"></i></a>
+  </nav>
+
 </header>
 
-<!-- Menú del inicio: fuera del encabezado para quedar fijo arriba en toda la página -->
-<nav class="nav-home min-padding">
-  <a class="btn btn-pink nav-home-link" href="/proyectos">Proyectos</a>
-  <a class="btn btn-pink nav-home-link" href="/sobre-mi">Sobre mí</a>
-  <a class="nav-home-logo" href="/"><img alt="Texto fátima color negro" width="81" height="25" src="/logo-fatima.svg"></a>
-  <a class="btn btn-pink nav-home-link" href="/recursos">Recursos</a>
-  <a class="btn btn-fill" href="/contacto">Contacto<i class="fi fi-rs-arrow-up-right"></i></a>
-  <MenuMobile />
-</nav>
-
 <style>
-  /* Alto del menú: relleno de 32px arriba y abajo más el alto de los botones */
-  .header-home,
-  .nav-home {
-    --nav-home-alto: calc(2 * var(--space-32) + var(--btn-height));
-  }
-
-  @media (max-width: 768px), (hover: none) {
-    .header-home,
-    .nav-home {
-      --nav-home-alto: calc(2 * var(--space-32) + var(--btn-height-movil));
-    }
-  }
-
   .header-home {
     width: 100%;
     display: flex;
     flex-direction: column;
     padding-block: var(--space-32);
-    justify-content: flex-end;
+    gap: var(--space-48);
+    justify-content: space-between;
     align-items: flex-end;
   }
 
   .logo img { width: 100%; }
   .logo--desktop, .logo--tablet { display: none; }
   .logo--mobile { display: flex; }
-
-  .nav-home {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    width: 100%;
-    height: var(--nav-home-alto);
-    padding-block: var(--space-32);
-    display: flex;
-    align-items: center;
-    gap: var(--space-16);
-    /* Celular: arriba de todo, sobre el encabezado, sin ocupar lugar propio */
-    margin-top: -100vh;
-    margin-top: -100dvh;
-    margin-bottom: calc(100vh - var(--nav-home-alto));
-    margin-bottom: calc(100dvh - var(--nav-home-alto));
-  }
-
-  .nav-home-link { display: none; }
-
-  .nav-home-logo {
-    margin-right: auto;
-  }
-
-  .nav-home-logo img {
-    width: auto;
-    height: var(--space-16);
-  }
-
-  /* Logo chico: aparece cuando el logo grande sale de la pantalla */
-  :global(.js) .nav-home-logo {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.4s ease, visibility 0s linear 0.4s;
-  }
-
-  :global(.js) .nav-home.con-logo .nav-home-logo {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.4s ease, visibility 0s linear 0s;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    :global(.js) .nav-home-logo,
-    :global(.js) .nav-home.con-logo .nav-home-logo {
-      transition: none;
-    }
-  }
+  .nav-full { display: none; }
 
   @media (min-width: 768px) {
-    .header-home {
-      align-items: unset;
-      /* Lugar del menú al pie del encabezado, a 48px del logo */
-      padding-bottom: calc(var(--space-48) + var(--nav-home-alto) - var(--space-32));
-    }
+    .header-home { justify-content: end; align-items: unset; }
     .logo--mobile { display: none; }
     .logo--tablet { display: flex; }
     .logo--desktop { display: none; }
-
-    /* Escritorio: al pie del encabezado, sube con el scroll y queda fijo arriba */
-    .nav-home {
-      justify-content: space-between;
-      gap: var(--space-8);
-      margin-top: calc(-1 * var(--nav-home-alto));
-      margin-bottom: 0;
-    }
-    .nav-home-link { display: flex; }
-
-    /* Logo en el centro, con su lugar reservado aunque esté oculto: los links no se mueven */
-    .nav-home-logo { margin-right: 0; }
-    .nav-home-logo img { height: 25px; }
+    .nav-full { display: flex; justify-content: space-between; gap: 8px; }
   }
 
   @media (min-width: 1440px) {
@@ -130,21 +55,3 @@ import MenuMobile from './MenuMobile.astro'
     .logo--desktop { display: flex; }
   }
 </style>
-
-<script>
-  const nav = document.querySelector<HTMLElement>('.nav-home')
-  const logos = document.querySelectorAll<HTMLElement>('.header-home .logo')
-
-  if (nav && logos.length) {
-    // Solo uno de los logos grandes se muestra por ancho; los ocultos nunca están en pantalla
-    const visibles = new Set<Element>()
-    const observador = new IntersectionObserver((entradas) => {
-      entradas.forEach((entrada) => {
-        if (entrada.isIntersecting) visibles.add(entrada.target)
-        else visibles.delete(entrada.target)
-      })
-      nav.classList.toggle('con-logo', visibles.size === 0)
-    })
-    logos.forEach((logo) => observador.observe(logo))
-  }
-</script>
