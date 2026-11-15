@@ -1,6 +1,6 @@
 ---
 import MenuMobile from './MenuMobile.astro'
-const { flotante = false, bg = 'bg-pink' } = Astro.props
+const { bg = 'bg-pink' } = Astro.props
 const ruta = Astro.url.pathname.replace(/\/$/, '') || '/'
 
 // Página actual: 'page' en la página exacta, 'true' en sus subpáginas
@@ -8,7 +8,7 @@ const actual = (destino: string) =>
   ruta === destino ? 'page' : ruta.startsWith(`${destino}/`) ? 'true' : undefined
 ---
 
-<header class={`header-alt min-padding ${flotante ? 'nav-flotante' : bg}`}>
+<header class={`header-alt min-padding ${bg}`}>
   <!-- MOBILE -->
   <div class="nav-alt-mobile">
     <a href="/"><img alt="Texto fátima color negro" src="/logo-fatima.svg"></a>
@@ -37,24 +37,8 @@ const actual = (destino: string) =>
     transition: background-color 0.3s ease;
   }
 
-  .nav-flotante {
-    position: fixed;
-    background-color: transparent;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.15s ease, visibility 0.15s;
-  }
-
-  .nav-flotante.visible {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: all;
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .header-alt,
-    .nav-flotante {
+    .header-alt {
       transition: none;
     }
   }
@@ -86,14 +70,8 @@ const actual = (destino: string) =>
 <script>
   const header = document.querySelector('.header-alt') as HTMLElement
 
-  // comportamiento scroll en páginas normales
-  if (!header.classList.contains('nav-flotante')) {
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        header.classList.add('transparente')
-      } else {
-        header.classList.remove('transparente')
-      }
-    }, { passive: true })
-  }
+  // Fondo transparente al desplazarse
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('transparente', window.scrollY > 50)
+  }, { passive: true })
 </script>
