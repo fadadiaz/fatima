@@ -170,32 +170,18 @@ const areas = [
 <script>
   import '../scripts/revelar'
 
-  // Curva de todas las variantes de entrada del menú flotante
+  // Distancia que el encabezado tiene que haber pasado por arriba para mostrar el flotante, en px
+  const ADELANTO = 160
+  // Duración de la entrada de cada link, en ms
+  const DURACION_ENTRADA = 400
+  // Duración de la salida de cada link, en ms
+  const DURACION_SALIDA = 400
+  // Retraso entre un link y el siguiente, en ms
+  const RETRASO = 60
+  // Distancia desde la que sube cada link
+  const DISTANCIA = '8px'
+  // Curva de la entrada y la salida
   const CURVA = 'cubic-bezier(0.22, 1, 0.36, 1)'
-  // 1, caída suave: duración de la entrada, en ms
-  const CAIDA_ENTRADA = 450
-  // 1, caída suave: duración de la salida, en ms
-  const CAIDA_SALIDA = 250
-  // 1, caída suave: distancia desde la que baja (100% es el alto del menú)
-  const CAIDA_DISTANCIA = '100%'
-  // 2, persiana: duración de la entrada, en ms
-  const PERSIANA_ENTRADA = 450
-  // 2, persiana: duración de la salida, en ms
-  const PERSIANA_SALIDA = 250
-  // 3, links escalonados: duración de la entrada de cada link, en ms
-  const LINKS_ENTRADA = 400
-  // 3, links escalonados: duración de la salida, en ms
-  const LINKS_SALIDA = 200
-  // 3, links escalonados: distancia desde la que sube cada link
-  const LINKS_DISTANCIA = '8px'
-  // 3, links escalonados: retraso entre un link y el siguiente, en ms
-  const LINKS_RETRASO = 60
-
-  const VARIANTES: Record<string, { entrada: number; salida: number; distancia: string; retraso: number }> = {
-    '1': { entrada: CAIDA_ENTRADA, salida: CAIDA_SALIDA, distancia: CAIDA_DISTANCIA, retraso: 0 },
-    '2': { entrada: PERSIANA_ENTRADA, salida: PERSIANA_SALIDA, distancia: '0px', retraso: 0 },
-    '3': { entrada: LINKS_ENTRADA, salida: LINKS_SALIDA, distancia: LINKS_DISTANCIA, retraso: LINKS_RETRASO },
-  }
 
   const headerHome = document.querySelector<HTMLElement>('.header-home')
   const navFlotante = document.querySelector<HTMLElement>('.nav-flotante')
@@ -211,35 +197,56 @@ const areas = [
   }
 
   if (headerHome && navFlotante) {
-    // Temporal: variante de entrada elegida con ?menu=1, 2 o 3; sin parámetro, la original
-    const id = new URLSearchParams(location.search).get('menu') ?? ''
-    const variante = VARIANTES[id]
-    if (variante && !movimientoReducido) {
-      navFlotante.dataset.animacion = id
-      navFlotante.style.setProperty('--nav-entrada', `${variante.entrada}ms`)
-      navFlotante.style.setProperty('--nav-salida', `${variante.salida}ms`)
-      navFlotante.style.setProperty('--nav-distancia', variante.distancia)
-      navFlotante.style.setProperty('--nav-retraso', `${variante.retraso}ms`)
-      navFlotante.style.setProperty('--nav-curva', CURVA)
+    const ms = (valor: number) => `${movimientoReducido ? 0 : valor}ms`
 
-      // Orden de entrada del logo y los links en cada fila (escritorio y celular)
-      navFlotante.querySelectorAll('.nav-alt-full, .nav-alt-mobile').forEach((fila) => {
-        const items = [...fila.querySelectorAll<HTMLElement>(':scope > a, :scope > .btn-burger')]
-        items.forEach((item, i) => {
-          item.classList.add('nav-item')
-          item.style.setProperty('--i', String(i))
-        })
+    // Logo y links de cada fila (escritorio y celular): entran en orden y salen en orden inverso
+    let maxItems = 0
+    navFlotante.querySelectorAll('.nav-alt-full, .nav-alt-mobile').forEach((fila) => {
+      const items = [...fila.querySelectorAll<HTMLElement>(':scope > a, :scope > .btn-burger')]
+      maxItems = Math.max(maxItems, items.length)
+      items.forEach((item, i) => {
+        item.classList.add('nav-item')
+        item.style.setProperty('--retraso-entrada', ms(i * RETRASO))
+        item.style.setProperty('--retraso-salida', ms((items.length - 1 - i) * RETRASO))
       })
-    }
+    })
 
-    // El flotante aparece solo cuando el encabezado completo salió por arriba
+    navFlotante.style.setProperty('--nav-entrada', ms(DURACION_ENTRADA))
+    navFlotante.style.setProperty('--nav-salida', ms(DURACION_SALIDA))
+    navFlotante.style.setProperty('--nav-distancia', DISTANCIA)
+    navFlotante.style.setProperty('--nav-curva', CURVA)
+    // La barra se oculta cuando terminó de salir el último link
+    navFlotante.style.setProperty('--nav-fin-salida', ms(DURACION_SALIDA + (maxItems - 1) * RETRASO))
+
+    let visible: boolean | null = null
+    let pendiente = false
+
+    // Estado según la posición del borde inferior del encabezado naranja
     const actualizar = () => {
-      const visible = headerHome.getBoundingClientRect().bottom <= 0
-      navFlotante.classList.toggle('visible', visible)
-      ocultar(navFlotante, !visible)
-      menusHero.forEach((menu) => ocultar(menu, visible))
+      pendiente = false
+      const borde = headerHome.getBoundingClientRect().bottom
+      const mostrar = borde < -ADELANTO
+
+      // El flotante nunca se dibuja sobre el encabezado: solo se ve lo que queda por debajo de su borde
+      navFlotante.style.clipPath = borde > 0 ? `inset(${borde}px 0 0 0)` : ''
+      // Con el encabezado a la vista, oculto de inmediato
+      navFlotante.classList.toggle('forzado', borde > 0)
+
+      if (mostrar === visible) return
+      visible = mostrar
+      navFlotante.classList.toggle('visible', mostrar)
+      ocultar(navFlotante, !mostrar)
+      menusHero.forEach((menu) => ocultar(menu, mostrar))
     }
 
-    new IntersectionObserver(actualizar).observe(headerHome)
+    const pedir = () => {
+      if (pendiente) return
+      pendiente = true
+      requestAnimationFrame(actualizar)
+    }
+
+    window.addEventListener('scroll', pedir, { passive: true })
+    window.addEventListener('resize', pedir)
+    actualizar()
   }
 </script>
