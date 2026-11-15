@@ -170,11 +170,9 @@ const areas = [
 <script>
   import '../scripts/revelar'
 
-  // Píxeles que el borde del encabezado pasa por arriba antes de mostrar el flotante
-  const ADELANTO_ENTRADA = 0
-  // Píxeles por arriba en los que el flotante empieza a ocultarse al subir
-  const ADELANTO_SALIDA = 0
-  // Margen contra parpadeos en el límite, en px
+  // Distancia del borde del encabezado al borde superior de la ventana en la que empieza la entrada, en px
+  const ENTRADA_ANTICIPADA = 80
+  // Histéresis contra parpadeos en los límites, en px
   const TOLERANCIA = 4
   // Duración de la entrada de cada link, en ms
   const DURACION_ENTRADA = 400
@@ -204,10 +202,14 @@ const areas = [
   if (headerHome && navFlotante) {
     const ms = (valor: number) => `${movimientoReducido ? 0 : valor}ms`
 
-    // Entrada en orden, salida en orden inverso
+    // Entra primero el logo en escritorio y el botón del menú en celular; la salida va en orden inverso
     let maxItems = 0
     navFlotante.querySelectorAll('.nav-alt-full, .nav-alt-mobile').forEach((fila) => {
-      const items = [...fila.querySelectorAll<HTMLElement>(':scope > a, :scope > .btn-burger')]
+      const todos = [...fila.querySelectorAll<HTMLElement>(':scope > a, :scope > .btn-burger')]
+      const primero = fila.classList.contains('nav-alt-full')
+        ? todos.find((item) => item.querySelector('img'))
+        : todos.find((item) => item.classList.contains('btn-burger'))
+      const items = primero ? [primero, ...todos.filter((item) => item !== primero)] : todos
       maxItems = Math.max(maxItems, items.length)
       items.forEach((item, i) => {
         item.classList.add('nav-item')
@@ -222,27 +224,47 @@ const areas = [
     navFlotante.style.setProperty('--nav-curva', CURVA)
     navFlotante.style.setProperty('--nav-fin-salida', ms(DURACION_SALIDA + (maxItems - 1) * RETRASO_SALIDA))
 
-    let visible: boolean | null = null
+    let visible = false
+    // El encabezado llegó a salir por completo desde que apareció el flotante
+    let salioCompleto = false
+    // La entrada anticipada solo se habilita bajando desde más arriba de su límite
+    let armado = true
+    let activo: boolean | null = null
     let pendiente = false
 
     const actualizar = () => {
       pendiente = false
       const borde = headerHome.getBoundingClientRect().bottom
-      let mostrar = visible ?? false
-      if (borde <= -(ADELANTO_ENTRADA + TOLERANCIA)) mostrar = true
-      else if (borde > -ADELANTO_SALIDA) mostrar = false
+      const menuHero = [...menusHero].find((menu) => menu.getClientRects().length > 0)
+      const bordeMenuHero = menuHero?.getBoundingClientRect().bottom ?? borde
 
+      if (borde > ENTRADA_ANTICIPADA + TOLERANCIA) armado = true
+
+      if (!visible) {
+        if ((armado && borde <= ENTRADA_ANTICIPADA) || borde <= -TOLERANCIA) {
+          visible = true
+          salioCompleto = false
+        }
+      } else {
+        if (borde <= -TOLERANCIA) salioCompleto = true
+        if (borde > (salioCompleto ? 0 : ENTRADA_ANTICIPADA + TOLERANCIA)) {
+          visible = false
+          armado = false
+        }
+      }
+
+      navFlotante.classList.toggle('visible', visible)
       // Recorte a la parte por debajo del encabezado
       navFlotante.style.clipPath = borde > 0 ? `inset(${borde}px 0 0 0)` : ''
-      // Oculto de inmediato si el menú del hero ya asoma
-      const menuHero = [...menusHero].find((menu) => menu.getClientRects().length > 0)
-      navFlotante.classList.toggle('forzado', (menuHero?.getBoundingClientRect().bottom ?? borde) > 0)
+      // Salida cortada de inmediato si el menú del hero ya asoma
+      navFlotante.classList.toggle('forzado', !visible && bordeMenuHero > 0)
 
-      if (mostrar === visible) return
-      visible = mostrar
-      navFlotante.classList.toggle('visible', mostrar)
-      ocultar(navFlotante, !mostrar)
-      menusHero.forEach((menu) => ocultar(menu, mostrar))
+      // Accesible el menú que se ve: el flotante recién cuando el del hero salió
+      const flotanteActivo = visible && bordeMenuHero <= 0
+      if (flotanteActivo === activo) return
+      activo = flotanteActivo
+      ocultar(navFlotante, !flotanteActivo)
+      menusHero.forEach((menu) => ocultar(menu, flotanteActivo))
     }
 
     const pedir = () => {
