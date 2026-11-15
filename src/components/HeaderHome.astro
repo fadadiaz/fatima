@@ -120,14 +120,8 @@ import MenuMobile from './MenuMobile.astro'
     }
     .nav-home-link { display: flex; }
 
-    /* Logo centrado fuera del flujo: los links no cambian de lugar */
-    .nav-home-logo {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      margin-right: 0;
-    }
+    /* Logo en el centro, con su lugar reservado aunque esté oculto: los links no se mueven */
+    .nav-home-logo { margin-right: 0; }
     .nav-home-logo img { height: 25px; }
   }
 
