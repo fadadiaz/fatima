@@ -99,8 +99,7 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     user-select: none;
   }
 
-  /* Descripción debajo del nombre, por encima de las etiquetas.
-     La separación crece con el tamaño del nombre y no baja de 8px */
+  /* La separación crece con el tamaño del nombre y no baja de 8px */
   .areas-descripcion {
     position: absolute;
     top: 100%;
@@ -124,7 +123,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     cursor: default;
   }
 
-  /* Cada línea entra desde abajo y sale hacia arriba, con un escalonado corto */
   .areas-descripcion :global(.linea) {
     display: block;
     width: fit-content;
@@ -173,7 +171,7 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     cursor: pointer;
   }
 
-  /* Tablet y celular: descripción y texto centrados, nombre a todo el ancho */
+  /* Tablet y celular */
   @media (max-width: 799px) {
     .areas-nombre,
     .areas-boton {
@@ -438,11 +436,9 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     const alto = area.clientHeight
     const sep = config.separacion
 
-    // Base fija por semilla y variación de cada hover
     const semilla = crearAleatorio(config.semilla * 9973 + indice * 101 + 1)
     const azar = config.variacion > 0 ? Math.random : crearAleatorio(config.semilla * 7919 + indice)
 
-    // Tamaño real de cada etiqueta con su rotación
     const datos = visibles.map((el) => {
       const giroBase = (semilla() * 2 - 1) * config.rotacion
       const giro = limitar(
@@ -468,7 +464,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     const maxMx = Math.max(...datos.map((d) => d.mx))
     const maxMy = Math.max(...datos.map((d) => d.my))
 
-    // La dispersión agranda la grilla desde el centro
     const extension = 0.3 + 0.7 * config.dispersion
     const bw = Math.max(0, (ancho - 2 * (borde + maxMx)) * extension)
     const bh = Math.max(0, (alto - 2 * (borde + maxMy)) * extension)
@@ -479,7 +474,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     const nombre = area.querySelector('.areas-categoria')!.getBoundingClientRect()
     const nombreY = nombre.top - base.top + nombre.height / 2
 
-    // Bordes del contenedor que recorta las etiquetas
     const marco = (area.closest('section') ?? area).getBoundingClientRect()
     const limIzq = marco.left - base.left
     const limDer = marco.right - base.left
@@ -491,7 +485,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
       c.y + c.my + sep > nombre.top - base.top &&
       c.y - c.my - sep < nombre.bottom - base.top
 
-    // Grilla con celdas suficientes para todas las etiquetas
     let columnas = Math.max(1, Math.round(Math.sqrt((n * bw) / Math.max(bh, 1))))
     let filas = Math.max(1, Math.ceil(n / columnas))
     let celdas: { x: number; y: number }[] = []
@@ -518,7 +511,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
       ;[celdas[i], celdas[j]] = [celdas[j], celdas[i]]
     }
 
-    // Desplazamiento fijo de toda la grilla según la semilla
     const desX = (semilla() - 0.5) * celdaW * 0.5 * config.dispersion
     const desY = (semilla() - 0.5) * celdaH * 0.5 * config.dispersion
 
@@ -539,7 +531,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
       )
     }
 
-    // Posición buscada: celda, desvío por semilla y por hover, y atracción vertical hacia el nombre
     const objetivo = (i: number, nivelY: number): Caja => {
       const d = datos[i]
       const celda = celdas[i % celdas.length]
@@ -554,7 +545,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
       }
     }
 
-    // Una pasada completa; las etiquetas que no entran quedan en null
     const ubicar = (nivelY: number) => {
       const puestas: Caja[] = []
       return datos.map((_, i) => {
@@ -573,14 +563,12 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
       })
     }
 
-    // Ante choques se reduce solo la dispersión vertical
     let resultado: (Caja | null)[] = []
     for (const nivelY of NIVELES_Y) {
       resultado = ubicar(nivelY)
       if (resultado.every(Boolean)) break
     }
 
-    // Las que no entran prueban contra el borde lateral, con corte parcial si hace falta
     if (!resultado.every(Boolean)) {
       const puestas = resultado.filter((c): c is Caja => c !== null)
       const cortada = (c: Caja) => c.x - c.mx < limIzq - 0.5 || c.x + c.mx > limDer + 0.5
@@ -670,7 +658,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     })
   }
 
-  // Posiciones nuevas cada vez que se muestran las etiquetas en escritorio
   areas.forEach((area, indice) => {
     area.addEventListener('mouseenter', () => {
       if (mediaEscritorio.matches) colocar(area, indice)
@@ -699,7 +686,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
   const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
   let abierta: HTMLElement | null = null
 
-  // Si la descripción no entra en el alto del área, se suma espacio debajo sin mover el nombre
   function ajustarEspacio(area: HTMLElement) {
     const texto = area.querySelector('.areas-descripcion p')
     if (!texto || area !== abierta) {
@@ -711,7 +697,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     area.style.marginBottom = extra > 0 ? `${extra}px` : ''
   }
 
-  // Separa el párrafo en sus líneas reales para animarlas una por una
   function partirEnLineas(parrafo: HTMLElement) {
     const texto = parrafo.dataset.texto ?? parrafo.textContent?.trim() ?? ''
     parrafo.dataset.texto = texto
@@ -751,7 +736,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     return lineas.length
   }
 
-  // Duración total de la animación según la cantidad de líneas
   const duracionTotal = (area: HTMLElement, base: number) => {
     if (movimientoReducido.matches) return 0
     const lineas = area.querySelectorAll('.linea').length
@@ -771,7 +755,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     const altoAntes = area.style.marginBottom
 
     if (abrir) {
-      // Las líneas se calculan antes de animar y quedan abajo, listas para subir
       area.classList.remove('cerrando')
       partirEnLineas(parrafo)
       ajustarEspacio(area)
@@ -779,7 +762,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
         area.classList.add('animando', 'abierta')
       })
     } else {
-      // Las líneas salen hacia arriba y después se oculta el bloque
       area.classList.add('animando', 'cerrando')
       area.classList.remove('abierta')
       ajustarEspacio(area)
@@ -790,7 +772,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
       window.setTimeout(() => {
         area.classList.remove('animando')
         if (!abrir) area.classList.remove('cerrando')
-        // Si cambió el alto, las etiquetas se reparten de nuevo al terminar
         if (area.style.marginBottom !== altoAntes) colocar(area, areas.indexOf(area))
       }, espera)
     )

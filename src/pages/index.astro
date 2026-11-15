@@ -127,7 +127,6 @@ const areas = [
     vertical-align: 0.1em;
   }
 
-  /* "Más sobre mí" aparece cuando la presentación terminó de revelarse */
   .hero-boton {
     transition: opacity 0.4s ease, visibility 0s linear 0s;
   }
@@ -180,7 +179,6 @@ const areas = [
   // Menú del hero: los links en escritorio, el botón del menú plegable en celular
   const menusHero = document.querySelectorAll<HTMLElement>('.header-home .nav-full, .header-home .btn-burger')
 
-  // Menú inaccesible: fuera del tabulado y oculto para lectores de pantalla
   const ocultar = (elemento: HTMLElement, oculto: boolean) => {
     elemento.inert = oculto
     if (oculto) elemento.setAttribute('aria-hidden', 'true')

@@ -61,7 +61,7 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
     max-width: 100%;
 }
 
-/* Subrayado superpuesto al SVG, revelado con una máscara de izquierda a derecha */
+/* Subrayado superpuesto al SVG */
 .correo-linea {
     position: absolute;
     inset: 0;
@@ -109,14 +109,14 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
     white-space: nowrap;
 }
 
-/* Escritorio: el correo es un botón que abre las opciones */
+/* Escritorio */
 @media (hover: hover) and (min-width: 769px) {
   .correo-enlace {
     display: none;
   }
 }
 
-/* Celular: el correo es un enlace y las opciones quedan visibles debajo */
+/* Celular */
 @media (max-width: 768px), (hover: none) {
   .correo-boton {
     display: none;
@@ -166,7 +166,6 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
 
     boton.addEventListener('click', () => marcar(!abierto()))
 
-    // Se cierra con Escape, con un clic fuera o al elegir una opción
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && abierto()) {
         marcar(false)
@@ -182,7 +181,6 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
       if (escritorio.matches) marcar(false)
     })
 
-    // Al pasar a celular, las opciones dejan de depender del estado abierto
     escritorio.addEventListener('change', (e) => {
       if (!e.matches) marcar(false)
     })

@@ -1,9 +1,4 @@
-// Revela las palabras de los bloques con data-reveal según el scroll.
-// Todos los párrafos del bloque comparten un único progreso: las palabras se
-// revelan en una sola secuencia, en orden de lectura. Con data-reveal="intro",
-// al entrar en pantalla se revelan solas y después el scroll toma el control.
-// Con data-reveal-salida, además se atenúan al salir por el borde superior.
-// data-reveal-umbrales elige un juego de umbrales de UMBRALES (por defecto, "general").
+// Revelado de palabras con data-reveal; opciones: data-reveal="intro", data-reveal-salida y data-reveal-umbrales
 
 // Umbrales de la animación de palabras, en porcentaje de la altura de la ventana (0 arriba, 100 abajo)
 // Valores originales: entradaInicio 85, entradaFin 55, salidaInicio 35, salidaFin 5
@@ -105,7 +100,6 @@ const parte = (avance: number, i: number) => Math.min(1, Math.max(0, (avance - i
 
 const limitar = (valor: number) => Math.min(1, Math.max(0, valor))
 
-// La opacidad final es la más baja entre la entrada por abajo y la salida por arriba
 function opacidad(entrada: number, salida: number, i: number) {
   const visible = Math.min(parte(entrada, i), 1 - parte(salida, i))
   return OPACIDAD_MINIMA + (1 - OPACIDAD_MINIMA) * visible
@@ -139,7 +133,6 @@ function actualizar(ahora: number) {
       progresoSalida = limitar((inicioSalida - caja.top) / (inicioSalida - finSalida + caja.height))
     }
 
-    // Revelado automático al entrar en pantalla; después manda el scroll
     if (bloque.introPendiente && caja.top < alto) {
       bloque.introPendiente = false
       bloque.inicioIntro = ahora
@@ -162,7 +155,6 @@ function actualizar(ahora: number) {
       elemento.style.opacity = String(opacidad(avance, avanceSalida, indice))
     })
 
-    // Revelado: todas las palabras completas (la última por la entrada, la primera por la salida)
     const ultima = bloque.palabras.length - 1
     const completo = Math.min(parte(avance, ultima), 1 - parte(avanceSalida, 0)) >= VISIBLE
     bloque.contenedor.classList.toggle(

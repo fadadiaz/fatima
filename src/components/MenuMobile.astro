@@ -96,8 +96,7 @@ const id = `menu-${Math.random().toString(36).slice(2, 8)}`
     align-self: flex-end;
   }
 
-  /* Área táctil de 44px sin cambiar el aspecto: .btn-alt no usa corchetes,
-     así que el ::before queda libre para ampliar la zona que recibe el toque */
+  /* Área táctil de 44px en el ::before, libre porque .btn-alt no usa corchetes */
   .btn-burger,
   .btn-cerrar {
     position: relative;
@@ -131,7 +130,7 @@ const id = `menu-${Math.random().toString(36).slice(2, 8)}`
     const btnCerrar = menu?.querySelector<HTMLButtonElement>('.btn-cerrar')
     if (!menu || !btnCerrar) return
 
-    // Estado accesible: cerrado queda oculto para lectores de pantalla y fuera del tabulado
+    // Estado accesible
     const marcar = (abierto: boolean) => {
       menu.classList.toggle('is-open', abierto)
       menu.inert = !abierto

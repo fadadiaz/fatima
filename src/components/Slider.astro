@@ -83,7 +83,7 @@ const slides = proyectos.flatMap((proyecto) => {
 </style>
 
 <script>
-  // Velocidad automática: media vuelta del carril cada 100 segundos, como la animación anterior
+  // Velocidad automática: media vuelta del carril cada 100 segundos
   const SEGUNDOS_POR_VUELTA = 100
   // Tiempo para pasar suavemente de una velocidad a otra (unos 600ms)
   const SUAVIZADO_MS = 200
@@ -134,7 +134,6 @@ const slides = proyectos.flatMap((proyecto) => {
 
       if (!arrastrando) {
         const objetivo = encima || enfocado ? 0 : velocidadAutomatica()
-        // Acercamiento exponencial: sin saltos al soltar, frenar o reanudar
         velocidad += (objetivo - velocidad) * (1 - Math.exp((-dt * 1000) / SUAVIZADO_MS))
         posicion += velocidad * dt
       }
@@ -149,7 +148,6 @@ const slides = proyectos.flatMap((proyecto) => {
       requestAnimationFrame(cuadro)
     }
 
-    // El bucle se detiene mientras el slider no está en pantalla
     new IntersectionObserver(([entrada]) => {
       const antes = visible
       visible = entrada.isIntersecting
@@ -160,7 +158,6 @@ const slides = proyectos.flatMap((proyecto) => {
     new ResizeObserver(medirPeriodo).observe(carril)
     medirPeriodo()
 
-    // Hover: frena y se reanuda de forma suave
     contenedor.addEventListener('pointerenter', (e) => {
       if (e.pointerType === 'mouse') encima = true
     })
@@ -188,7 +185,6 @@ const slides = proyectos.flatMap((proyecto) => {
       const dx = e.clientX - ultimoX
       const dt = Math.max(1, ahora - ultimoTiempo) / 1000
       posicion += dx
-      // Velocidad del gesto, suavizada para que la inercia no dependa de un solo evento
       velocidadArrastre = velocidadArrastre * 0.7 + (dx / dt) * 0.3
       ultimoX = e.clientX
       ultimoTiempo = ahora
@@ -210,7 +206,6 @@ const slides = proyectos.flatMap((proyecto) => {
       contenedor.classList.remove('arrastrando')
       if (contenedor.hasPointerCapture(e.pointerId)) contenedor.releasePointerCapture(e.pointerId)
       bloquearClic = recorrido > UMBRAL_ARRASTRE
-      // Si el gesto se detuvo antes de soltar, no hay inercia
       velocidad = performance.now() - ultimoTiempo > 100 ? 0 : velocidadArrastre
     }
     contenedor.addEventListener('pointerup', soltar)
@@ -230,7 +225,6 @@ const slides = proyectos.flatMap((proyecto) => {
 
     contenedor.addEventListener('dragstart', (e) => e.preventDefault())
 
-    // Solo el foco de teclado frena el carril y trae la imagen enfocada a la vista
     contenedor.addEventListener('focusin', (e) => {
       const objetivo = e.target as HTMLElement
       if (!objetivo.matches(':focus-visible')) return
