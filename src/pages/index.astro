@@ -170,29 +170,15 @@ const areas = [
 <script>
   import '../scripts/revelar'
 
-  // Distancia del borde del encabezado al borde superior de la ventana en la que empieza la entrada, en px
-  const ENTRADA_ANTICIPADA = 80
-  // Histéresis contra parpadeos en los límites, en px
-  const TOLERANCIA = 4
-  // Duración de la entrada de cada link, en ms
-  const DURACION_ENTRADA = 400
-  // Retraso entre links en la entrada, en ms
-  const RETRASO_ENTRADA = 60
-  // Duración de la salida de cada link, en ms
-  const DURACION_SALIDA = 200
-  // Retraso entre links en la salida, en ms
-  const RETRASO_SALIDA = 40
-  // Distancia desde la que sube cada link
-  const DISTANCIA = '8px'
-  const CURVA = 'cubic-bezier(0.22, 1, 0.36, 1)'
-  // Orden de entrada; la salida va al revés
-  const ORDEN = ['a[href="/proyectos"]', 'a[href="/sobre-mi"]', 'a[href="/"]', 'a[href="/recursos"]', 'a[href="/contacto"]', '.btn-burger']
+  // Al bajar, el flotante entra con el borde inferior del encabezado en este valor o menos, en px
+  const ENTRADA = 80
+  // Al subir, el flotante sale con el borde inferior del encabezado por encima de este valor, en px
+  const SALIDA = -160
 
   const headerHome = document.querySelector<HTMLElement>('.header-home')
   const navFlotante = document.querySelector<HTMLElement>('.nav-flotante')
   // Menú del hero: los links en escritorio, el botón del menú plegable en celular
   const menusHero = document.querySelectorAll<HTMLElement>('.header-home .nav-full, .header-home .btn-burger')
-  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   // Menú inaccesible: fuera del tabulado y oculto para lectores de pantalla
   const ocultar = (elemento: HTMLElement, oculto: boolean) => {
@@ -202,71 +188,30 @@ const areas = [
   }
 
   if (headerHome && navFlotante) {
-    const ms = (valor: number) => `${movimientoReducido ? 0 : valor}ms`
-
-    let maxItems = 0
-    const filas = [...navFlotante.querySelectorAll<HTMLElement>('.nav-alt-full, .nav-alt-mobile')]
-    filas.forEach((fila) => {
-      const items = ORDEN
-        .map((selector) => fila.querySelector<HTMLElement>(`:scope > ${selector}`))
-        .filter((item): item is HTMLElement => item !== null)
-      maxItems = Math.max(maxItems, items.length)
-      items.forEach((item, i) => {
-        item.classList.add('nav-item')
-        item.style.setProperty('--retraso-entrada', ms(i * RETRASO_ENTRADA))
-        item.style.setProperty('--retraso-salida', ms((items.length - 1 - i) * RETRASO_SALIDA))
-      })
-    })
-
-    navFlotante.style.setProperty('--nav-entrada', ms(DURACION_ENTRADA))
-    navFlotante.style.setProperty('--nav-salida', ms(DURACION_SALIDA))
-    navFlotante.style.setProperty('--nav-distancia', DISTANCIA)
-    navFlotante.style.setProperty('--nav-curva', CURVA)
-    navFlotante.style.setProperty('--nav-fin-salida', ms(DURACION_SALIDA + (maxItems - 1) * RETRASO_SALIDA))
-
     let visible = false
-    // El encabezado llegó a salir por completo desde que apareció el flotante
-    let salioCompleto = false
-    // La entrada anticipada solo se habilita bajando desde más arriba de su límite
-    let armado = true
-    let activo: boolean | null = null
     let pendiente = false
 
+    const aplicar = (valor: boolean) => {
+      visible = valor
+      navFlotante.classList.toggle('is-visible', valor)
+      ocultar(navFlotante, !valor)
+      menusHero.forEach((menu) => ocultar(menu, valor))
+    }
+
+    let anterior = headerHome.getBoundingClientRect().bottom
+
+    // Estado inicial sin animación
+    navFlotante.classList.add('sin-transicion')
+    aplicar(anterior <= ENTRADA)
+    requestAnimationFrame(() => requestAnimationFrame(() => navFlotante.classList.remove('sin-transicion')))
+
+    // Histéresis por dirección: entre SALIDA y ENTRADA se mantiene el estado
     const actualizar = () => {
       pendiente = false
       const borde = headerHome.getBoundingClientRect().bottom
-      const menuHero = [...menusHero].find((menu) => menu.getClientRects().length > 0)
-      const bordeMenuHero = menuHero?.getBoundingClientRect().bottom ?? borde
-
-      if (borde > ENTRADA_ANTICIPADA + TOLERANCIA) armado = true
-
-      if (!visible) {
-        if ((armado && borde <= ENTRADA_ANTICIPADA) || borde <= -TOLERANCIA) {
-          visible = true
-          salioCompleto = false
-        }
-      } else {
-        if (borde <= -TOLERANCIA) salioCompleto = true
-        if (borde > (salioCompleto ? 0 : ENTRADA_ANTICIPADA + TOLERANCIA)) {
-          visible = false
-          armado = false
-        }
-      }
-
-      navFlotante.classList.toggle('visible', visible)
-      // Recorte solo de la franja que ya tapa el naranja
-      navFlotante.style.clipPath = borde > 0 ? `inset(${borde}px 0 0 0)` : ''
-      // Oculto de golpe solo cuando el naranja ya tapó la fila entera
-      const fila = filas.find((f) => f.getClientRects().length > 0)
-      const bordeFila = fila?.getBoundingClientRect().bottom ?? 0
-      navFlotante.classList.toggle('forzado', !visible && borde >= bordeFila)
-
-      // Accesible el menú que se ve: el flotante recién cuando el del hero salió
-      const flotanteActivo = visible && bordeMenuHero <= 0
-      if (flotanteActivo === activo) return
-      activo = flotanteActivo
-      ocultar(navFlotante, !flotanteActivo)
-      menusHero.forEach((menu) => ocultar(menu, flotanteActivo))
+      if (!visible && borde < anterior && borde <= ENTRADA) aplicar(true)
+      else if (visible && borde > anterior && borde > SALIDA) aplicar(false)
+      anterior = borde
     }
 
     const pedir = () => {
@@ -276,7 +221,5 @@ const areas = [
     }
 
     window.addEventListener('scroll', pedir, { passive: true })
-    window.addEventListener('resize', pedir)
-    actualizar()
   }
 </script>

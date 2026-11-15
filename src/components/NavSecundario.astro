@@ -41,44 +41,75 @@ const actual = (destino: string) =>
     transition: background-color 0.3s ease;
   }
 
-  /* Menú flotante del inicio: la barra aparece al instante y el logo y los links entran
-     y salen escalonados; tiempos, distancia y retrasos los define el script del inicio */
+  /* Menú flotante del inicio */
   .nav-flotante {
+    --duracion-entrada: 400ms;
+    --retraso-entrada: 60ms;
+    --duracion-salida: 250ms;
+    --retraso-salida: 40ms;
+    --distancia: 8px;
+    --curva: cubic-bezier(0.22, 1, 0.36, 1);
     position: fixed;
     background-color: transparent;
-    visibility: hidden;
-    transition: visibility 0s linear var(--nav-fin-salida, 0s);
   }
 
-  .nav-flotante.visible {
-    visibility: visible;
-    transition: visibility 0s;
+  .nav-flotante:not(.is-visible) {
+    pointer-events: none;
   }
 
-  .nav-flotante :global(.nav-item) {
+  /* Orden de entrada; la salida va al revés */
+  .nav-flotante .nav-alt-full { --n: 5; }
+  .nav-flotante .nav-alt-full > a[href="/proyectos"] { --i: 0; }
+  .nav-flotante .nav-alt-full > a[href="/sobre-mi"] { --i: 1; }
+  .nav-flotante .nav-alt-full > a[href="/"] { --i: 2; }
+  .nav-flotante .nav-alt-full > a[href="/recursos"] { --i: 3; }
+  .nav-flotante .nav-alt-full > a[href="/contacto"] { --i: 4; }
+  .nav-flotante .nav-alt-mobile { --n: 2; }
+  .nav-flotante .nav-alt-mobile > a[href="/"] { --i: 0; }
+  .nav-flotante .nav-alt-mobile > :global(.btn-burger) { --i: 1; }
+
+  /* Salida: sube y se desvanece; al terminar vuelve abajo, listo para entrar */
+  .nav-flotante .nav-alt-full > a,
+  .nav-flotante .nav-alt-mobile > a,
+  .nav-flotante .nav-alt-mobile > :global(.btn-burger) {
+    --demora-salida: calc((var(--n) - 1 - var(--i)) * var(--retraso-salida));
     opacity: 0;
-    transform: translateY(var(--nav-distancia, 8px));
+    translate: 0 calc(-1 * var(--distancia));
+    transform: translateY(var(--distancia));
     transition:
-      opacity var(--nav-salida, 0s) var(--nav-curva, ease) var(--retraso-salida, 0s),
-      transform var(--nav-salida, 0s) var(--nav-curva, ease) var(--retraso-salida, 0s);
+      opacity var(--duracion-salida) var(--curva) var(--demora-salida),
+      translate var(--duracion-salida) var(--curva) var(--demora-salida),
+      transform 0s linear calc(var(--demora-salida) + var(--duracion-salida));
   }
 
-  .nav-flotante.visible :global(.nav-item) {
+  /* Entrada: sube desde abajo y aparece */
+  .nav-flotante.is-visible .nav-alt-full > a,
+  .nav-flotante.is-visible .nav-alt-mobile > a,
+  .nav-flotante.is-visible .nav-alt-mobile > :global(.btn-burger) {
+    --demora-entrada: calc(var(--i) * var(--retraso-entrada));
     opacity: 1;
+    translate: none;
     transform: none;
     transition:
-      opacity var(--nav-entrada, 0s) var(--nav-curva, ease) var(--retraso-entrada, 0s),
-      transform var(--nav-entrada, 0s) var(--nav-curva, ease) var(--retraso-entrada, 0s);
+      opacity var(--duracion-entrada) var(--curva) var(--demora-entrada),
+      transform var(--duracion-entrada) var(--curva) var(--demora-entrada),
+      translate 0s;
   }
 
-  /* Ocultamiento inmediato, sin esperar la animación */
-  .nav-flotante.forzado,
-  .nav-flotante.forzado :global(.nav-item) {
+  .nav-flotante.sin-transicion .nav-alt-full > a,
+  .nav-flotante.sin-transicion .nav-alt-mobile > a,
+  .nav-flotante.sin-transicion .nav-alt-mobile > :global(.btn-burger) {
     transition: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .header-alt {
+    .header-alt,
+    .nav-flotante .nav-alt-full > a,
+    .nav-flotante .nav-alt-mobile > a,
+    .nav-flotante .nav-alt-mobile > :global(.btn-burger),
+    .nav-flotante.is-visible .nav-alt-full > a,
+    .nav-flotante.is-visible .nav-alt-mobile > a,
+    .nav-flotante.is-visible .nav-alt-mobile > :global(.btn-burger) {
       transition: none;
     }
   }
