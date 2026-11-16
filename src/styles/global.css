@@ -389,7 +389,8 @@ button {
   visibility: visible;
 }
 
-/* Link de la página actual en el menú: subrayado fijo debajo del roll, redibujado con hover o foco */
+/* Link de la página actual en el menú: subrayado debajo del roll, como .subrayado pero invertido */
+/* Dibujado en reposo; con hover o foco se retira hacia la derecha y al salir se redibuja desde la izquierda */
 .activo .btn-texto {
   position: relative;
 }
@@ -403,22 +404,20 @@ button {
   height: var(--subrayado-grosor);
   background-image: linear-gradient(currentColor, currentColor);
   background-repeat: no-repeat;
-  background-position: 0 0;
+  background-position: 0 100%;
   background-size: 100% 100%;
+  transition: background-size var(--subrayado-duracion) ease-in-out;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .activo:is(:hover, :focus-visible) .btn-texto::after {
-    animation: redibujar-subrayado calc(2 * var(--subrayado-duracion)) ease-in-out;
+.activo:is(:hover, :focus-visible) .btn-texto::after {
+  background-position: 100% 100%;
+  background-size: 0 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activo .btn-texto::after {
+    transition: none;
   }
-}
-
-/* Se retira hacia la derecha y vuelve a dibujarse desde la izquierda */
-@keyframes redibujar-subrayado {
-  0% { background-position: 100% 0; background-size: 100% 100%; }
-  50% { background-position: 100% 0; background-size: 0 100%; }
-  50.01% { background-position: 0 0; background-size: 0 100%; }
-  100% { background-position: 0 0; background-size: 100% 100%; }
 }
 
 /* COLORER HOVER */
@@ -490,6 +489,9 @@ button {
   font-weight: 400;
   /* Bloque para que el .subrayado interno fluya inline, con una línea por renglón */
   display: block;
+  /* Mayúsculas sin descendentes: subrayado más cerca para no tocar los acentos del renglón siguiente */
+  --subrayado-separacion: 0.04em;
+  --subrayado-elevacion: 0.13em;
   line-height: var(--text-lg);
   text-transform: uppercase;
   text-wrap: balance;
@@ -504,7 +506,8 @@ button {
   padding-bottom: var(--subrayado-separacion);
   background-image: linear-gradient(currentColor, currentColor);
   background-repeat: no-repeat;
-  background-position: 100% 100%;
+  background-position-x: 100%;
+  background-position-y: calc(100% - var(--subrayado-elevacion, 0px));
   background-size: 0 var(--subrayado-grosor);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
@@ -519,7 +522,7 @@ button {
 .subrayado:is(a, button):is(:hover, :focus-visible),
 .subrayado:is(a, button):is(:hover, :focus-visible) .sub-linea,
 :is(a, button):is(:hover, :focus-visible) :is(.subrayado, .sub-linea) {
-  background-position: 0 100%;
+  background-position-x: 0;
   background-size: 100% var(--subrayado-grosor);
   transition-delay: calc(var(--n, 0) * var(--subrayado-duracion));
 }
