@@ -77,9 +77,9 @@ const ogImagen = await getImage({
 
   /* Entrada escalonada de los bloques en orden de lectura; --orden lo asigna el script */
   main {
-    --bloque-duracion: 450ms;
+    --bloque-duracion: 600ms;
     --bloque-distancia: 16px;
-    --bloque-escalon: 60ms;
+    --bloque-escalon: 90ms;
     --bloque-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
   }
 
@@ -190,7 +190,7 @@ const ogImagen = await getImage({
 
 <script>
   // Escalón entre bloques, en ms, y cantidad de bloques con retraso propio
-  const ESCALON = 60
+  const ESCALON = 90
   const TOPE = 12
 
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

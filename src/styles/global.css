@@ -45,6 +45,7 @@
 
   --subrayado-grosor: max(1px, 0.08em); /* em del texto subrayado */
   --subrayado-duracion: 300ms;
+  --subrayado-separacion: 0.12em;
 }
 
 *, *::before, *::after {
@@ -388,7 +389,7 @@ button {
   visibility: visible;
 }
 
-/* Link de la página actual en el menú: subrayado debajo del roll, con hover o foco como .subrayado */
+/* Link de la página actual en el menú: subrayado fijo debajo del roll, redibujado con hover o foco */
 .activo .btn-texto {
   position: relative;
 }
@@ -402,20 +403,22 @@ button {
   height: var(--subrayado-grosor);
   background-image: linear-gradient(currentColor, currentColor);
   background-repeat: no-repeat;
-  background-position: 100% 0;
-  background-size: 0 100%;
-  transition: background-size var(--subrayado-duracion) ease-in-out;
-}
-
-.activo:is(:hover, :focus-visible) .btn-texto::after {
   background-position: 0 0;
   background-size: 100% 100%;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .activo .btn-texto::after {
-    transition: none;
+@media (prefers-reduced-motion: no-preference) {
+  .activo:is(:hover, :focus-visible) .btn-texto::after {
+    animation: redibujar-subrayado calc(2 * var(--subrayado-duracion)) ease-in-out;
   }
+}
+
+/* Se retira hacia la derecha y vuelve a dibujarse desde la izquierda */
+@keyframes redibujar-subrayado {
+  0% { background-position: 100% 0; background-size: 100% 100%; }
+  50% { background-position: 100% 0; background-size: 0 100%; }
+  50.01% { background-position: 0 0; background-size: 0 100%; }
+  100% { background-position: 0 0; background-size: 100% 100%; }
 }
 
 /* COLORER HOVER */
@@ -494,26 +497,37 @@ button {
 
 /* ─── SUBRAYADO ANIMADO ────────────────────── */
 /* Entra de izquierda a derecha y se retira hacia la derecha; se activa también con el hover del link que lo contiene */
-.subrayado {
+/* Con varias líneas, el script las separa en .sub-linea: entran una tras otra y salen en orden inverso */
+.subrayado,
+.sub-linea {
   display: inline;
+  padding-bottom: var(--subrayado-separacion);
   background-image: linear-gradient(currentColor, currentColor);
   background-repeat: no-repeat;
   background-position: 100% 100%;
   background-size: 0 var(--subrayado-grosor);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  transition: background-size var(--subrayado-duracion) ease-in-out;
+  transition: background-size var(--subrayado-duracion) ease-in-out
+    calc((var(--total, 1) - 1 - var(--n, 0)) * var(--subrayado-duracion));
+}
+
+.subrayado-partido {
+  background-image: none;
 }
 
 .subrayado:is(a, button):is(:hover, :focus-visible),
-:is(a, button):is(:hover, :focus-visible) .subrayado {
+.subrayado:is(a, button):is(:hover, :focus-visible) .sub-linea,
+:is(a, button):is(:hover, :focus-visible) :is(.subrayado, .sub-linea) {
   background-position: 0 100%;
   background-size: 100% var(--subrayado-grosor);
+  transition-delay: calc(var(--n, 0) * var(--subrayado-duracion));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .subrayado {
-    transition: none;
+  .subrayado,
+  .sub-linea {
+    transition: none !important;
   }
 }
 
