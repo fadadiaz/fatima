@@ -75,32 +75,26 @@ const ogImagen = await getImage({
     white-space: pre-line;
 }
 
-  /* Entrada del título y la descripción por palabras, al cargar */
-  .proyecto-header {
-    --titulo-duracion: 600ms;
-    --titulo-retraso: 40ms;
-    --descripcion-duracion: 500ms;
-    --descripcion-retraso: 15ms;
-    --entrada-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
+  /* Entrada escalonada de los bloques en orden de lectura; --orden lo asigna el script */
+  main {
+    --bloque-duracion: 450ms;
+    --bloque-distancia: 16px;
+    --bloque-escalon: 60ms;
+    --bloque-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    /* Oculto hasta que el script divide las palabras, sin destello al cargar */
-    :global(.js) :is(.proyecto-titulo, .proyecto-descripcion):not(.preparado) {
-      visibility: hidden;
+    :global(.js) :is(.proyecto-header, .proyecto-body) > :global(*) {
+      opacity: 0;
+      translate: 0 var(--bloque-distancia);
     }
 
-    .proyecto-titulo :global(.mascara-texto) {
-      transition: translate var(--titulo-duracion) var(--entrada-curva) calc(var(--p) * var(--titulo-retraso));
-    }
-
-    .proyecto-descripcion :global(.mascara-texto) {
-      transition: translate var(--descripcion-duracion) var(--entrada-curva)
-        calc(var(--descripcion-delay, 0ms) + var(--p) * var(--descripcion-retraso));
-    }
-
-    .por-entrar :global(.mascara-texto) {
-      translate: 0 120%;
+    :global(.js) :is(.proyecto-header, .proyecto-body) > :global(.bloque-visible) {
+      opacity: 1;
+      translate: none;
+      transition:
+        opacity var(--bloque-duracion) var(--bloque-curva) calc(var(--orden, 0) * var(--bloque-escalon)),
+        translate var(--bloque-duracion) var(--bloque-curva) calc(var(--orden, 0) * var(--bloque-escalon));
     }
   }
 
@@ -195,22 +189,33 @@ const ogImagen = await getImage({
 </style>
 
 <script>
-  import { enmascarar } from '../../scripts/mascara'
-
-  // Retraso de la descripción respecto del título, en ms
-  const DESCRIPCION_DELAY = 0
+  // Escalón entre bloques, en ms, y cantidad de bloques con retraso propio
+  const ESCALON = 60
+  const TOPE = 12
 
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const bloques = [...document.querySelectorAll<HTMLElement>('.proyecto-titulo, .proyecto-descripcion')]
-      .filter((bloque) => bloque.textContent?.trim())
-    document.querySelector<HTMLElement>('.proyecto-header')?.style.setProperty('--descripcion-delay', `${DESCRIPCION_DELAY}ms`)
+    document.querySelector<HTMLElement>('main')?.style.setProperty('--bloque-escalon', `${ESCALON}ms`)
+    const bloques = [...document.querySelectorAll<HTMLElement>('.proyecto-header > *, .proyecto-body > *')]
+    const mostrar = (bloque: Element) => bloque.classList.add('bloque-visible')
 
-    bloques.forEach((bloque) => {
-      enmascarar(bloque)
-      bloque.classList.add('por-entrar', 'preparado')
+    // Bloques fuera de la primera pantalla: aparecen al entrar, sin retraso
+    const entrada = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+        mostrar(entry.target)
+        entrada.unobserve(entry.target)
+      })
     })
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => bloques.forEach((bloque) => bloque.classList.remove('por-entrar')))
-    )
+
+    const primeraPantalla: HTMLElement[] = []
+    bloques.forEach((bloque) => {
+      if (bloque.getBoundingClientRect().top < window.innerHeight) {
+        bloque.style.setProperty('--orden', String(Math.min(primeraPantalla.length, TOPE - 1)))
+        primeraPantalla.push(bloque)
+      } else {
+        entrada.observe(bloque)
+      }
+    })
+    requestAnimationFrame(() => requestAnimationFrame(() => primeraPantalla.forEach(mostrar)))
   }
 </script>

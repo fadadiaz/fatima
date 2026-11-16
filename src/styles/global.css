@@ -43,7 +43,7 @@
 
   --linea-encabezado: 0.75px; /* Línea divisoria de los encabezados de sección */
 
-  --subrayado-grosor: 2.5px;
+  --subrayado-grosor: max(1px, 0.08em); /* em del texto subrayado */
   --subrayado-duracion: 300ms;
 }
 
@@ -388,7 +388,7 @@ button {
   visibility: visible;
 }
 
-/* Link de la página actual en el menú: subrayado fijo debajo del roll, dibujado al cargar */
+/* Link de la página actual en el menú: subrayado debajo del roll, con hover o foco como .subrayado */
 .activo .btn-texto {
   position: relative;
 }
@@ -400,19 +400,21 @@ button {
   right: 0;
   top: 100%;
   height: var(--subrayado-grosor);
-  background-color: currentColor;
-  transform-origin: left;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 100% 0;
+  background-size: 0 100%;
+  transition: background-size var(--subrayado-duracion) ease-in-out;
 }
 
-@media (prefers-reduced-motion: no-preference) {
+.activo:is(:hover, :focus-visible) .btn-texto::after {
+  background-position: 0 0;
+  background-size: 100% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
   .activo .btn-texto::after {
-    animation: dibujar-subrayado var(--subrayado-duracion) ease-in-out both;
-  }
-}
-
-@keyframes dibujar-subrayado {
-  from {
-    scale: 0 1;
+    transition: none;
   }
 }
 
@@ -483,8 +485,8 @@ button {
   font-size: var(--text-base);
   font-style: normal;
   font-weight: 400;
-  display: flex;
-  gap: var(--space-4);
+  /* Bloque para que el .subrayado interno fluya inline, con una línea por renglón */
+  display: block;
   line-height: var(--text-lg);
   text-transform: uppercase;
   text-wrap: balance;
@@ -493,6 +495,7 @@ button {
 /* ─── SUBRAYADO ANIMADO ────────────────────── */
 /* Entra de izquierda a derecha y se retira hacia la derecha; se activa también con el hover del link que lo contiene */
 .subrayado {
+  display: inline;
   background-image: linear-gradient(currentColor, currentColor);
   background-repeat: no-repeat;
   background-position: 100% 100%;
