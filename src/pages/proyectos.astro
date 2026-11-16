@@ -141,6 +141,20 @@ const proyectos = await getCollection('proyectos')
     white-space: normal;
     overflow-wrap: anywhere;
   }
+
+  /* Una y dos columnas: la fecha debajo del título */
+  @media (max-width: 1023px) {
+    .proyecto-card-info {
+      --separacion-fecha: var(--space-4);
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--separacion-fecha);
+    }
+
+    .proyecto-card-info h3 {
+      width: 100%;
+    }
+  }
 </style>
 
 <script define:vars={{ proyectos: proyectos.map(p => p.id) }}>
