@@ -1,4 +1,10 @@
-// Revelado de palabras con data-reveal; opciones: data-reveal="intro", data-reveal-salida y data-reveal-umbrales
+// Revelado de palabras con data-reveal; opciones: data-reveal="intro", data-reveal-salida, data-reveal-umbrales y data-reveal-modo="resaltar"
+
+// Modo resaltar, en porcentaje de la altura de la ventana: inicio para el borde superior, fin para el inferior
+const RESALTADO = {
+  inicio: 85,
+  fin: 45,
+}
 
 // Umbrales de la animación de palabras, en porcentaje de la altura de la ventana (0 arriba, 100 abajo)
 // Valores originales: entradaInicio 85, entradaFin 55, salidaInicio 35, salidaFin 5
@@ -49,8 +55,13 @@ interface Bloque {
   seccion: Element
 }
 
+interface Resaltado {
+  contenedor: HTMLElement
+  elementos: HTMLElement[]
+}
+
 // Divide el texto en palabras sin tocar los elementos internos (imágenes, enlaces)
-function partir(contenedor: HTMLElement) {
+function partir(contenedor: HTMLElement, conOpacidad = true) {
   const palabras: HTMLElement[] = []
   const adjuntos: Adjunto[] = []
 
@@ -68,8 +79,10 @@ function partir(contenedor: HTMLElement) {
           const palabra = document.createElement('span')
           palabra.className = 'palabra'
           palabra.textContent = parte
-          palabra.style.transition = 'opacity 0.15s linear'
-          palabra.style.opacity = String(OPACIDAD_MINIMA)
+          if (conOpacidad) {
+            palabra.style.transition = 'opacity 0.15s linear'
+            palabra.style.opacity = String(OPACIDAD_MINIMA)
+          }
           fragmento.append(palabra)
           palabras.push(palabra)
         })
@@ -79,8 +92,10 @@ function partir(contenedor: HTMLElement) {
           procesar(hijo)
         } else {
           // Elementos sin texto (como los emojis) aparecen junto con la palabra anterior
-          hijo.style.transition = 'opacity 0.15s linear'
-          hijo.style.opacity = String(OPACIDAD_MINIMA)
+          if (conOpacidad) {
+            hijo.style.transition = 'opacity 0.15s linear'
+            hijo.style.opacity = String(OPACIDAD_MINIMA)
+          }
           adjuntos.push({ elemento: hijo, indice: Math.max(0, palabras.length - 1) })
         }
       }
@@ -94,6 +109,7 @@ function partir(contenedor: HTMLElement) {
 
 const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
 const bloques: Bloque[] = []
+const resaltados: Resaltado[] = []
 
 // Cuánto avanzó la palabra i en una secuencia (0 a 1), con transición entre vecinas
 const parte = (avance: number, i: number) => Math.min(1, Math.max(0, (avance - i) / SUAVIDAD))
@@ -163,6 +179,16 @@ function actualizar(ahora: number) {
     )
   })
 
+  resaltados.forEach(({ contenedor, elementos }) => {
+    const caja = contenedor.getBoundingClientRect()
+    const inicio = (alto * RESALTADO.inicio) / 100
+    const fin = (alto * RESALTADO.fin) / 100
+    const progreso = limitar((inicio - caja.top) / (inicio - fin + caja.height))
+    elementos.forEach((elemento, i) => {
+      elemento.classList.toggle('encendida', progreso > i / elementos.length)
+    })
+  })
+
   if (seguirIntro) pedir()
 }
 
@@ -174,6 +200,14 @@ function pedir() {
 
 if (!movimientoReducido.matches) {
   document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((contenedor) => {
+    if (contenedor.dataset.revealModo === 'resaltar') {
+      const { adjuntos } = partir(contenedor, false)
+      adjuntos.forEach(({ elemento }) => elemento.classList.add('palabra'))
+      resaltados.push({ contenedor, elementos: [...contenedor.querySelectorAll<HTMLElement>('.palabra')] })
+      contenedor.classList.add('reveal-activo')
+      return
+    }
+
     const { palabras, adjuntos } = partir(contenedor)
     const intro = contenedor.dataset.reveal === 'intro'
     bloques.push({
@@ -190,7 +224,7 @@ if (!movimientoReducido.matches) {
     contenedor.classList.add('reveal-activo')
   })
 
-  if (bloques.length) {
+  if (bloques.length || resaltados.length) {
     window.addEventListener('scroll', pedir, { passive: true })
     window.addEventListener('resize', pedir)
     pedir()

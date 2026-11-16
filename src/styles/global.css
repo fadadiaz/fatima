@@ -62,8 +62,22 @@ html {
 
 /* Texto con data-reveal: atenuado hasta que el script divide las palabras, sin destello al cargar */
 @media (prefers-reduced-motion: no-preference) {
-  .js [data-reveal]:not(.reveal-activo) {
+  .js [data-reveal]:not([data-reveal-modo="resaltar"]):not(.reveal-activo) {
     opacity: 0.15;
+  }
+
+  /* Modo resaltar */
+  .js [data-reveal-modo="resaltar"]:not(.reveal-activo),
+  [data-reveal-modo="resaltar"] .palabra {
+    color: color-mix(in srgb, var(--fa-black) 22%, transparent);
+  }
+
+  [data-reveal-modo="resaltar"] .palabra {
+    transition: color 350ms ease;
+  }
+
+  [data-reveal-modo="resaltar"] .palabra.encendida {
+    color: var(--fa-black);
   }
 }
 
