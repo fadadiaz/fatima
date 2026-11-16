@@ -17,7 +17,7 @@ import BotonLlamada from '../components/BotonLlamada.astro'
       </div>
       <div class="contacto-cierre">
         <div class="contacto-hook">
-          <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time. Escribime, o hablemos por llamada o videollamada.</p>
+          <p data-entrada-palabras>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time. Escribime, o hablemos por llamada o videollamada.</p>
           <BotonLlamada />
         </div>
         <CorreoGrande />
@@ -81,3 +81,7 @@ import BotonLlamada from '../components/BotonLlamada.astro'
     align-items: flex-end;
     gap: var(--space-16);
   }</style>
+
+<script>
+  import '../scripts/entrada-palabras'
+</script>

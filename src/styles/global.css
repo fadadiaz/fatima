@@ -253,6 +253,23 @@ button {
   display: inline-block;
 }
 
+/* Entrada por palabras con data-entrada-palabras */
+[data-entrada-palabras] {
+  --entrada-duracion: 500ms;
+  --entrada-retraso: 15ms;
+  --entrada-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-entrada-palabras] .mascara-texto {
+    transition: translate var(--entrada-duracion) var(--entrada-curva) calc(var(--p) * var(--entrada-retraso));
+  }
+
+  [data-entrada-palabras].por-entrar .mascara-texto {
+    translate: 0 120%;
+  }
+}
+
 /* Text roll por letra */
 .btn {
   --roll-duracion: 850ms;
@@ -303,37 +320,6 @@ button {
 
 .roll-corchete .roll-original {
   visibility: hidden;
-}
-
-/* Corchete: entra desde abajo y sale hacia arriba; al terminar vuelve abajo sin transición */
-.roll-corchete .roll-copia {
-  --fin-salida: calc(var(--l) * var(--roll-retraso) + var(--roll-duracion));
-  top: 200%;
-  transform: translateY(-100%);
-  transition:
-    transform var(--roll-duracion) var(--roll-curva) calc(var(--l) * var(--roll-retraso)),
-    translate 0s linear var(--fin-salida),
-    top 0s linear var(--fin-salida);
-}
-
-.btn:focus-visible .roll-corchete .roll-copia {
-  top: 100%;
-  transform: none;
-  transition:
-    translate var(--roll-duracion) var(--roll-curva) calc(var(--l) * var(--roll-retraso)),
-    transform 0s,
-    top 0s;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .btn:hover .roll-corchete .roll-copia {
-    top: 100%;
-    transform: none;
-    transition:
-      translate var(--roll-duracion) var(--roll-curva) calc(var(--l) * var(--roll-retraso)),
-      transform 0s,
-      top 0s;
-  }
 }
 
 /* Ícono: el margen pasa a la caja que recorta */

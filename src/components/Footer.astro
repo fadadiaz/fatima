@@ -6,7 +6,7 @@ import BotonLlamada from './BotonLlamada.astro'
 <footer id="contacto" class="bg-green min-padding h-80">
 
   <div class="hook">
-    <p>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
+    <p data-entrada-palabras>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
     <BotonLlamada />
   </div>
   <CorreoGrande />
@@ -40,41 +40,8 @@ footer {
     align-items: flex-end;
     gap: var(--space-16);
 }
-
-/* Entrada del párrafo por palabras */
-.hook p {
-    --entrada-duracion: 500ms;
-    --entrada-retraso: 15ms;
-    --entrada-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .hook p :global(.mascara-texto) {
-        transition: translate var(--entrada-duracion) var(--entrada-curva) calc(var(--p) * var(--entrada-retraso));
-    }
-
-    .hook p.por-entrar :global(.mascara-texto) {
-        translate: 0 120%;
-    }
-}
 </style>
 
 <script>
-  import { enmascarar } from '../scripts/mascara'
-
-  const parrafo = document.querySelector<HTMLElement>('.hook p')
-
-  if (parrafo && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    enmascarar(parrafo)
-    parrafo.classList.add('por-entrar')
-    const entrada = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting && entry.boundingClientRect.top > 0) return
-        parrafo.classList.remove('por-entrar')
-        entrada.disconnect()
-      },
-      { threshold: 0.5 }
-    )
-    entrada.observe(parrafo)
-  }
+  import '../scripts/entrada-palabras'
 </script>
