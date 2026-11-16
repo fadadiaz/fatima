@@ -48,7 +48,7 @@ const ogImagen = await getImage({
       {proyecto.data.enlaces && (
         <div class="proyecto-enlaces col" style="--start: 3; --end: 9;">
           {proyecto.data.enlaces.map((enlace) => (
-            <a class="btn-link" href={enlace.href} target="_blank">{enlace.texto}</a>
+            <a class="btn-link" href={enlace.href} target="_blank"><span class="subrayado">{enlace.texto}</span></a>
           ))}
         </div>
       )}
@@ -74,6 +74,35 @@ const ogImagen = await getImage({
   .proyecto-descripcion {
     white-space: pre-line;
 }
+
+  /* Entrada del título y la descripción por palabras, al cargar */
+  .proyecto-header {
+    --titulo-duracion: 600ms;
+    --titulo-retraso: 40ms;
+    --descripcion-duracion: 500ms;
+    --descripcion-retraso: 15ms;
+    --entrada-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Oculto hasta que el script divide las palabras, sin destello al cargar */
+    :global(.js) :is(.proyecto-titulo, .proyecto-descripcion):not(.preparado) {
+      visibility: hidden;
+    }
+
+    .proyecto-titulo :global(.mascara-texto) {
+      transition: translate var(--titulo-duracion) var(--entrada-curva) calc(var(--p) * var(--titulo-retraso));
+    }
+
+    .proyecto-descripcion :global(.mascara-texto) {
+      transition: translate var(--descripcion-duracion) var(--entrada-curva)
+        calc(var(--descripcion-delay, 0ms) + var(--p) * var(--descripcion-retraso));
+    }
+
+    .por-entrar :global(.mascara-texto) {
+      translate: 0 120%;
+    }
+  }
 
   .proyecto-enlaces {
     display: flex;
@@ -164,3 +193,24 @@ const ogImagen = await getImage({
   }
 }
 </style>
+
+<script>
+  import { enmascarar } from '../../scripts/mascara'
+
+  // Retraso de la descripción respecto del título, en ms
+  const DESCRIPCION_DELAY = 0
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const bloques = [...document.querySelectorAll<HTMLElement>('.proyecto-titulo, .proyecto-descripcion')]
+      .filter((bloque) => bloque.textContent?.trim())
+    document.querySelector<HTMLElement>('.proyecto-header')?.style.setProperty('--descripcion-delay', `${DESCRIPCION_DELAY}ms`)
+
+    bloques.forEach((bloque) => {
+      enmascarar(bloque)
+      bloque.classList.add('por-entrar', 'preparado')
+    })
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => bloques.forEach((bloque) => bloque.classList.remove('por-entrar')))
+    )
+  }
+</script>

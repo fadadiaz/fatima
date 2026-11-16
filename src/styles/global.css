@@ -42,6 +42,9 @@
   --btn-height-movil: 2.75rem; /* 44px, área táctil mínima */
 
   --linea-encabezado: 0.75px; /* Línea divisoria de los encabezados de sección */
+
+  --subrayado-grosor: 2.5px;
+  --subrayado-duracion: 300ms;
 }
 
 *, *::before, *::after {
@@ -385,10 +388,32 @@ button {
   visibility: visible;
 }
 
-/* Link de la página actual en el menú: solo el texto, sin corchetes ni íconos */
+/* Link de la página actual en el menú: subrayado fijo debajo del roll, dibujado al cargar */
 .activo .btn-texto {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  position: relative;
+}
+
+.activo .btn-texto::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: var(--subrayado-grosor);
+  background-color: currentColor;
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .activo .btn-texto::after {
+    animation: dibujar-subrayado var(--subrayado-duracion) ease-in-out both;
+  }
+}
+
+@keyframes dibujar-subrayado {
+  from {
+    scale: 0 1;
+  }
 }
 
 /* COLORER HOVER */
@@ -465,9 +490,28 @@ button {
   text-wrap: balance;
 }
 
-.btn-link:hover {
-  text-decoration: underline;
-  text-underline-position: under;
+/* ─── SUBRAYADO ANIMADO ────────────────────── */
+/* Entra de izquierda a derecha y se retira hacia la derecha; se activa también con el hover del link que lo contiene */
+.subrayado {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 100% 100%;
+  background-size: 0 var(--subrayado-grosor);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-size var(--subrayado-duracion) ease-in-out;
+}
+
+.subrayado:is(a, button):is(:hover, :focus-visible),
+:is(a, button):is(:hover, :focus-visible) .subrayado {
+  background-position: 0 100%;
+  background-size: 100% var(--subrayado-grosor);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subrayado {
+    transition: none;
+  }
 }
 
 /* ─── GRILLA ────────────────────── */

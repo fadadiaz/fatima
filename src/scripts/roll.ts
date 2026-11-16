@@ -22,8 +22,7 @@ const grupo = (clase: string) => {
 }
 
 export function prepararRoll(boton: HTMLElement) {
-  // El link de la página actual conserva su subrayado sin roll
-  if (boton.classList.contains('btn-tag') || boton.classList.contains('activo')) return
+  if (boton.classList.contains('btn-tag')) return
   const conCorchetes = !boton.matches('.btn-alt, .btn-corchetes')
   let indice = conCorchetes ? 1 : 0
 

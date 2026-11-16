@@ -1,16 +1,21 @@
-// Palabras dentro de una máscara, con su posición en --p
+// Palabras dentro de una máscara, con su posición en --p; los espacios originales se conservan (saltos con pre-line)
 export function enmascarar(elemento: HTMLElement) {
-  const palabras = (elemento.textContent ?? '').trim().split(/\s+/)
+  const partes = (elemento.textContent ?? '').trim().split(/(\s+)/)
   elemento.replaceChildren()
-  palabras.forEach((palabra, i) => {
+  let indice = 0
+  partes.forEach((parte) => {
+    if (!parte) return
+    if (/^\s+$/.test(parte)) {
+      elemento.append(parte)
+      return
+    }
     const mascara = document.createElement('span')
     mascara.className = 'mascara'
     const texto = document.createElement('span')
     texto.className = 'mascara-texto'
-    texto.style.setProperty('--p', String(i))
-    texto.textContent = palabra
+    texto.style.setProperty('--p', String(indice++))
+    texto.textContent = parte
     mascara.append(texto)
     elemento.append(mascara)
-    if (i < palabras.length - 1) elemento.append(' ')
   })
 }
