@@ -240,6 +240,19 @@ button {
   visibility: visible;
 }
 
+/* Palabras que suben desde una máscara; margen extra para no recortar acentos ni descendentes */
+.mascara {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-block: 0.1em;
+  margin-block: -0.1em;
+}
+
+.mascara-texto {
+  display: inline-block;
+}
+
 /* Text roll por letra */
 .btn {
   --roll-duracion: 850ms;
@@ -279,6 +292,58 @@ button {
   top: 100%;
   left: 0;
   color: var(--roll-color, currentColor);
+}
+
+/* Corchetes de la ola: la copia 1 reserva el espacio sin verse */
+.con-roll-corchetes::before,
+.con-roll-corchetes::after {
+  content: none;
+  display: none;
+}
+
+.roll-corchete .roll-original {
+  visibility: hidden;
+}
+
+/* Corchete: entra desde abajo y sale hacia arriba; al terminar vuelve abajo sin transición */
+.roll-corchete .roll-copia {
+  --fin-salida: calc(var(--l) * var(--roll-retraso) + var(--roll-duracion));
+  top: 200%;
+  transform: translateY(-100%);
+  transition:
+    transform var(--roll-duracion) var(--roll-curva) calc(var(--l) * var(--roll-retraso)),
+    translate 0s linear var(--fin-salida),
+    top 0s linear var(--fin-salida);
+}
+
+.btn:focus-visible .roll-corchete .roll-copia {
+  top: 100%;
+  transform: none;
+  transition:
+    translate var(--roll-duracion) var(--roll-curva) calc(var(--l) * var(--roll-retraso)),
+    transform 0s,
+    top 0s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover .roll-corchete .roll-copia {
+    top: 100%;
+    transform: none;
+    transition:
+      translate var(--roll-duracion) var(--roll-curva) calc(var(--l) * var(--roll-retraso)),
+      transform 0s,
+      top 0s;
+  }
+}
+
+/* Ícono: el margen pasa a la caja que recorta */
+.roll-icono {
+  margin-left: var(--space-8);
+}
+
+.roll-icono i {
+  margin-left: 0;
+  height: auto;
 }
 
 .btn:focus-visible .roll-letra > span {

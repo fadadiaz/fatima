@@ -138,19 +138,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     --mascara-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
   }
 
-  /* Margen extra para no recortar acentos ni descendentes, sin cambiar el alto de línea */
-  .areas-item :global(.mascara) {
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: top;
-    padding-block: 0.1em;
-    margin-block: -0.1em;
-  }
-
-  .areas-item :global(.mascara-texto) {
-    display: inline-block;
-  }
-
   @media (prefers-reduced-motion: no-preference) {
     .areas-categoria :global(.mascara-texto) {
       transition: translate var(--nombre-duracion) var(--mascara-curva) calc(var(--p) * var(--nombre-retraso));
@@ -187,6 +174,17 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     cursor: pointer;
   }
 
+  /* Ancho de la línea más larga del nombre, medido por el script */
+  @media (min-width: 800px) {
+    .areas-nombre {
+      width: var(--ancho-nombre, auto);
+    }
+
+    .areas-boton {
+      width: 100%;
+    }
+  }
+
   /* Tablet y celular */
   @media (max-width: 799px) {
     .areas-nombre,
@@ -210,66 +208,58 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     display: flex;
     gap: var(--space-8);
     justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease, filter 0.5s ease;
+    transition: filter 0.5s ease;
     flex-wrap: wrap;
     list-style: none;
   }
 
-  .areas-trigger:hover .tag-item {
-    opacity: 1;
-  }
-
-  /* Etiquetas visibles con el foco del teclado */
-  .areas-trigger:focus-within .tag-item {
-    opacity: 1;
-  }
-
-  /* Etiquetas repartidas por toda la pantalla del área */
+  /* Etiquetas repartidas por toda la pantalla del área, visibles solo con el área enfocada */
   @media (hover: hover) and (min-width: 769px) {
-    .areas-item {
+    :global(.js) .areas-item {
       position: relative;
     }
 
-    .areas-trigger {
+    :global(.js) .areas-trigger {
       position: static;
     }
 
-    .tag-item {
+    :global(.js) .tag-item {
       inset: 0;
       width: auto;
       max-width: none;
       display: block;
       pointer-events: none;
-      opacity: 1;
     }
 
-    /* Aparición escalonada de las etiquetas al pasar el cursor */
-    .tag-item li {
+    /* Salida: todas juntas */
+    :global(.js) .tag-item li {
       opacity: 0;
-      transition: opacity 0.4s ease;
+      transition: opacity var(--tags-salida) ease;
     }
 
-    .areas-item:hover .tag-item li,
-    .areas-trigger:focus-within .tag-item li {
-      opacity: 1;
-      transition-delay: calc(var(--i) * 70ms);
-    }
-
-    .tag-item .btn-tag {
+    :global(.js) .tag-item .btn-tag {
       position: absolute;
       left: var(--x, 50%);
       top: var(--y, 50%);
       transform: translate(-50%, -50%) rotate(var(--r, 0deg));
+      translate: 0 var(--tags-desplazamiento);
+      transition: translate 0s linear var(--tags-salida);
       white-space: nowrap;
     }
 
-    .areas-item:hover .btn-tag,
-    .areas-trigger:focus-within .btn-tag {
-      pointer-events: auto;
+    /* Entrada: una a una */
+    :global(.js) .areas-item.etiquetas-visibles .tag-item li {
+      opacity: 1;
+      transition: opacity var(--tags-entrada) ease calc(var(--i) * var(--tags-escalonado));
     }
 
-    .tag-oculta {
+    :global(.js) .areas-item.etiquetas-visibles .btn-tag {
+      translate: none;
+      pointer-events: auto;
+      transition: translate var(--tags-entrada) ease calc(var(--i) * var(--tags-escalonado));
+    }
+
+    :global(.js) .tag-oculta {
       display: none;
     }
   }
@@ -277,9 +267,10 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
   @media (prefers-reduced-motion: reduce) {
     .tag-item,
     .tag-item li,
+    .tag-item .btn-tag,
     .areas-item,
     .areas-descripcion {
-      transition: none;
+      transition: none !important;
     }
   }
 
@@ -288,7 +279,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     gap: var(--space-24);
     }
     .tag-item {
-      opacity: 1;
       position: static;
     }
     .tag-item .btn-tag {
@@ -331,30 +321,22 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
       display: none;
     }
 
-    /* Aparición escalonada de las etiquetas al entrar el área en pantalla */
+    /* Aparición escalonada después del nombre, una sola vez */
     .areas-item.esparcido.aparicion .tag-item li {
       opacity: 0;
-      transition: opacity 0.4s ease;
     }
 
-    .areas-item.esparcido.aparicion.en-vista .tag-item li {
-      opacity: 1;
-      transition-delay: calc(var(--i) * 70ms);
-    }
-
+    .areas-item.esparcido.aparicion.etiquetas-visibles .tag-item li,
     .areas-item.esparcido.aparicion .areas-trigger:focus-within .tag-item li {
       opacity: 1;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .areas-item.esparcido.aparicion .tag-item li {
-      transition: none;
+      transition: opacity var(--tags-entrada) ease calc(var(--i) * var(--tags-escalonado));
     }
   }
 </style>
 
 <script>
+  import { enmascarar } from '../scripts/mascara'
+
   interface Config {
     maxEtiquetas: number | null
     dispersion: number
@@ -657,64 +639,49 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
 
   const areas = [...document.querySelectorAll<HTMLElement>('.areas-item')]
 
+  const mediaNombreAjustado = window.matchMedia('(min-width: 800px)')
+
+  // Ancho del contenedor del nombre: la línea más larga, para alinear la descripción a su borde derecho
+  function medirNombre(area: HTMLElement) {
+    const contenedor = area.querySelector<HTMLElement>('.areas-nombre')
+    const nombre = area.querySelector<HTMLElement>('.areas-categoria')
+    if (!contenedor || !nombre) return
+    contenedor.style.removeProperty('--ancho-nombre')
+    if (!mediaNombreAjustado.matches) return
+
+    // Caja de cada palabra; la máscara solo baja su contenido, así que el borde superior marca la línea
+    const rango = document.createRange()
+    const mitadLinea = parseFloat(getComputedStyle(nombre).fontSize) * 0.6
+    const lineas: { arriba: number; izquierda: number; derecha: number }[] = []
+    ;[...nombre.querySelectorAll('.mascara')]
+      .map((mascara) => {
+        rango.selectNode(mascara)
+        return rango.getBoundingClientRect()
+      })
+      .sort((a, b) => a.top - b.top)
+      .forEach((caja) => {
+        const linea = lineas[lineas.length - 1]
+        if (linea && caja.top - linea.arriba < mitadLinea) {
+          linea.izquierda = Math.min(linea.izquierda, caja.left)
+          linea.derecha = Math.max(linea.derecha, caja.right)
+        } else {
+          lineas.push({ arriba: caja.top, izquierda: caja.left, derecha: caja.right })
+        }
+      })
+    if (!lineas.length) return
+    const ancho = Math.max(...lineas.map((linea) => linea.derecha - linea.izquierda))
+    contenedor.style.setProperty('--ancho-nombre', `${Math.ceil(ancho)}px`)
+  }
+
   function actualizar() {
     areas.forEach((area, indice) => {
+      medirNombre(area)
       colocar(area, indice)
       if (area === abierta) ajustarEspacio(area)
     })
   }
 
-  areas.forEach((area, indice) => {
-    area.addEventListener('mouseenter', () => {
-      if (mediaEscritorio.matches) colocar(area, indice)
-    })
-    area.addEventListener('focusin', (e) => {
-      if (mediaEscritorio.matches && !area.contains(e.relatedTarget as Node | null)) {
-        colocar(area, indice)
-      }
-    })
-  })
-
-  // Un área está en vista cuando cruza la franja central de la pantalla
-  const enVista = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => entry.target.classList.toggle('en-vista', entry.isIntersecting))
-    },
-    { rootMargin: '-35% 0px -35% 0px' }
-  )
-  areas.forEach((area) => enVista.observe(area))
-
   const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
-
-  // Palabras dentro de una máscara, con su posición en --p
-  function enmascarar(elemento: HTMLElement) {
-    const palabras = (elemento.textContent ?? '').trim().split(/\s+/)
-    elemento.replaceChildren()
-    palabras.forEach((palabra, i) => {
-      const mascara = document.createElement('span')
-      mascara.className = 'mascara'
-      const texto = document.createElement('span')
-      texto.className = 'mascara-texto'
-      texto.style.setProperty('--p', String(i))
-      texto.textContent = palabra
-      mascara.append(texto)
-      elemento.append(mascara)
-      if (i < palabras.length - 1) elemento.append(' ')
-    })
-  }
-
-  // Nombres: entran una sola vez, cuando su borde superior llega al centro de la ventana
-  const entradaNombre = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const centro = entry.rootBounds?.bottom ?? window.innerHeight / 2
-        if (entry.boundingClientRect.top > centro) return
-        entry.target.classList.remove('por-entrar')
-        entradaNombre.unobserve(entry.target)
-      })
-    },
-    { rootMargin: '0px 0px -50% 0px' }
-  )
 
   areas.forEach((area) => {
     const nombre = area.querySelector<HTMLElement>('.areas-categoria')
@@ -722,9 +689,69 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     if (parrafo) enmascarar(parrafo)
     if (!nombre) return
     enmascarar(nombre)
-    if (movimientoReducido.matches) return
-    nombre.classList.add('por-entrar')
-    entradaNombre.observe(nombre)
+    if (!movimientoReducido.matches) nombre.classList.add('por-entrar')
+  })
+
+  // Tiempos de las etiquetas, en ms y px
+  const configEnfoque = {
+    TAGS_DELAY: 250,
+    entrada: 500,
+    escalonado: 70,
+    salida: 300,
+    desplazamiento: 12,
+  }
+
+  areas.forEach((area) => {
+    area.style.setProperty('--tags-entrada', `${configEnfoque.entrada}ms`)
+    area.style.setProperty('--tags-escalonado', `${configEnfoque.escalonado}ms`)
+    area.style.setProperty('--tags-salida', `${configEnfoque.salida}ms`)
+    area.style.setProperty('--tags-desplazamiento', `${configEnfoque.desplazamiento}px`)
+  })
+
+  // Área enfocada: la que cruza la banda central de la ventana, o la que recibe el foco del teclado
+  let enfocada: HTMLElement | null = null
+  const enBanda: HTMLElement[] = []
+
+  function enfocar(area: HTMLElement | null) {
+    if (area === enfocada) return
+    if (enfocada) {
+      window.clearTimeout(Number(enfocada.dataset.esperaEtiquetas))
+      // En celular las etiquetas no se ocultan al salir
+      if (mediaEscritorio.matches) enfocada.classList.remove('etiquetas-visibles')
+    }
+    enfocada = area
+    if (!area) return
+
+    area.querySelector('.areas-categoria')?.classList.remove('por-entrar')
+    if (!mediaEscritorio.matches && area.classList.contains('etiquetas-visibles')) return
+
+    const mostrar = () => {
+      if (mediaEscritorio.matches) colocar(area, areas.indexOf(area))
+      area.classList.add('etiquetas-visibles')
+    }
+    if (movimientoReducido.matches) mostrar()
+    else area.dataset.esperaEtiquetas = String(window.setTimeout(mostrar, configEnfoque.TAGS_DELAY))
+  }
+
+  const banda = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const area = entry.target as HTMLElement
+        const i = enBanda.indexOf(area)
+        if (entry.isIntersecting && i === -1) enBanda.push(area)
+        if (!entry.isIntersecting && i !== -1) enBanda.splice(i, 1)
+      })
+      enfocar(enBanda[enBanda.length - 1] ?? null)
+    },
+    { rootMargin: '-45% 0px -45% 0px' }
+  )
+  areas.forEach((area) => banda.observe(area))
+
+  areas.forEach((area) => {
+    const boton = area.querySelector<HTMLElement>('.areas-boton')
+    boton?.addEventListener('focus', () => {
+      if (boton.matches(':focus-visible')) enfocar(area)
+    })
   })
 
   // Descripciones: una abierta a la vez
