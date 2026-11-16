@@ -60,24 +60,32 @@ html {
   }
 }
 
-/* Texto con data-reveal: atenuado hasta que el script divide las palabras, sin destello al cargar */
+/* Resaltado de palabras por scroll; apagado desde la carga, sin destello */
 @media (prefers-reduced-motion: no-preference) {
-  .js [data-reveal]:not([data-reveal-modo="resaltar"]):not(.reveal-activo) {
-    opacity: 0.15;
-  }
-
-  /* Modo resaltar */
   .js [data-reveal-modo="resaltar"]:not(.reveal-activo),
   [data-reveal-modo="resaltar"] .palabra {
     color: color-mix(in srgb, var(--fa-black) 22%, transparent);
+  }
+
+  .js [data-reveal-modo="resaltar"]:not(.reveal-activo) img,
+  [data-reveal-modo="resaltar"] .adjunto {
+    opacity: 0.22;
   }
 
   [data-reveal-modo="resaltar"] .palabra {
     transition: color 350ms ease;
   }
 
+  [data-reveal-modo="resaltar"] .adjunto {
+    transition: opacity 350ms ease;
+  }
+
   [data-reveal-modo="resaltar"] .palabra.encendida {
     color: var(--fa-black);
+  }
+
+  [data-reveal-modo="resaltar"] .adjunto.encendida {
+    opacity: 1;
   }
 }
 
