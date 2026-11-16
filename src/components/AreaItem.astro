@@ -123,37 +123,53 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     cursor: default;
   }
 
-  .areas-descripcion :global(.linea) {
-    display: block;
-    width: fit-content;
-    overflow: clip;
-  }
-
-  .areas-descripcion :global(.linea-texto) {
-    display: block;
-    width: fit-content;
-    white-space: nowrap;
-    transform: translateY(100%);
-    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-    transition-delay: calc(var(--l, 0) * 50ms);
-  }
-
-  .areas-item.animando .areas-descripcion :global(.linea-texto) {
-    will-change: transform;
-  }
-
   .areas-item.abierta .areas-descripcion,
   .areas-item.cerrando .areas-descripcion {
     visibility: visible;
   }
 
-  .areas-item.abierta .areas-descripcion :global(.linea-texto) {
-    transform: translateY(0);
+  /* Palabras que suben desde una máscara (nombre y descripción) */
+  .areas-item {
+    --nombre-duracion: 600ms;
+    --nombre-retraso: 40ms;
+    --descripcion-entrada: 500ms;
+    --descripcion-salida: 350ms;
+    --descripcion-retraso: 15ms;
+    --mascara-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
   }
 
-  .areas-item.cerrando .areas-descripcion :global(.linea-texto) {
-    transform: translateY(-100%);
-    transition-duration: 0.45s;
+  /* Margen extra para no recortar acentos ni descendentes, sin cambiar el alto de línea */
+  .areas-item :global(.mascara) {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.1em;
+    margin-block: -0.1em;
+  }
+
+  .areas-item :global(.mascara-texto) {
+    display: inline-block;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .areas-categoria :global(.mascara-texto) {
+      transition: translate var(--nombre-duracion) var(--mascara-curva) calc(var(--p) * var(--nombre-retraso));
+    }
+
+    .areas-categoria.por-entrar :global(.mascara-texto),
+    .areas-descripcion :global(.mascara-texto) {
+      translate: 0 120%;
+    }
+
+    .areas-item.abierta .areas-descripcion :global(.mascara-texto) {
+      translate: none;
+      transition: translate var(--descripcion-entrada) var(--mascara-curva) calc(var(--p) * var(--descripcion-retraso));
+    }
+
+    .areas-item.cerrando .areas-descripcion :global(.mascara-texto) {
+      translate: 0 -120%;
+      transition: translate var(--descripcion-salida) var(--mascara-curva) calc(var(--p) * var(--descripcion-retraso));
+    }
   }
 
   /* Espacio extra debajo del área cuando la descripción no entra */
@@ -184,10 +200,6 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
 
     .areas-descripcion p {
       text-align: center;
-    }
-
-    .areas-descripcion :global(.linea) {
-      margin-inline: auto;
     }
   }
 
@@ -266,8 +278,7 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     .tag-item,
     .tag-item li,
     .areas-item,
-    .areas-descripcion,
-    .areas-descripcion :global(.linea-texto) {
+    .areas-descripcion {
       transition: none;
     }
   }
@@ -649,12 +660,7 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
   function actualizar() {
     areas.forEach((area, indice) => {
       colocar(area, indice)
-      // Las líneas no se recalculan mientras se animan
-      if (area === abierta && !area.classList.contains('animando')) {
-        const parrafo = area.querySelector<HTMLElement>('.areas-descripcion p')
-        if (parrafo) partirEnLineas(parrafo)
-        ajustarEspacio(area)
-      }
+      if (area === abierta) ajustarEspacio(area)
     })
   }
 
@@ -678,12 +684,51 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
   )
   areas.forEach((area) => enVista.observe(area))
 
+  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+  // Palabras dentro de una máscara, con su posición en --p
+  function enmascarar(elemento: HTMLElement) {
+    const palabras = (elemento.textContent ?? '').trim().split(/\s+/)
+    elemento.replaceChildren()
+    palabras.forEach((palabra, i) => {
+      const mascara = document.createElement('span')
+      mascara.className = 'mascara'
+      const texto = document.createElement('span')
+      texto.className = 'mascara-texto'
+      texto.style.setProperty('--p', String(i))
+      texto.textContent = palabra
+      mascara.append(texto)
+      elemento.append(mascara)
+      if (i < palabras.length - 1) elemento.append(' ')
+    })
+  }
+
+  // Nombres: entran una sola vez, cuando su borde superior llega al centro de la ventana
+  const entradaNombre = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const centro = entry.rootBounds?.bottom ?? window.innerHeight / 2
+        if (entry.boundingClientRect.top > centro) return
+        entry.target.classList.remove('por-entrar')
+        entradaNombre.unobserve(entry.target)
+      })
+    },
+    { rootMargin: '0px 0px -50% 0px' }
+  )
+
+  areas.forEach((area) => {
+    const nombre = area.querySelector<HTMLElement>('.areas-categoria')
+    const parrafo = area.querySelector<HTMLElement>('.areas-descripcion p')
+    if (parrafo) enmascarar(parrafo)
+    if (!nombre) return
+    enmascarar(nombre)
+    if (movimientoReducido.matches) return
+    nombre.classList.add('por-entrar')
+    entradaNombre.observe(nombre)
+  })
+
   // Descripciones: una abierta a la vez
   const MARGEN_DESCRIPCION = 32
-  const DURACION_APERTURA = 700
-  const DURACION_CIERRE = 450
-  const ESCALONADO = 50
-  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
   let abierta: HTMLElement | null = null
 
   function ajustarEspacio(area: HTMLElement) {
@@ -697,56 +742,20 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     area.style.marginBottom = extra > 0 ? `${extra}px` : ''
   }
 
-  function partirEnLineas(parrafo: HTMLElement) {
-    const texto = parrafo.dataset.texto ?? parrafo.textContent?.trim() ?? ''
-    parrafo.dataset.texto = texto
-
-    const palabras = texto.split(/\s+/)
-    parrafo.replaceChildren()
-    const marcas = palabras.map((palabra, i) => {
-      const marca = document.createElement('span')
-      marca.textContent = palabra
-      parrafo.append(marca)
-      if (i < palabras.length - 1) parrafo.append(' ')
-      return marca
-    })
-
-    const lineas: string[][] = []
-    let arriba: number | null = null
-    marcas.forEach((marca, i) => {
-      if (marca.offsetTop !== arriba) {
-        lineas.push([])
-        arriba = marca.offsetTop
-      }
-      lineas[lineas.length - 1].push(palabras[i])
-    })
-
-    parrafo.replaceChildren(
-      ...lineas.map((linea, i) => {
-        const elemento = document.createElement('span')
-        elemento.className = 'linea'
-        const texto = document.createElement('span')
-        texto.className = 'linea-texto'
-        texto.style.setProperty('--l', String(i))
-        texto.textContent = linea.join(' ')
-        elemento.append(texto)
-        return elemento
-      })
-    )
-    return lineas.length
-  }
-
-  const duracionTotal = (area: HTMLElement, base: number) => {
+  // Duración de la descripción con el escalonado, según las variables CSS del área
+  const duracionTotal = (area: HTMLElement, abrir: boolean) => {
     if (movimientoReducido.matches) return 0
-    const lineas = area.querySelectorAll('.linea').length
-    return base + Math.max(0, lineas - 1) * ESCALONADO
+    const estilo = getComputedStyle(area)
+    const base = parseFloat(estilo.getPropertyValue(abrir ? '--descripcion-entrada' : '--descripcion-salida'))
+    const retraso = parseFloat(estilo.getPropertyValue('--descripcion-retraso'))
+    const palabras = area.querySelectorAll('.areas-descripcion .mascara').length
+    return base + Math.max(0, palabras - 1) * retraso
   }
 
   function marcarDescripcion(area: HTMLElement, abrir: boolean) {
     const boton = area.querySelector<HTMLButtonElement>('.areas-boton')
     const descripcion = area.querySelector<HTMLElement>('.areas-descripcion')
-    const parrafo = descripcion?.querySelector<HTMLElement>('p')
-    if (!boton || !descripcion || !parrafo) return
+    if (!boton || !descripcion) return
 
     window.clearTimeout(Number(area.dataset.espera))
     descripcion.inert = !abrir
@@ -755,22 +764,19 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     const altoAntes = area.style.marginBottom
 
     if (abrir) {
+      // Las palabras vuelven abajo sin transición antes de subir
       area.classList.remove('cerrando')
-      partirEnLineas(parrafo)
-      ajustarEspacio(area)
-      requestAnimationFrame(() => {
-        area.classList.add('animando', 'abierta')
-      })
+      void descripcion.offsetWidth
+      area.classList.add('abierta')
     } else {
-      area.classList.add('animando', 'cerrando')
+      area.classList.add('cerrando')
       area.classList.remove('abierta')
-      ajustarEspacio(area)
     }
+    ajustarEspacio(area)
 
-    const espera = duracionTotal(area, abrir ? DURACION_APERTURA : DURACION_CIERRE)
+    const espera = duracionTotal(area, abrir)
     area.dataset.espera = String(
       window.setTimeout(() => {
-        area.classList.remove('animando')
         if (!abrir) area.classList.remove('cerrando')
         if (area.style.marginBottom !== altoAntes) colocar(area, areas.indexOf(area))
       }, espera)

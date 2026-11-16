@@ -240,6 +240,63 @@ button {
   visibility: visible;
 }
 
+/* Text roll por letra */
+.btn {
+  --roll-duracion: 850ms;
+  --roll-retraso: 28ms;
+  --roll-curva: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.roll-lector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.roll {
+  display: flex;
+}
+
+/* Margen extra para no recortar acentos ni descendentes, sin cambiar el alto */
+.roll-letra {
+  position: relative;
+  overflow: hidden;
+  white-space: pre;
+  margin-block: -0.15em;
+}
+
+.roll-letra > span {
+  display: block;
+  padding-block: 0.15em;
+  transition: translate var(--roll-duracion) var(--roll-curva) calc(var(--l) * var(--roll-retraso));
+}
+
+.roll-copia {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  color: var(--roll-color, currentColor);
+}
+
+.btn:focus-visible .roll-letra > span {
+  translate: 0 -100%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover .roll-letra > span {
+    translate: 0 -100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roll-letra > span {
+    transition: none;
+  }
+}
+
 /* BOTON ALTERNATIVO */
 .btn-alt::before,
 .btn-alt::after,

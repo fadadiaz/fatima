@@ -69,7 +69,6 @@ function actualizar() {
 
     palabras.forEach((palabra, i) => palabra.classList.toggle('encendida', encendida(i)))
     adjuntos.forEach(({ elemento, indice }) => elemento.classList.toggle('encendida', encendida(indice)))
-    contenedor.classList.toggle('revelado', encendida(palabras.length - 1))
   })
 }
 

@@ -42,6 +42,7 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
       class="btn btn-corchetes bg-pink correo-copiar"
       aria-label="Copiar el correo"
       data-correo={correo}
+      data-texto={TEXTO_COPIAR}
       data-copiado={TEXTO_COPIADO}
     >{TEXTO_COPIAR}</button>
   </div>
@@ -69,14 +70,21 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
     height: 100%;
     fill: var(--fa-black);
     pointer-events: none;
+    --linea-duracion: 300ms;
     clip-path: inset(0 100% 0 0);
-    transition: clip-path 0.5s ease;
 }
 
 .correo-boton:hover .correo-linea,
 .correo-boton:focus-visible .correo-linea,
 .correo.abierto .correo-linea {
-    clip-path: inset(0 0 0 0);
+    clip-path: inset(0);
+    transition: clip-path var(--linea-duracion) ease-in-out;
+}
+
+/* Salida hacia la derecha */
+.correo-linea.saliendo {
+    clip-path: inset(0 0 0 100%);
+    transition: clip-path var(--linea-duracion) ease-in-out;
 }
 
 /* Opciones del correo superpuestas en el centro */
@@ -136,7 +144,9 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .correo-linea,
+  .correo-boton:hover .correo-linea,
+  .correo-boton:focus-visible .correo-linea,
+  .correo.abierto .correo-linea,
   .correo-opciones {
     transition: none;
   }
@@ -144,24 +154,51 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
 </style>
 
 <script>
+  import { prepararRoll } from '../scripts/roll'
+
   // Escritorio: hover y más de 768px, igual que en AreaItem
   const escritorio = window.matchMedia('(hover: hover) and (min-width: 769px)')
+  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
 
   document.querySelectorAll<HTMLElement>('.correo').forEach((bloque) => {
     const boton = bloque.querySelector<HTMLButtonElement>('.correo-boton')
+    const linea = bloque.querySelector<SVGElement>('.correo-linea')
     const escribir = bloque.querySelector<HTMLAnchorElement>('.correo-escribir')
     const copiar = bloque.querySelector<HTMLButtonElement>('.correo-copiar')
     const aviso = bloque.querySelector('.aviso-copiado')
-    if (!boton || !escribir || !copiar) return
+    if (!boton || !linea || !escribir || !copiar) return
 
-    const textoCopiar = copiar.textContent
+    const textoCopiar = copiar.dataset.texto ?? ''
     let espera: number | undefined
 
     const abierto = () => bloque.classList.contains('abierto')
 
+    const ponerTexto = (texto: string) => {
+      copiar.textContent = texto
+      if (!movimientoReducido.matches) prepararRoll(copiar)
+    }
+
+    // Subrayado: entra con el hover y sale hacia la derecha cuando deja de mostrarse
+    const mostrada = () => boton.matches(':hover, :focus-visible') || abierto()
+    let visible = false
+    const revisarLinea = () => {
+      const ahora = mostrada()
+      if (ahora) linea.classList.remove('saliendo')
+      else if (visible && !movimientoReducido.matches) linea.classList.add('saliendo')
+      visible = ahora
+    }
+    boton.addEventListener('mouseenter', revisarLinea)
+    boton.addEventListener('mouseleave', revisarLinea)
+    boton.addEventListener('focus', revisarLinea)
+    boton.addEventListener('blur', revisarLinea)
+    linea.addEventListener('transitionend', () => {
+      if (linea.classList.contains('saliendo')) linea.classList.remove('saliendo')
+    })
+
     const marcar = (abrir: boolean) => {
       bloque.classList.toggle('abierto', abrir)
       boton.setAttribute('aria-expanded', String(abrir))
+      revisarLinea()
     }
 
     boton.addEventListener('click', () => marcar(!abierto()))
@@ -188,14 +225,14 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
     copiar.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(copiar.dataset.correo ?? '')
-        copiar.textContent = copiar.dataset.copiado ?? ''
+        ponerTexto(copiar.dataset.copiado ?? '')
         if (aviso) aviso.textContent = 'Correo copiado'
       } catch {
-        copiar.textContent = 'no se pudo copiar'
+        ponerTexto('no se pudo copiar')
       }
       window.clearTimeout(espera)
       espera = window.setTimeout(() => {
-        copiar.textContent = textoCopiar
+        ponerTexto(textoCopiar)
         if (aviso) aviso.textContent = ''
         if (escritorio.matches) marcar(false)
       }, 2000)
