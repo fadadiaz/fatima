@@ -389,35 +389,11 @@ button {
   visibility: visible;
 }
 
-/* Link de la página actual en el menú: subrayado debajo del roll, como .subrayado pero invertido */
-/* Dibujado en reposo; con hover o foco se retira hacia la derecha y al salir se redibuja desde la izquierda */
-.activo .btn-texto {
-  position: relative;
-}
-
-.activo .btn-texto::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  height: var(--subrayado-grosor);
-  background-image: linear-gradient(currentColor, currentColor);
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 100% 100%;
-  transition: background-size var(--subrayado-duracion) ease-in-out;
-}
-
-.activo:is(:hover, :focus-visible) .btn-texto::after {
-  background-position: 100% 100%;
-  background-size: 0 100%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .activo .btn-texto::after {
-    transition: none;
-  }
+/* Link de la página actual en el menú: corchetes visibles en reposo */
+.activo::before,
+.activo::after,
+.activo .roll-corchete .roll-original {
+  visibility: visible;
 }
 
 /* COLORER HOVER */
