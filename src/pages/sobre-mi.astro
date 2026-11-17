@@ -32,6 +32,13 @@ import Footer from '../components/Footer.astro'
 </Layout>
 
 <style>
+  /* Margen propio: no hay una variable de 38px en la escala */
+  @media (min-width: 769px) {
+    main.margin-main {
+      margin-top: 38px;
+    }
+  }
+
   .bio article {
     gap: var(--space-24);
   }
