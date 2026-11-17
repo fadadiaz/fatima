@@ -383,6 +383,24 @@ button {
   color: var(--btn-fg);
 }
 
+/* BOTON MINI: naranja, compacto y sin corchetes; en celular toma el alto táctil de .btn */
+.btn-mini {
+  --btn-mini-alto: var(--space-24);
+  --btn-mini-ancho: fit-content;
+  --btn-mini-relleno: var(--space-8);
+  min-height: var(--btn-mini-alto);
+  width: var(--btn-mini-ancho);
+  padding-inline: var(--btn-mini-relleno);
+  border: none;
+  background-color: var(--fa-orange);
+}
+
+.btn-mini::before,
+.btn-mini::after {
+  content: none;
+  display: none;
+}
+
 /* BOTON CON CORCHETES SIEMPRE VISIBLES */
 .btn-corchetes::before,
 .btn-corchetes::after {

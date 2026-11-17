@@ -80,6 +80,25 @@ import BotonLlamada from '../components/BotonLlamada.astro'
     justify-content: space-between;
     align-items: flex-end;
     gap: var(--space-16);
+  }
+
+  /* Mismo orden que el pie: párrafo, correo y botón, en columna */
+  @media (max-width: 719px) {
+    .contacto-hook {
+      display: contents;
+    }
+
+    .contacto-hook p {
+      order: 1;
+    }
+
+    .contacto-cierre > :global(.correo) {
+      order: 2;
+    }
+
+    .contacto-hook :global(.btn) {
+      order: 3;
+    }
   }</style>
 
 <script>

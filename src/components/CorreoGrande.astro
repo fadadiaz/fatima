@@ -33,13 +33,13 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
   </button>
   <div class="correo-opciones" id={idOpciones}>
     <a
-      class="btn btn-corchetes bg-pink correo-escribir"
+      class="btn btn-mini correo-escribir"
       href={`mailto:${correo}`}
       aria-label={`Escribir un correo a ${correo}`}
     >{TEXTO_ESCRIBIR}</a>
     <button
       type="button"
-      class="btn btn-corchetes bg-pink correo-copiar"
+      class="btn btn-mini correo-copiar"
       aria-label="Copiar el correo"
       data-correo={correo}
       data-texto={TEXTO_COPIAR}
@@ -122,6 +122,14 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
   .correo-enlace {
     display: none;
   }
+
+  /* Opciones centradas en el punto del clic; --x y --y las calcula el script */
+  .correo-opciones.en-punto {
+    inset: auto;
+    left: var(--x);
+    top: var(--y);
+    translate: -50% -50%;
+  }
 }
 
 /* Celular */
@@ -166,7 +174,8 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
     const escribir = bloque.querySelector<HTMLAnchorElement>('.correo-escribir')
     const copiar = bloque.querySelector<HTMLButtonElement>('.correo-copiar')
     const aviso = bloque.querySelector('.aviso-copiado')
-    if (!boton || !linea || !escribir || !copiar) return
+    const opciones = bloque.querySelector<HTMLElement>('.correo-opciones')
+    if (!boton || !linea || !escribir || !copiar || !opciones) return
 
     const textoCopiar = copiar.dataset.texto ?? ''
     let espera: number | undefined
@@ -201,7 +210,27 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
       revisarLinea()
     }
 
-    boton.addEventListener('click', () => marcar(!abierto()))
+    // Con puntero, las opciones se centran en el clic sin salirse del correo ni de la ventana; con teclado, en el centro
+    const ubicar = (e: MouseEvent) => {
+      if (e.detail === 0) {
+        opciones.classList.remove('en-punto')
+        return
+      }
+      // La clase va antes de medir: así el ancho es el de los botones y no el del correo
+      opciones.classList.add('en-punto')
+      const caja = bloque.getBoundingClientRect()
+      const mitad = opciones.offsetWidth / 2
+      const minimo = Math.max(mitad, mitad - caja.left)
+      const maximo = Math.min(caja.width - mitad, window.innerWidth - mitad - caja.left)
+      const x = Math.min(Math.max(e.clientX - caja.left, minimo), maximo)
+      opciones.style.setProperty('--x', `${x}px`)
+      opciones.style.setProperty('--y', `${e.clientY - caja.top}px`)
+    }
+
+    boton.addEventListener('click', (e) => {
+      if (!abierto()) ubicar(e)
+      marcar(!abierto())
+    })
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && abierto()) {

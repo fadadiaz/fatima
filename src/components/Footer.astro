@@ -40,6 +40,25 @@ footer {
     align-items: flex-end;
     gap: var(--space-16);
 }
+
+/* Desde que el botón ya no entra al lado del párrafo: párrafo, correo y botón, en columna */
+@media (max-width: 719px) {
+    .hook {
+        display: contents;
+    }
+
+    .hook p {
+        order: 1;
+    }
+
+    footer > :global(.correo) {
+        order: 2;
+    }
+
+    .hook :global(.btn) {
+        order: 3;
+    }
+}
 </style>
 
 <script>
