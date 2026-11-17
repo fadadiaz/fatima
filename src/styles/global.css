@@ -542,8 +542,11 @@ button {
   gap: var(--space-16);
 }
 
-.subtitulo h1 {
-  font-size: var(--text-2xl);
+/* Título manuscrito; Schoolbell solo tiene peso 400, sin negrita sintética */
+.subtitulo :is(h1, h2) {
+  font-family: var(--font-alt);
+  font-size: var(--text-xl);
   text-transform: lowercase;
   font-weight: 400;
+  font-synthesis: none;
 }
