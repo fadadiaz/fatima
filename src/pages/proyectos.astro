@@ -90,10 +90,6 @@ const proyectos = await getCollection('proyectos')
     }
   }
 
-  .proyecto-cover {
-      padding: var(--space-24);
-  }
-
   .proyecto-card img {
       width: 100%;
       height: auto;
@@ -104,7 +100,7 @@ const proyectos = await getCollection('proyectos')
       transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  /* Zoom de la foto dentro de su marco: el marco no cambia */
+  /* Zoom de la foto dentro de su propio rectángulo */
   .proyecto-foto {
       overflow: hidden;
   }

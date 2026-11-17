@@ -545,7 +545,7 @@ button {
 /* Título manuscrito; Schoolbell solo tiene peso 400, sin negrita sintética */
 .subtitulo :is(h1, h2) {
   font-family: var(--font-alt);
-  font-size: var(--text-xl);
+  font-size: 1.3rem; /* sin variable en la escala */
   text-transform: lowercase;
   font-weight: 400;
   font-synthesis: none;
