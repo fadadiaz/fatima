@@ -32,6 +32,8 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
     </svg>
   </button>
   <div class="correo-opciones" id={idOpciones}>
+    <!-- Botón de llamada en la fila de acciones, solo en celular y sin hover -->
+    <div class="correo-llamada"><slot name="llamada" /></div>
     <a
       class="btn btn-mini correo-escribir"
       href={`mailto:${correo}`}
@@ -140,14 +142,27 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
 
   .correo-opciones {
     position: static;
+    flex-wrap: wrap;
     justify-content: flex-start;
     margin-top: var(--space-16);
     gap: 12px;
     opacity: 1;
   }
 
-  .correo-opciones .btn {
+  .correo-opciones .btn,
+  .correo-opciones :global(.btn) {
     pointer-events: auto;
+  }
+}
+
+.correo-llamada {
+  display: none;
+}
+
+/* Celular y sin hover: llamada, escribir y copiar en una sola fila */
+@media (max-width: 719px), (hover: none) {
+  .correo-llamada {
+    display: contents;
   }
 }
 

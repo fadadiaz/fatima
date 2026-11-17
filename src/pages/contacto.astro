@@ -20,7 +20,9 @@ import BotonLlamada from '../components/BotonLlamada.astro'
           <p data-entrada-palabras>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time. Escribime, o hablemos por llamada o videollamada.</p>
           <BotonLlamada />
         </div>
-        <CorreoGrande />
+        <CorreoGrande>
+          <BotonLlamada slot="llamada" />
+        </CorreoGrande>
       </div>
     </main>
   </div>
@@ -82,22 +84,10 @@ import BotonLlamada from '../components/BotonLlamada.astro'
     gap: var(--space-16);
   }
 
-  /* Mismo orden que el pie: párrafo, correo y botón, en columna */
-  @media (max-width: 719px) {
-    .contacto-hook {
-      display: contents;
-    }
-
-    .contacto-hook p {
-      order: 1;
-    }
-
-    .contacto-cierre > :global(.correo) {
-      order: 2;
-    }
-
-    .contacto-hook :global(.btn) {
-      order: 3;
+  /* Igual que el pie: el botón de llamada pasa a la fila de acciones del correo */
+  @media (max-width: 719px), (hover: none) {
+    .contacto-hook > :global(.btn) {
+      display: none;
     }
   }</style>
 

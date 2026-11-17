@@ -401,6 +401,14 @@ button {
   display: none;
 }
 
+/* En celular, relleno mayor para compensar en parte el espacio de los corchetes */
+@media (max-width: 768px), (hover: none) {
+  .btn-mini {
+    --btn-mini-relleno-movil: var(--space-16);
+    padding-inline: var(--btn-mini-relleno-movil);
+  }
+}
+
 /* BOTON CON CORCHETES SIEMPRE VISIBLES */
 .btn-corchetes::before,
 .btn-corchetes::after {
