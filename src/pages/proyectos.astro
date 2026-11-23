@@ -22,7 +22,7 @@ const proyectos = await getCollection('proyectos')
       </div>
     </header>
     <section class="grilla-proyectos max-width min-padding">
-      {proyectos.map((proyecto: CollectionEntry<'proyectos'>) => (
+      {proyectos.map((proyecto: CollectionEntry<'proyectos'>, i: number) => (
         <a href={`/proyectos/${proyecto.id}`} class="proyecto-card">
           <div class="proyecto-cover">
             <div class="proyecto-foto">
@@ -31,7 +31,8 @@ const proyectos = await getCollection('proyectos')
                 alt={proyecto.data.titulo}
                 widths={[450, 900]}
                 sizes="(max-width: 768px) 100vw, (max-width: 1023px) 50vw, 33vw"
-                loading="lazy"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : undefined}
               />
             </div>
           </div>

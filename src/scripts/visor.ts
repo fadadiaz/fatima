@@ -62,6 +62,8 @@ export function crearVisor(opciones: OpcionesVisor) {
     imagen!.removeAttribute('srcset')
     imagen!.src = dato.src
     imagen!.alt = dato.alt
+    imagen!.width = dato.ancho
+    imagen!.height = dato.alto
     const grande = new Image()
     grande.src = dato.grande
     grande.decode().then(

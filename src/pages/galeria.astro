@@ -6,6 +6,8 @@ import Layout from '../layouts/Layout.astro'
 import NavSecundario from '../components/NavSecundario.astro'
 import Visor from '../components/Visor.astro'
 import { crearAleatorio } from '../scripts/aleatorio'
+import { analizarAnimacion, rutaPoster } from '../lib/posters'
+import { readFileSync } from 'node:fs'
 
 // Semilla del orden de las fotos
 const SEMILLA_ORDEN = 7
@@ -23,12 +25,12 @@ const imagenes = import.meta.glob<{ default: ImageMetadata }>(
 )
 
 const nombreDeRuta = (ruta: string) => ruta.split('/').pop() ?? ruta
-// Nombre original a partir del src optimizado: sin consulta ni hash del build
-const nombreDeSrc = (src: string) =>
-  (src.split('?')[0].split('/').pop() ?? src).replace(/\.[^.]+(?=\.\w+$)/, '')
+// Archivo de la portada leído del frontmatter: leer .src del import copiaría el original a dist/
+const portadaDe = (proyecto: (typeof proyectos)[number]) =>
+  nombreDeRuta(readFileSync(proyecto.filePath ?? '', 'utf8').match(/^portada:\s*["']?([^"'\n]+)/m)?.[1]?.trim() ?? '')
 
 // Exclusiones por nombre de archivo: las portadas de cada proyecto y la última imagen de Nubes (decorativa)
-const portadas = proyectos.map((proyecto) => nombreDeSrc(proyecto.data.portada.src))
+const portadas = proyectos.map(portadaDe)
 const ultimaDeNubes = Object.keys(imagenes)
   .filter((ruta) => ruta.startsWith('/src/assets/proyectos/nubes/'))
   .map(nombreDeRuta)
@@ -72,13 +74,22 @@ while (mezcla.length) {
   mezcla.splice(mezcla.indexOf(elegida), 1)
 }
 
-// Versión grande para el visor
+// Versión grande para el visor (sharp no agranda); las animaciones pesadas muestran un póster hasta abrirse.
+// Las medidas salen de getImage: leer cualquier propiedad del import copiaría el original a dist/
 const fotos = await Promise.all(
-  orden.map(async (foto) => ({
-    ...foto,
-    grande: await getImage({ src: foto.imagen, width: Math.min(1600, foto.imagen.width) }),
-  }))
+  orden.map(async (foto) => {
+    const animacion = /\.gif$/i.test(foto.ruta) ? await analizarAnimacion(foto.ruta) : null
+    const grande = await getImage({ src: foto.imagen, width: 1600 })
+    return {
+      ...foto,
+      grande,
+      ancho: Number(grande.attributes.width),
+      alto: Number(grande.attributes.height),
+      poster: animacion?.pesada ? { src: rutaPoster(foto.ruta) } : null,
+    }
+  })
 )
+const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * foto.alto) / foto.ancho)
 ---
 
 <Layout
@@ -100,17 +111,33 @@ const fotos = await Promise.all(
           data-titulo={foto.titulo}
           data-href={foto.href}
           data-grande={foto.grande.src}
-          data-ancho={foto.imagen.width}
-          data-alto={foto.imagen.height}
+          data-ancho={foto.ancho}
+          data-alto={foto.alto}
+          data-pesada={foto.poster ? '' : undefined}
         >
-          <Image
-            src={foto.imagen}
-            alt=""
-            width={MINIATURA}
-            densities={[1, 2]}
-            loading={i < CARGA_INMEDIATA ? 'eager' : 'lazy'}
-            draggable="false"
-          />
+          {foto.poster ? (
+            <img
+              src={foto.poster.src}
+              alt=""
+              width={MINIATURA}
+              height={altoMiniatura(foto)}
+              loading={i < CARGA_INMEDIATA ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : undefined}
+              decoding="async"
+              draggable="false"
+            />
+          ) : (
+            <Image
+              src={foto.imagen}
+              alt=""
+              width={MINIATURA}
+              densities={[1, 2]}
+              loading={i < CARGA_INMEDIATA ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : undefined}
+              decoding="async"
+              draggable="false"
+            />
+          )}
         </button>
       ))}
     </section>
@@ -253,6 +280,11 @@ const fotos = await Promise.all(
     srcset: string
   }
 
+  // Lectura temporal de ?sinpesadas=1: quita del mosaico, del lienzo y del visor las animaciones pesadas
+  if (new URLSearchParams(window.location.search).get('sinpesadas') === '1') {
+    document.querySelectorAll('.galeria-foto[data-pesada]').forEach((boton) => boton.remove())
+  }
+
   const mosaico = [...document.querySelectorAll<HTMLButtonElement>('.galeria-foto')]
   const datos: Dato[] = mosaico.map((boton) => {
     const img = boton.querySelector('img')
@@ -389,6 +421,8 @@ const fotos = await Promise.all(
     img.src = dato.src
     if (dato.srcset) img.srcset = dato.srcset
     img.alt = ''
+    img.width = Math.round(medidas.ancho)
+    img.height = Math.round(alto)
     img.draggable = false
     img.decoding = 'async'
     boton.append(img)

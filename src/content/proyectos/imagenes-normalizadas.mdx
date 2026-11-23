@@ -9,7 +9,11 @@ carpeta: "/proyectos/normalizadas"
 
 ---
 
-![Portada de la colección Imágenes normalizadas](../../assets/proyectos/normalizadas/otras/behance-etica-animal-01.png)
+import { Image } from 'astro:assets'
+import etica01 from '../../assets/proyectos/normalizadas/otras/behance-etica-animal-01.png'
+
+<Image src={etica01} widths={[800, 1600]} sizes="(max-width: 768px) 100vw, 1296px" loading="eager" fetchpriority="high" alt="Portada de la colección Imágenes normalizadas" />
+
 ![Tapas de los tres libros de la colección, con fotos pixeladas de animales colgados](../../assets/proyectos/normalizadas/behance-etica-animal-02.png)
 ![Cuatro dobles páginas interiores con el índice, el texto y las notas](../../assets/proyectos/normalizadas/behance-etica-animal-03.png)
 ![Folleto plegado con las tres tapas pixeladas y la reseña de cada libro](../../assets/proyectos/normalizadas/behance-etica-animal-04.png)
