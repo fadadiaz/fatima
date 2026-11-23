@@ -7,7 +7,7 @@ import NavSecundario from '../components/NavSecundario.astro'
 import Footer from '../components/Footer.astro'
 import { crearAleatorio } from '../scripts/aleatorio'
 
-// Semilla del orden de las fotos (la del reparto en pantalla está en CONFIG, en el script)
+// Semilla del orden de las fotos
 const SEMILLA_ORDEN = 7
 // Miniaturas que se cargan de entrada: las primeras en orden, visibles en la primera pantalla
 const CARGA_INMEDIATA = 6
@@ -87,34 +87,27 @@ const fotos = await Promise.all(
   <main>
     <h1 class="galeria-titulo">Galería</h1>
     <section class="galeria" aria-label="Imágenes de los proyectos">
-      <div class="galeria-escenario">
-        <div class="galeria-carril">
-          {fotos.map((foto, i) => (
-            <button
-              type="button"
-              class="galeria-foto"
-              aria-label={`Ver imagen de ${foto.titulo}`}
-              data-indice={i}
-              data-proyecto={foto.proyecto}
-              data-titulo={foto.titulo}
-              data-href={foto.href}
-              data-grande={foto.grande.src}
-              data-ancho={foto.imagen.width}
-              data-alto={foto.imagen.height}
-              style={`--proporcion: ${foto.imagen.width} / ${foto.imagen.height}`}
-            >
-              <Image
-                src={foto.imagen}
-                alt=""
-                width={480}
-                densities={[1, 2]}
-                loading={i < CARGA_INMEDIATA ? 'eager' : 'lazy'}
-                draggable="false"
-              />
-            </button>
-          ))}
-        </div>
-      </div>
+      {fotos.map((foto, i) => (
+        <button
+          type="button"
+          class="galeria-foto"
+          aria-label={`Ver imagen de ${foto.titulo}`}
+          data-titulo={foto.titulo}
+          data-href={foto.href}
+          data-grande={foto.grande.src}
+          data-ancho={foto.imagen.width}
+          data-alto={foto.imagen.height}
+        >
+          <Image
+            src={foto.imagen}
+            alt=""
+            width={480}
+            densities={[1, 2]}
+            loading={i < CARGA_INMEDIATA ? 'eager' : 'lazy'}
+            draggable="false"
+          />
+        </button>
+      ))}
     </section>
   </main>
 
@@ -124,10 +117,10 @@ const fotos = await Promise.all(
       <div class="visor-barra">
         <p class="visor-proyecto"></p>
         <div class="visor-acciones">
-          <a class="btn btn-pink visor-ver" href="/proyectos">Ver proyecto<i class="fi fi-rs-arrow-up-right"></i></a>
-          <button type="button" class="btn btn-pink visor-anterior">Anterior<i class="fi fi-rs-arrow-left"></i></button>
-          <button type="button" class="btn btn-pink visor-siguiente">Siguiente<i class="fi fi-rs-arrow-right"></i></button>
-          <button type="button" class="btn btn-pink visor-cerrar">Cerrar<i class="fi fi-rs-cross-small"></i></button>
+          <a class="btn btn-pink visor-ver" href="/proyectos">Ver proyecto</a>
+          <button type="button" class="btn btn-pink visor-anterior">Anterior</button>
+          <button type="button" class="btn btn-pink visor-siguiente">Siguiente</button>
+          <button type="button" class="btn btn-pink visor-cerrar">Cerrar</button>
         </div>
       </div>
     </div>
@@ -147,25 +140,21 @@ const fotos = await Promise.all(
     white-space: nowrap;
   }
 
+  /* Mosaico */
   .galeria {
     width: 100%;
-    background-color: var(--fa-white);
-    user-select: none;
-  }
-
-  /* Respaldo sin movimiento: grilla común */
-  .galeria-carril {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: var(--space-16);
     padding: var(--space-48);
+    background-color: var(--fa-white);
+    user-select: none;
   }
 
   .galeria-foto {
     display: block;
     width: 100%;
     cursor: pointer;
-    user-select: none;
     -webkit-user-drag: none;
   }
 
@@ -173,41 +162,14 @@ const fotos = await Promise.all(
     display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: var(--proporcion);
-    object-fit: cover;
     pointer-events: none;
   }
 
   @media (max-width: 768px) {
-    .galeria-carril {
+    .galeria {
       grid-template-columns: repeat(2, 1fr);
       padding: var(--space-16);
     }
-  }
-
-  /* Galería en movimiento: escenario fijo y carril horizontal */
-  .galeria.en-movimiento .galeria-escenario {
-    position: sticky;
-    top: 0;
-    height: 100svh;
-    /* clip en lugar de hidden: el foco no desplaza el escenario por su cuenta */
-    overflow: clip;
-  }
-
-  .galeria.en-movimiento .galeria-carril {
-    display: block;
-    position: relative;
-    height: 100%;
-    padding: 0;
-    will-change: transform;
-  }
-
-  .galeria.en-movimiento .galeria-foto {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    width: var(--ancho);
-    will-change: transform;
   }
 
   /* Visor a pantalla completa */
@@ -270,183 +232,7 @@ const fotos = await Promise.all(
 </style>
 
 <script>
-  import { crearAleatorio } from '../scripts/aleatorio'
-
-  // Configuración de la galería en movimiento
-  const CONFIG = {
-    semilla: 7,
-    tamanos: {
-      escritorio: [12, 17, 23], // vw: chico, mediano, grande
-      movil: [38, 50, 62], // vw, hasta 768px
-    },
-    huecoMin: 2, // vw entre fotos
-    huecoMax: 6, // vw
-    probSuperposicion: 0.2, // parte de las fotos que se superponen un poco a la anterior
-    superposicionMax: 3, // vw
-    margenInicio: 4, // vw antes de la primera foto y después de la última
-    margenVertical: 24, // px libres arriba (debajo del menú) y abajo
-    probInclinacion: 0.35,
-    inclinacion: [1.5, 4], // grados
-    paralaje: [0.92, 1.08], // velocidad de cada foto respecto del carril
-    escalaMin: 0.9, // escala en los bordes de la ventana
-    zonaEscala: 0.25, // parte del ancho de la ventana, en cada borde, donde cambia la escala
-    deriva: 10, // px máximos de movimiento vertical
-    ciclosDeriva: 1.5, // ondas de la deriva a lo largo de todo el recorrido
-    lerp: 0.1, // suavizado del desplazamiento
-  }
-
-  interface Foto {
-    boton: HTMLButtonElement
-    x: number
-    y: number
-    ancho: number
-    alto: number
-    giro: number
-    paralaje: number
-    fase: number
-  }
-
-  const galeria = document.querySelector<HTMLElement>('.galeria')
-  const carril = galeria?.querySelector<HTMLElement>('.galeria-carril')
-  const escenario = galeria?.querySelector<HTMLElement>('.galeria-escenario')
   const botones = [...document.querySelectorAll<HTMLButtonElement>('.galeria-foto')]
-  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
-  const movil = window.matchMedia('(max-width: 768px)')
-
-  let fotos: Foto[] = []
-  let recorrido = 0
-  let inicioSeccion = 0
-  let actual = 0
-  let objetivo = 0
-  let animando = false
-
-  const limitar = (valor: number, min: number, max: number) => Math.min(max, Math.max(min, valor))
-  const entre = (azar: () => number, [min, max]: number[]) => min + azar() * (max - min)
-
-  // Reparte las fotos en el carril; devuelve el ancho total
-  function repartir() {
-    const azar = crearAleatorio(CONFIG.semilla)
-    const vw = window.innerWidth / 100
-    const altoEscenario = escenario!.clientHeight
-    const menu = document.querySelector<HTMLElement>('.header-alt')?.offsetHeight ?? 0
-    const arriba = menu + CONFIG.margenVertical
-    const disponible = Math.max(100, altoEscenario - arriba - CONFIG.margenVertical)
-    const tamanos = movil.matches ? CONFIG.tamanos.movil : CONFIG.tamanos.escritorio
-
-    let x = CONFIG.margenInicio * vw
-    fotos = botones.map((boton, i) => {
-      const proporcion = Number(boton.dataset.alto) / Number(boton.dataset.ancho)
-      let ancho = tamanos[Math.floor(azar() * tamanos.length)] * vw
-      // Altura según la proporción real, sin pasarse del alto disponible
-      if (ancho * proporcion > disponible) ancho = disponible / proporcion
-      const alto = ancho * proporcion
-
-      if (i > 0) {
-        x += azar() < CONFIG.probSuperposicion
-          ? -azar() * CONFIG.superposicionMax * vw
-          : entre(azar, [CONFIG.huecoMin, CONFIG.huecoMax]) * vw
-      }
-      const foto: Foto = {
-        boton,
-        x,
-        y: arriba + azar() * (disponible - alto),
-        ancho,
-        alto,
-        giro: azar() < CONFIG.probInclinacion ? entre(azar, CONFIG.inclinacion) * (azar() < 0.5 ? -1 : 1) : 0,
-        paralaje: entre(azar, CONFIG.paralaje),
-        fase: azar() * Math.PI * 2,
-      }
-      x += ancho
-      boton.style.setProperty('--x', `${foto.x}px`)
-      boton.style.setProperty('--y', `${foto.y}px`)
-      boton.style.setProperty('--ancho', `${ancho}px`)
-      return foto
-    })
-    return x + CONFIG.margenInicio * vw
-  }
-
-  function dibujar() {
-    const anchoVentana = window.innerWidth
-    const zona = anchoVentana * CONFIG.zonaEscala
-    const avance = recorrido > 0 ? actual / recorrido : 0
-    carril!.style.transform = `translate3d(${-actual}px, 0, 0)`
-
-    fotos.forEach((foto) => {
-      // Paralaje: nulo cuando la foto está en el centro de la ventana
-      const centrada = foto.x + foto.ancho / 2 - anchoVentana / 2
-      const dx = -(foto.paralaje - 1) * (actual - centrada)
-      const centro = foto.x + foto.ancho / 2 - actual + dx
-      // Escala: crece al entrar por la derecha y se achica al salir por la izquierda
-      let borde = 0
-      if (centro > anchoVentana - zona) borde = (centro - (anchoVentana - zona)) / zona
-      else if (centro < zona) borde = (zona - centro) / zona
-      const escala = 1 - (1 - CONFIG.escalaMin) * limitar(borde, 0, 1)
-      const dy = CONFIG.deriva * Math.sin(avance * Math.PI * 2 * CONFIG.ciclosDeriva + foto.fase)
-      foto.boton.style.transform =
-        `translate3d(${dx}px, ${dy}px, 0) rotate(${foto.giro}deg) scale(${escala})`
-    })
-  }
-
-  function cuadro() {
-    actual += (objetivo - actual) * CONFIG.lerp
-    if (Math.abs(objetivo - actual) < 0.1) actual = objetivo
-    dibujar()
-    animando = actual !== objetivo
-    if (animando) requestAnimationFrame(cuadro)
-  }
-
-  function leerScroll() {
-    objetivo = limitar(window.scrollY - inicioSeccion, 0, recorrido)
-    if (!animando) {
-      animando = true
-      requestAnimationFrame(cuadro)
-    }
-  }
-
-  // Alto de la sección: el recorrido del carril más el alto de la ventana
-  function medir() {
-    if (!galeria || !escenario || !carril) return
-    galeria.classList.add('en-movimiento')
-    // El escenario arranca arriba de todo, debajo del menú fijo
-    const menu = document.querySelector<HTMLElement>('.header-alt')?.offsetHeight ?? 0
-    galeria.style.marginTop = `${-menu}px`
-    const ancho = repartir()
-    recorrido = ancho - window.innerWidth
-    if (recorrido <= 0) {
-      // Sin recorrido posible: vuelve a la grilla
-      galeria.classList.remove('en-movimiento')
-      galeria.style.marginTop = ''
-      galeria.style.height = ''
-      carril.style.transform = ''
-      botones.forEach((boton) => (boton.style.transform = ''))
-      fotos = []
-      return
-    }
-    galeria.style.height = `${recorrido + escenario.clientHeight}px`
-    inicioSeccion = galeria.getBoundingClientRect().top + window.scrollY
-    objetivo = actual = limitar(window.scrollY - inicioSeccion, 0, recorrido)
-    dibujar()
-  }
-
-  if (galeria && carril && escenario && !movimientoReducido.matches) {
-    medir()
-    window.addEventListener('scroll', leerScroll, { passive: true })
-    let espera: number | undefined
-    window.addEventListener('resize', () => {
-      window.clearTimeout(espera)
-      espera = window.setTimeout(medir, 150)
-    })
-
-    // Con el teclado, la foto enfocada se trae al centro de la ventana
-    galeria.addEventListener('focusin', (e) => {
-      const boton = (e.target as HTMLElement).closest<HTMLButtonElement>('.galeria-foto')
-      if (!boton || !boton.matches(':focus-visible') || !fotos.length) return
-      const foto = fotos.find((f) => f.boton === boton)
-      if (!foto) return
-      const destino = limitar(foto.x + foto.ancho / 2 - window.innerWidth / 2, 0, recorrido)
-      window.scrollTo({ top: inicioSeccion + destino })
-    })
-  }
 
   // Visor
   const visor = document.querySelector<HTMLDialogElement>('.visor')
