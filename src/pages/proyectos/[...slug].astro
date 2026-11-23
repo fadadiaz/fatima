@@ -55,13 +55,8 @@ const ogImagen = await getImage({
   <NavSecundario />
   <main class="margin-main">
     <header class="proyecto-header max-width min-padding grid-12">
-      <nav class="migas col" style="--start: 1; --end: 12;" aria-label="Migas de pan">
-        <ol>
-          <li><a class="subrayado" href="/proyectos">proyectos</a></li>
-          <li aria-current="page">{proyecto.data.categoria}</li>
-        </ol>
-      </nav>
       <h1 class="proyecto-titulo col" style="--start: 1; --end: 12;">{proyecto.data.titulo}</h1>
+      <p class="proyecto-categoria col" style="--start: 1; --end: 3;">{proyecto.data.categoria}</p>
       <p class="proyecto-descripcion col" style="--start: 3; --end: 9;">{proyecto.data.descripcion}</p>
       {proyecto.data.enlaces && (
         <div class="proyecto-enlaces col" style="--start: 3; --end: 9;">
@@ -90,24 +85,24 @@ const ogImagen = await getImage({
     row-gap: var(--space-16);
   }
 
-  /* Migas de pan: misma tipografía que los títulos de sección */
-  .migas ol {
-    display: flex;
-    flex-wrap: wrap;
-    list-style: none;
-    font-family: var(--font-alt);
-    font-size: 1.3rem;
-    font-weight: 400;
-    font-synthesis: none;
-    letter-spacing: 0.05em;
-    text-transform: lowercase;
+  /* Título del proyecto; 5rem no está en la escala */
+  .proyecto-titulo {
+    font-size: 5rem;
+    letter-spacing: -0.05em;
   }
 
-  /* Separador dibujado, sin texto para lectores de pantalla */
-  .migas li + li::before {
-    content: '>';
-    content: '>' / '';
-    margin-inline: 0.4em;
+  @media (max-width: 768px) {
+    .proyecto-titulo {
+      font-size: var(--text-3xl);
+    }
+  }
+
+  /* Categoría a la izquierda de la primera línea del párrafo; tipografía provisoria en una sola variable */
+  .proyecto-categoria {
+    --categoria-fuente: 400 var(--text-sm) / var(--text-lg) var(--font-mono);
+    font: var(--categoria-fuente);
+    text-transform: uppercase;
+    align-self: start;
   }
 
   /* Navegación entre proyectos: anterior, aleatorio y siguiente */

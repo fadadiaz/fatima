@@ -88,7 +88,7 @@ const fotos = await Promise.all(
 >
   <NavSecundario transparente />
   <main>
-    <h1 class="galeria-titulo">Galería</h1>
+    <h1 class="solo-lectores">Galería</h1>
 
     <!-- Mosaico: respaldo sin JavaScript o con movimiento reducido, y fuente de datos del lienzo -->
     <section class="galeria" aria-label="Imágenes de los proyectos">
@@ -124,16 +124,6 @@ const fotos = await Promise.all(
 </Layout>
 
 <style>
-  /* Título para lectores de pantalla y buscadores */
-  .galeria-titulo {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
   /* Mosaico */
   .galeria {
     width: 100%;
