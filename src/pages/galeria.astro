@@ -136,7 +136,7 @@ const fotos = await Promise.all(
 <style>
   /* Opacidad de las fotos del lienzo con el visor abierto (0 a 1) */
   :global(:root) {
-    --visor-opacidad-fondo: 0.7;
+    --visor-opacidad-fondo: 0.5;
   }
 
   /* Título para lectores de pantalla y buscadores */
@@ -382,11 +382,6 @@ const fotos = await Promise.all(
     aparicionMaxima: 1500, // ms de espera máxima antes de mostrar el lienzo
   }
 
-  // Lectura temporal de ?velo=0.6, 0.7 u 0.8 para probar la atenuación del fondo del visor
-  const velo = new URLSearchParams(window.location.search).get('velo')
-  if (velo && ['0.6', '0.7', '0.8'].includes(velo)) {
-    document.documentElement.style.setProperty('--visor-opacidad-fondo', velo)
-  }
 
   interface Dato {
     titulo: string
