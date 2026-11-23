@@ -21,3 +21,4 @@ Portfolio de Fátima Díaz, diseñadora gráfica y web en Buenos Aires. Reúne p
 ## Créditos
 
 - Emojis: Noto Emoji de Google, licencia CC BY 4.0, https://googlefonts.github.io/noto-emoji-files/
+- Galería: adaptada de Infinite Draggable Image Gallery, de Filip Zrnzevic (MIT), https://codepen.io/filipz/pen/dPPyJZX
