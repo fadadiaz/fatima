@@ -91,7 +91,10 @@ const areas = [
       <div class="max-width min-padding">
         <div class="subtitulo">
           <h2>Proyectos</h2>
-          <a class="btn btn-pink" href="/proyectos">Ver todo<i class="fi fi-rs-eye"></i></a>
+          <div class="subtitulo-acciones">
+            <a class="btn btn-pink" href="/proyectos">Ver todo<i class="fi fi-rs-eye"></i></a>
+            <a class="btn btn-pink" href="/galeria">Ver galería<i class="fi fi-rs-picture"></i></a>
+          </div>
         </div>
       </div>
       <Slider />
@@ -132,6 +135,14 @@ const areas = [
     overflow-x: clip;
     /* Flecha estándar en toda la sección; el nombre de cada área usa la manito */
     cursor: default;
+  }
+
+  /* Botones del encabezado de proyectos, juntos a la derecha */
+  .subtitulo-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-8);
   }
 
   #slider-proyectos {
