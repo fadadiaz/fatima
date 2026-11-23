@@ -117,6 +117,7 @@ const fotos = await Promise.all(
     <div class="lienzo" role="region" tabindex="0" aria-label="Galería de imágenes">
       <div class="lienzo-capa"></div>
     </div>
+    <div class="galeria-velo" aria-hidden="true"></div>
   </main>
 
   <dialog class="visor" aria-label="Visor de imágenes">
@@ -134,6 +135,11 @@ const fotos = await Promise.all(
 </Layout>
 
 <style>
+  /* Atenuación de las fotos detrás del menú (0 a 1) */
+  :global(:root) {
+    --velo-opacidad: 0.7;
+  }
+
   /* Título para lectores de pantalla y buscadores */
   .galeria-titulo {
     position: absolute;
@@ -176,12 +182,12 @@ const fotos = await Promise.all(
     }
   }
 
-  /* Lienzo infinito: solo con JavaScript y sin movimiento reducido */
+  /* Lienzo infinito: solo con JavaScript y sin movimiento reducido; ocupa toda la ventana, detrás del menú */
   .lienzo {
     display: none;
-    position: relative;
-    width: 100%;
-    height: calc(100svh - var(--alto-menu, 0px));
+    position: fixed;
+    inset: 0;
+    height: 100svh;
     overflow: clip;
     background-color: var(--fa-white);
     cursor: grab;
@@ -196,9 +202,24 @@ const fotos = await Promise.all(
       display: none;
     }
 
-    :global(.js) .lienzo {
+    :global(.js) .lienzo,
+    :global(.js) .galeria-velo {
       display: block;
     }
+  }
+
+  /* Velo entre el lienzo y el menú: atenúa las fotos para que el menú se lea */
+  .galeria-velo {
+    --velo-color: color-mix(in srgb, var(--fa-white) calc(var(--velo-opacidad) * 100%), transparent);
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--alto-menu, 0px) + 40px);
+    z-index: 40;
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--velo-color) 0, var(--velo-color) var(--alto-menu, 0px), transparent 100%);
   }
 
   .lienzo.listo {
@@ -370,6 +391,29 @@ const fotos = await Promise.all(
     expandido: { alto: 0.8, ancho: 0.86 }, // parte de la ventana que ocupa la imagen abierta
     aparicionMaxima: 1500, // ms de espera máxima antes de mostrar el lienzo
   }
+
+  // Lectura temporal de parámetros por URL para probar el espaciado y el velo
+  const parametros = new URLSearchParams(window.location.search)
+  const ESPACIOS: Record<string, { h: [number, number]; v: [number, number] }> = {
+    '1': { h: [6, 8], v: [5, 6] },
+    '2': { h: [4, 5], v: [3.5, 4] },
+    '3': { h: [2, 3], v: [2, 2.5] },
+  }
+  const espacio = ESPACIOS[parametros.get('espacio') ?? '']
+  if (espacio) {
+    CONFIG.huecoH = { vw: espacio.h[0], vwMovil: espacio.h[1] }
+    CONFIG.huecoV = { vw: espacio.v[0], vwMovil: espacio.v[1] }
+  }
+  const numeroDeUrl = (clave: string) => {
+    const valor = parseFloat(parametros.get(clave) ?? '')
+    return Number.isFinite(valor) && valor >= 0 ? valor : null
+  }
+  const huecoManualH = numeroDeUrl('huecoh')
+  const huecoManualV = numeroDeUrl('huecov')
+  if (huecoManualH !== null) CONFIG.huecoH = { vw: huecoManualH, vwMovil: huecoManualH }
+  if (huecoManualV !== null) CONFIG.huecoV = { vw: huecoManualV, vwMovil: huecoManualV }
+  const velo = parametros.get('velo')
+  if (velo && ['0.6', '0.7', '0.8'].includes(velo)) document.documentElement.style.setProperty('--velo-opacidad', velo)
 
   interface Dato {
     titulo: string
@@ -803,6 +847,7 @@ const fotos = await Promise.all(
     } catch {
       // Sin GSAP: queda el mosaico
       lienzo.remove()
+      document.querySelector('.galeria-velo')?.remove()
       document.querySelector<HTMLElement>('.galeria')?.style.setProperty('display', 'grid')
       document.body.classList.remove('sin-scroll')
       return
@@ -811,7 +856,7 @@ const fotos = await Promise.all(
     while (mcd(paso, N) !== 1) paso++
     lienzo.style.setProperty('--escala-hover', String(CONFIG.hoverScale))
     const menu = document.querySelector<HTMLElement>('.header-alt')?.offsetHeight ?? 0
-    lienzo.style.setProperty('--alto-menu', `${menu}px`)
+    document.body.style.setProperty('--alto-menu', `${menu}px`)
 
     medir()
     // La primera foto arranca en el centro del lienzo
@@ -900,7 +945,7 @@ const fotos = await Promise.all(
     window.addEventListener('resize', () => {
       window.clearTimeout(espera)
       espera = window.setTimeout(() => {
-        lienzo.style.setProperty('--alto-menu', `${document.querySelector<HTMLElement>('.header-alt')?.offsetHeight ?? 0}px`)
+        document.body.style.setProperty('--alto-menu', `${document.querySelector<HTMLElement>('.header-alt')?.offsetHeight ?? 0}px`)
         if (abierto && imagen && gsap) {
           const destino = tamanoAbierto(datos[indiceActual])
           gsap.set(imagen, { width: destino.ancho, height: destino.alto })
