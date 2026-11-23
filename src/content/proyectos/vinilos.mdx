@@ -15,30 +15,45 @@ import vinilos01 from '../../assets/proyectos/vinilos/vinilos-pag-1.gif'
 import vinilos07 from '../../assets/proyectos/vinilos/vinilos-pag-7.gif'
 import vinilos04 from '../../assets/proyectos/vinilos/vinilos-pag-4.png'
 import vinilos09 from '../../assets/proyectos/vinilos/vinilos-pag-9.png'
+import vinilos02 from '../../assets/proyectos/vinilos/vinilos-pag-2.png'
+import vinilos05 from '../../assets/proyectos/vinilos/vinilos-pag-5.png'
+import vinilos06 from '../../assets/proyectos/vinilos/vinilos-pag-6.png'
+import vinilos08 from '../../assets/proyectos/vinilos/vinilos-pag-8.png'
+import vinilos11 from '../../assets/proyectos/vinilos/vinilos-pag-11.png'
+import vinilos12 from '../../assets/proyectos/vinilos/vinilos-pag-12.jpg'
+import vinilosAlt2 from '../../assets/proyectos/vinilos/vinilos-pag-alt-2.png'
+import vinilosAlt3 from '../../assets/proyectos/vinilos/vinilos-pag-alt-3.png'
+import vinilosAlt4 from '../../assets/proyectos/vinilos/vinilos-pag-alt-4.png'
+import { ANCHOS_PROYECTO, SIZES_PROYECTO, CALIDAD_PROYECTO } from '../../lib/imagenes'
 
 <Image src={vinilos01} widths={[800, 1400]} sizes="(max-width: 768px) 100vw, 1296px" loading="eager" fetchpriority="high" alt="Doble página con texto manuscrito y un vinilo de Agnaldo Timoteo grabado a mano" />
 
-![Vista general de las dobles páginas de la publicación, con vinilos y letras manuscritas](../../assets/proyectos/vinilos/vinilos-pag-2.png)
+<Image src={vinilos02} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Vista general de las dobles páginas de la publicación, con vinilos y letras manuscritas" />
 
 <div class="agrupado">
     <Animacion nombre="vinilos-pag-3.gif" class="img-v" alt="Animación de etiquetas de vinilos junto a la firma manuscrita 'Nicolás'" />
-    <Image src={vinilos04} class="img-h" widths={[800, 1600]} sizes="(max-width: 768px) 100vw, 80vw" alt="Doble página con un vinilo de José Larralde firmado en la etiqueta" />
+    <Image src={vinilos04} class="img-h" widths={[800, 1600, 1800]} sizes="(max-width: 768px) 100vw, 80vw" alt="Doble página con un vinilo de José Larralde firmado en la etiqueta" />
 </div>
 
-![Doble página con tres etiquetas de vinilos gastadas, marcadas con 'Nico'](../../assets/proyectos/vinilos/vinilos-pag-5.png)
-![Doble página con tapas de cartón escritas a mano y una firma manuscrita en grande](../../assets/proyectos/vinilos/vinilos-pag-6.png)
+<Image src={vinilos05} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Doble página con tres etiquetas de vinilos gastadas, marcadas con 'Nico'" />
+
+<Image src={vinilos06} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Doble página con tapas de cartón escritas a mano y una firma manuscrita en grande" />
 
 <Image src={vinilos07} widths={[800, 1400]} sizes="(max-width: 768px) 100vw, 1296px" alt="Animación de una doble página con la tapa de un disco de Trío Rubí" />
 
-![Cuatro piezas de la publicación: vinilo grabado, páginas interiores, letras manuscritas y contratapa](../../assets/proyectos/vinilos/vinilos-pag-8.png)
+<Image src={vinilos08} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Cuatro piezas de la publicación: vinilo grabado, páginas interiores, letras manuscritas y contratapa" />
 
 <div class="agrupado">
-  <Image src={vinilos09} class="img-h" widths={[800, 1600]} sizes="(max-width: 768px) 100vw, 80vw" alt="Doble página de apertura con la dedicatoria al abuelo" />
+  <Image src={vinilos09} class="img-h" widths={[800, 1600, 1800]} sizes="(max-width: 768px) 100vw, 80vw" alt="Doble página de apertura con la dedicatoria al abuelo" />
   <Animacion nombre="vinilos-pag-10.gif" class="img-v" alt="Animación de una tapa de vinilo rota y emparchada, con 'Tango' escrito a mano" />
 </div>
 
-![Doble página con la tapa ilustrada de ¡Yo soy chamamé! y su contratapa](../../assets/proyectos/vinilos/vinilos-pag-11.png)
-![Afiche con dieciséis etiquetas de vinilos marcadas a mano y la firma del abuelo](../../assets/proyectos/vinilos/vinilos-pag-12.jpg)
-![Doble página con la tapa rota de un disco del Cuarteto Imperial](../../assets/proyectos/vinilos/vinilos-pag-alt-3.png)
-![Doble página con tres etiquetas de vinilos dedicadas a mano](../../assets/proyectos/vinilos/vinilos-pag-alt-2.png)
-![Doble página de cierre con una firma manuscrita y una breve biografía del abuelo](../../assets/proyectos/vinilos/vinilos-pag-alt-4.png)
+<Image src={vinilos11} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Doble página con la tapa ilustrada de ¡Yo soy chamamé! y su contratapa" />
+
+<Image src={vinilos12} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Afiche con dieciséis etiquetas de vinilos marcadas a mano y la firma del abuelo" />
+
+<Image src={vinilosAlt3} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Doble página con la tapa rota de un disco del Cuarteto Imperial" />
+
+<Image src={vinilosAlt2} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Doble página con tres etiquetas de vinilos dedicadas a mano" />
+
+<Image src={vinilosAlt4} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Doble página de cierre con una firma manuscrita y una breve biografía del abuelo" />

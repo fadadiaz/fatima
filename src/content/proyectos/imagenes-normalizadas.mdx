@@ -11,11 +11,21 @@ carpeta: "/proyectos/normalizadas"
 
 import { Image } from 'astro:assets'
 import etica01 from '../../assets/proyectos/normalizadas/otras/behance-etica-animal-01.png'
+import etica02 from '../../assets/proyectos/normalizadas/behance-etica-animal-02.png'
+import etica03 from '../../assets/proyectos/normalizadas/behance-etica-animal-03.png'
+import etica04 from '../../assets/proyectos/normalizadas/behance-etica-animal-04.png'
+import etica05 from '../../assets/proyectos/normalizadas/behance-etica-animal-05.png'
+import etica06 from '../../assets/proyectos/normalizadas/behance-etica-animal-06.png'
+import { ANCHOS_PROYECTO, SIZES_PROYECTO, CALIDAD_PROYECTO } from '../../lib/imagenes'
 
-<Image src={etica01} widths={[800, 1600]} sizes="(max-width: 768px) 100vw, 1296px" loading="eager" fetchpriority="high" alt="Portada de la colección Imágenes normalizadas" />
+<Image src={etica01} widths={[800, 1600, 1800]} sizes="(max-width: 768px) 100vw, 1296px" loading="eager" fetchpriority="high" alt="Portada de la colección Imágenes normalizadas" />
 
-![Tapas de los tres libros de la colección, con fotos pixeladas de animales colgados](../../assets/proyectos/normalizadas/behance-etica-animal-02.png)
-![Cuatro dobles páginas interiores con el índice, el texto y las notas](../../assets/proyectos/normalizadas/behance-etica-animal-03.png)
-![Folleto plegado con las tres tapas pixeladas y la reseña de cada libro](../../assets/proyectos/normalizadas/behance-etica-animal-04.png)
-![Tapa y contratapa de Por qué amamos a los perros, con un cerdo colgado y pixelado](../../assets/proyectos/normalizadas/behance-etica-animal-05.png)
-![Persona leyendo uno de los libros junto a los lomos de los tres libros](../../assets/proyectos/normalizadas/behance-etica-animal-06.png) 
+<Image src={etica02} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Tapas de los tres libros de la colección, con fotos pixeladas de animales colgados" />
+
+<Image src={etica03} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Cuatro dobles páginas interiores con el índice, el texto y las notas" />
+
+<Image src={etica04} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Folleto plegado con las tres tapas pixeladas y la reseña de cada libro" />
+
+<Image src={etica05} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Tapa y contratapa de Por qué amamos a los perros, con un cerdo colgado y pixelado" />
+
+<Image src={etica06} widths={ANCHOS_PROYECTO} sizes={SIZES_PROYECTO} quality={CALIDAD_PROYECTO} alt="Persona leyendo uno de los libros junto a los lomos de los tres libros" />

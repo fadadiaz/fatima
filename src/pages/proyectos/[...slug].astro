@@ -294,7 +294,10 @@ const ogImagen = await getImage({
 <script>
   import { crearVisor } from '../../scripts/visor'
 
-  // Imagen grande: la mayor del srcset, o el src si no hay srcset
+  // Ancho de la versión que abre el visor: alcanza para pantalla completa sin bajar el original
+  const ANCHO_VISOR = 1800
+
+  // Imagen grande: la mayor del srcset que no pase de ANCHO_VISOR, o el src si no hay srcset
   const mayor = (img: HTMLImageElement) => {
     const candidatas = (img.getAttribute('srcset') ?? '')
       .split(',')
@@ -302,7 +305,8 @@ const ogImagen = await getImage({
       .filter(([url]) => url)
       .map(([url, ancho]) => ({ url, ancho: parseFloat(ancho) || 0 }))
       .sort((a, b) => b.ancho - a.ancho)
-    return candidatas[0]?.url ?? img.getAttribute('src') ?? ''
+    const elegida = candidatas.find((candidata) => candidata.ancho <= ANCHO_VISOR) ?? candidatas.at(-1)
+    return elegida?.url ?? img.getAttribute('src') ?? ''
   }
 
   const cuerpo = document.querySelector<HTMLElement>('.proyecto-body')
@@ -341,7 +345,8 @@ const ogImagen = await getImage({
       img.setAttribute('aria-label', `Ver imagen ${i + 1} de ${titulo}`)
       img.addEventListener('click', () => visor.abrir(img, i))
       img.addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter' && e.key !== ' ') return
+        const tecla = (e as KeyboardEvent).key
+        if (tecla !== 'Enter' && tecla !== ' ') return
         e.preventDefault()
         visor.abrir(img, i)
       })
