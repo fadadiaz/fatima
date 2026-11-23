@@ -1,14 +1,14 @@
-// Pósters estáticos de las animaciones pesadas de la galería (ver src/lib/posters.ts)
+// Pósters estáticos de las animaciones (ver src/lib/posters.ts)
 import type { APIRoute, GetStaticPaths } from 'astro'
 import { analizarAnimacion } from '../../../lib/posters'
 
-const animaciones = import.meta.glob('/src/assets/proyectos/*/*.gif')
+const animaciones = import.meta.glob('/src/assets/proyectos/**/*.gif')
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const rutas = Object.keys(animaciones)
   const info = await Promise.all(rutas.map((ruta) => analizarAnimacion(ruta)))
   return rutas
-    .filter((_, i) => info[i].pesada)
+    .filter((_, i) => info[i].poster)
     .map((ruta) => ({
       params: { nombre: (ruta.split('/').pop() ?? ruta).replace(/\.gif$/i, '') },
       props: { ruta },

@@ -1,0 +1,67 @@
+---
+// Animación pesada como video (ver src/lib/animaciones.ts); sin JavaScript o con movimiento reducido queda el póster
+import { animacionDe } from '../lib/animaciones'
+
+interface Props {
+  // Nombre del GIF original, por ejemplo "vinilos-pag-3.gif"
+  nombre: string
+  alt: string
+  class?: string
+}
+
+const { nombre, alt, class: clase } = Astro.props
+const animacion = await animacionDe(nombre)
+if (!animacion) throw new Error(`[Animacion] ${nombre} no tiene MP4 en public/animaciones`)
+---
+
+<video
+  class:list={['animacion', clase]}
+  data-src={animacion.mp4}
+  poster={animacion.poster}
+  width={animacion.ancho}
+  height={animacion.alto}
+  muted
+  loop
+  playsinline
+  preload="none"
+  role="img"
+  aria-label={alt}
+></video>
+
+<script>
+  // El MP4 se pide a menos de 300px de la pantalla y se reproduce solo mientras se ve
+  const videos = [...document.querySelectorAll<HTMLVideoElement>('video.animacion[data-src]')]
+  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+  if (videos.length && !movimientoReducido.matches) {
+    const cerca = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          const video = entry.target as HTMLVideoElement
+          video.src = video.dataset.src ?? ''
+          cerca.unobserve(video)
+        })
+      },
+      { rootMargin: '300px 0px' }
+    )
+
+    const visible = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target as HTMLVideoElement
+        if (entry.isIntersecting && video.getAttribute('src')) video.play().catch(() => {})
+        else video.pause()
+      })
+    })
+
+    videos.forEach((video) => {
+      cerca.observe(video)
+      visible.observe(video)
+      // Si ya estaba visible cuando se asignó el MP4, arranca al poder reproducirse
+      video.addEventListener('loadeddata', () => {
+        const caja = video.getBoundingClientRect()
+        if (caja.bottom > 0 && caja.top < window.innerHeight) video.play().catch(() => {})
+      })
+    })
+  }
+</script>

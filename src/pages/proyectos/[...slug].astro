@@ -133,12 +133,12 @@ const ogImagen = await getImage({
   }
 
   /* Imágenes del cuerpo que abren el visor */
-  :global(.js) .proyecto-body :global(img) {
+  :global(.js) .proyecto-body :global(:is(img, video)) {
     cursor: pointer;
     transition: opacity 400ms ease;
   }
 
-  .proyecto-body.atenuado :global(img) {
+  .proyecto-body.atenuado :global(:is(img, video)) {
     opacity: var(--visor-opacidad-fondo);
   }
 
@@ -182,7 +182,7 @@ const ogImagen = await getImage({
       flex-direction: column;
   }
 
-  .proyecto-body :global(img) {
+  .proyecto-body :global(:is(img, video)) {
     height: auto;
   }
 
@@ -217,7 +217,7 @@ const ogImagen = await getImage({
   grid-column: span 15;
 }
 
-.proyecto-body :global(.agrupado img) {
+.proyecto-body :global(.agrupado :is(img, video)) {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -251,7 +251,7 @@ const ogImagen = await getImage({
     grid-column: span 1;
   }
 
-  .proyecto-body :global(.agrupado img),
+  .proyecto-body :global(.agrupado :is(img, video)),
   .proyecto-body :global(.agrupado-50 img) {
     height: auto;
     width: 100%;
@@ -307,16 +307,28 @@ const ogImagen = await getImage({
 
   const cuerpo = document.querySelector<HTMLElement>('.proyecto-body')
   const titulo = document.querySelector('.proyecto-titulo')?.textContent?.trim() ?? ''
-  const fotos = [...(cuerpo?.querySelectorAll<HTMLImageElement>('img') ?? [])]
+  // Imágenes y videos de animación, en orden de lectura
+  const fotos = [...(cuerpo?.querySelectorAll<HTMLImageElement | HTMLVideoElement>('img, video.animacion') ?? [])]
 
   const visor = crearVisor({
-    imagenes: fotos.map((img) => ({
-      src: img.getAttribute('src') ?? '',
-      grande: mayor(img),
-      ancho: Number(img.getAttribute('width')) || img.naturalWidth || 1,
-      alto: Number(img.getAttribute('height')) || img.naturalHeight || 1,
-      alt: img.alt,
-    })),
+    imagenes: fotos.map((foto) =>
+      foto instanceof HTMLVideoElement
+        ? {
+            src: foto.poster,
+            grande: foto.poster,
+            video: foto.dataset.src,
+            ancho: Number(foto.getAttribute('width')) || 1,
+            alto: Number(foto.getAttribute('height')) || 1,
+            alt: foto.getAttribute('aria-label') ?? '',
+          }
+        : {
+            src: foto.getAttribute('src') ?? '',
+            grande: mayor(foto),
+            ancho: Number(foto.getAttribute('width')) || foto.naturalWidth || 1,
+            alto: Number(foto.getAttribute('height')) || foto.naturalHeight || 1,
+            alt: foto.alt,
+          }
+    ),
     alAbrir: () => cuerpo?.classList.add('atenuado'),
     alCerrar: () => cuerpo?.classList.remove('atenuado'),
   })

@@ -17,8 +17,8 @@ carpeta: "/proyectos/nubes"
 import { Image } from 'astro:assets'
 import nubes01 from '../../assets/proyectos/nubes/behance-nubes-01.jpg'
 import nubes02 from '../../assets/proyectos/nubes/behance-nubes-02.png'
+import Animacion from '../../components/Animacion.astro'
 import nubes04 from '../../assets/proyectos/nubes/behance-nubes-04.png'
-import nubes05 from '../../assets/proyectos/nubes/behance-nubes-05.gif'
 import nubes10 from '../../assets/proyectos/nubes/behance-nubes-10.png'
 import nubes11 from '../../assets/proyectos/nubes/behance-nubes-11.png'
 import nubes14 from '../../assets/proyectos/nubes/otras/behance-nubes-14.gif'
@@ -32,7 +32,7 @@ import nubes14 from '../../assets/proyectos/nubes/otras/behance-nubes-14.gif'
 
 <div class="agrupado">
     <Image src={nubes04} class="img-h-30" widths={[800, 1600]} sizes="(max-width: 768px) 100vw, 70vw" alt="Doble página de la revista sobre albedo y efecto invernadero" />
-    <Image src={nubes05} class="img-v-15" widths={[480, 864]} sizes="(max-width: 768px) 100vw, 35vw" alt="Animación que compara Cirrocumulus y Cirrostratus con tramas de puntos" />
+    <Animacion nombre="behance-nubes-05.gif" class="img-v-15" alt="Animación que compara Cirrocumulus y Cirrostratus con tramas de puntos" />
 </div> 
 
 ![Pantalla de la herramienta con la pregunta '¿Hay relámpagos o truenos?'](../../assets/proyectos/nubes/otras/behance-nubes-06.png) 

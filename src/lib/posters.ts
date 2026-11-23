@@ -1,4 +1,4 @@
-// Pósters estáticos de las animaciones pesadas de la galería, generados en el build con sharp
+// Pósters estáticos de las animaciones (galería y videos), generados en el build con sharp
 import sharp from 'sharp'
 import { join } from 'node:path'
 
@@ -44,9 +44,7 @@ async function analizar(archivo: string, nombre: string): Promise<InfoAnimacion>
   const cuadros = meta.pages ?? 1
   const ancho = Math.min(ANCHO_MINIATURA, meta.width ?? ANCHO_MINIATURA)
   const miniatura = await sharp(archivo, { animated: true }).resize({ width: ancho }).webp().toBuffer()
-  if (cuadros < 2 || miniatura.length <= UMBRAL_ANIMADA) {
-    return { pesada: false, cuadros, pesoMiniatura: miniatura.length }
-  }
+  if (cuadros < 2) return { pesada: false, cuadros, pesoMiniatura: miniatura.length }
 
   // Cuadro con más contenido entre el 15% y el 85% de la animación
   const desde = Math.floor(cuadros * 0.15)
@@ -64,8 +62,9 @@ async function analizar(archivo: string, nombre: string): Promise<InfoAnimacion>
 
   const poster = await sharp(archivo, { page: cuadro }).resize({ width: ancho }).webp({ quality: 80 }).toBuffer()
   const alto = Math.round((ancho * (meta.pageHeight ?? meta.height ?? ancho)) / (meta.width ?? ancho))
+  // El póster se genera para toda animación (también la usan los videos); "pesada" decide si la galería lo muestra
   return {
-    pesada: true,
+    pesada: miniatura.length > UMBRAL_ANIMADA,
     cuadros,
     pesoMiniatura: miniatura.length,
     cuadro,

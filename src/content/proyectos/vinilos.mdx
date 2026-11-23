@@ -10,19 +10,18 @@ carpeta: "/proyectos/vinilos"
 ---
 
 import { Image } from 'astro:assets'
+import Animacion from '../../components/Animacion.astro'
 import vinilos01 from '../../assets/proyectos/vinilos/vinilos-pag-1.gif'
-import vinilos03 from '../../assets/proyectos/vinilos/vinilos-pag-3.gif'
 import vinilos07 from '../../assets/proyectos/vinilos/vinilos-pag-7.gif'
 import vinilos04 from '../../assets/proyectos/vinilos/vinilos-pag-4.png'
 import vinilos09 from '../../assets/proyectos/vinilos/vinilos-pag-9.png'
-import vinilos10 from '../../assets/proyectos/vinilos/vinilos-pag-10.gif'
 
 <Image src={vinilos01} widths={[800, 1400]} sizes="(max-width: 768px) 100vw, 1296px" loading="eager" fetchpriority="high" alt="Doble página con texto manuscrito y un vinilo de Agnaldo Timoteo grabado a mano" />
 
 ![Vista general de las dobles páginas de la publicación, con vinilos y letras manuscritas](../../assets/proyectos/vinilos/vinilos-pag-2.png)
 
 <div class="agrupado">
-    <Image src={vinilos03} class="img-v" widths={[400, 720]} sizes="(max-width: 768px) 100vw, 25vw" alt="Animación de etiquetas de vinilos junto a la firma manuscrita 'Nicolás'" />
+    <Animacion nombre="vinilos-pag-3.gif" class="img-v" alt="Animación de etiquetas de vinilos junto a la firma manuscrita 'Nicolás'" />
     <Image src={vinilos04} class="img-h" widths={[800, 1600]} sizes="(max-width: 768px) 100vw, 80vw" alt="Doble página con un vinilo de José Larralde firmado en la etiqueta" />
 </div>
 
@@ -35,7 +34,7 @@ import vinilos10 from '../../assets/proyectos/vinilos/vinilos-pag-10.gif'
 
 <div class="agrupado">
   <Image src={vinilos09} class="img-h" widths={[800, 1600]} sizes="(max-width: 768px) 100vw, 80vw" alt="Doble página de apertura con la dedicatoria al abuelo" />
-  <Image src={vinilos10} class="img-v" widths={[400, 720]} sizes="(max-width: 768px) 100vw, 25vw" alt="Animación de una tapa de vinilo rota y emparchada, con 'Tango' escrito a mano" />
+  <Animacion nombre="vinilos-pag-10.gif" class="img-v" alt="Animación de una tapa de vinilo rota y emparchada, con 'Tango' escrito a mano" />
 </div>
 
 ![Doble página con la tapa ilustrada de ¡Yo soy chamamé! y su contratapa](../../assets/proyectos/vinilos/vinilos-pag-11.png)

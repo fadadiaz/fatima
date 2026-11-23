@@ -4,8 +4,9 @@ import { enmascarar } from './mascara'
 type Gsap = typeof import('gsap').gsap
 
 export interface ImagenVisor {
-  src: string // miniatura, visible hasta que carga la grande
+  src: string // miniatura o póster, visible hasta que carga la grande o arranca el video
   grande: string
+  video?: string // MP4 de las animaciones pesadas
   ancho: number
   alto: number
   alt: string
@@ -31,9 +32,11 @@ const EXPANDIDO = { alto: 0.8, ancho: 0.86 } // parte de la ventana que ocupa la
 export function crearVisor(opciones: OpcionesVisor) {
   const visor = document.querySelector<HTMLDialogElement>('.visor')
   const fondo = visor?.querySelector<HTMLElement>('.visor-fondo')
+  const medio = visor?.querySelector<HTMLElement>('.visor-medio')
   const imagen = visor?.querySelector<HTMLImageElement>('.visor-imagen')
+  const video = visor?.querySelector<HTMLVideoElement>('.visor-video')
   const titulo = visor?.querySelector<HTMLAnchorElement>('.visor-titulo') ?? null
-  if (!visor || !fondo || !imagen || !opciones.imagenes.length) return null
+  if (!visor || !fondo || !medio || !imagen || !video || !opciones.imagenes.length) return null
 
   const imagenes = opciones.imagenes
   const N = imagenes.length
@@ -56,22 +59,45 @@ export function crearVisor(opciones: OpcionesVisor) {
 
   const palabrasTitulo = () => (titulo ? [...titulo.querySelectorAll('.mascara-texto')] : [])
 
+  function detenerVideo() {
+    video!.pause()
+    video!.hidden = true
+    video!.removeAttribute('src')
+    video!.load()
+  }
+
   function cargar(indice: number) {
     indiceActual = (indice + N) % N
     const dato = imagenes[indiceActual]
-    imagen!.removeAttribute('srcset')
-    imagen!.src = dato.src
-    imagen!.alt = dato.alt
-    imagen!.width = dato.ancho
-    imagen!.height = dato.alto
-    const grande = new Image()
-    grande.src = dato.grande
-    grande.decode().then(
-      () => {
-        if (imagenes[indiceActual] === dato) imagen!.src = dato.grande
-      },
-      () => {}
-    )
+
+    // Animaciones pesadas: video en bucle con el póster hasta que arranca (con movimiento reducido, solo el póster)
+    if (dato.video && !movimientoReducido.matches) {
+      imagen!.hidden = true
+      video!.hidden = false
+      video!.poster = dato.src
+      video!.width = dato.ancho
+      video!.height = dato.alto
+      video!.setAttribute('aria-label', dato.alt)
+      video!.src = dato.video
+      video!.play().catch(() => {})
+    } else {
+      detenerVideo()
+      imagen!.hidden = false
+      imagen!.removeAttribute('srcset')
+      imagen!.src = dato.src
+      imagen!.alt = dato.alt
+      imagen!.width = dato.ancho
+      imagen!.height = dato.alto
+      const grande = new Image()
+      grande.src = dato.grande
+      grande.decode().then(
+        () => {
+          if (imagenes[indiceActual] === dato) imagen!.src = dato.grande
+        },
+        () => {}
+      )
+    }
+
     if (titulo && dato.titulo) {
       titulo.href = dato.href ?? '/proyectos'
       titulo.textContent = dato.titulo
@@ -93,7 +119,7 @@ export function crearVisor(opciones: OpcionesVisor) {
 
   function ajustarTamano() {
     const destino = tamanoAbierto(imagenes[indiceActual])
-    Object.assign(imagen!.style, { width: `${destino.ancho}px`, height: `${destino.alto}px` })
+    Object.assign(medio!.style, { width: `${destino.ancho}px`, height: `${destino.alto}px` })
   }
 
   function abrir(boton: HTMLElement, indice: number) {
@@ -110,12 +136,12 @@ export function crearVisor(opciones: OpcionesVisor) {
     if (!gsap) {
       // Fundido con transiciones de CSS
       ajustarTamano()
-      Object.assign(imagen!.style, { transform: 'translate(-50%, -50%)', opacity: '0' })
+      Object.assign(medio!.style, { transform: 'translate(-50%, -50%)', opacity: '0' })
       fondo!.style.opacity = '0'
       visor!.showModal()
       requestAnimationFrame(() => {
         fondo!.style.opacity = ''
-        imagen!.style.opacity = ''
+        medio!.style.opacity = ''
       })
       return
     }
@@ -124,9 +150,9 @@ export function crearVisor(opciones: OpcionesVisor) {
     animando = true
     gsap.fromTo(fondo, { opacity: 0 }, { opacity: 1, duration: DESENFOQUE, ease: 'power2.inOut' })
     boton.style.visibility = 'hidden'
-    gsap.set(imagen, { xPercent: -50, yPercent: -50, opacity: 1, scale: 1 })
+    gsap.set(medio, { xPercent: -50, yPercent: -50, opacity: 1, scale: 1 })
     gsap.fromTo(
-      imagen,
+      medio,
       {
         width: caja.width,
         height: caja.height,
@@ -161,7 +187,7 @@ export function crearVisor(opciones: OpcionesVisor) {
     const siguiente = () => {
       cargar(indiceActual + paso)
       const destino = tamanoAbierto(imagenes[indiceActual])
-      gsap.to(imagen, {
+      gsap.to(medio, {
         width: destino.ancho,
         height: destino.alto,
         duration: ZOOM,
@@ -179,8 +205,10 @@ export function crearVisor(opciones: OpcionesVisor) {
 
   function cerrar() {
     if (!abierto || animando) return
+    video!.pause()
     const terminar = (destino: HTMLElement | null) => {
       visor!.close()
+      detenerVideo()
       if (origen) origen.style.visibility = ''
       if (destino) destino.style.visibility = ''
       abierto = false
@@ -193,7 +221,7 @@ export function crearVisor(opciones: OpcionesVisor) {
     const gsap = motor()
     if (!gsap) {
       fondo!.style.opacity = '0'
-      imagen!.style.opacity = '0'
+      medio!.style.opacity = '0'
       animando = true
       window.setTimeout(() => {
         fondo!.style.opacity = ''
@@ -210,7 +238,7 @@ export function crearVisor(opciones: OpcionesVisor) {
       if (origen && destino !== origen) origen.style.visibility = ''
       destino.style.visibility = 'hidden'
       const caja = destino.getBoundingClientRect()
-      gsap.to(imagen, {
+      gsap.to(medio, {
         width: caja.width,
         height: caja.height,
         x: caja.left + caja.width / 2 - window.innerWidth / 2,
@@ -220,7 +248,7 @@ export function crearVisor(opciones: OpcionesVisor) {
         onComplete: () => terminar(destino),
       })
     } else {
-      gsap.to(imagen, { opacity: 0, scale: 0.9, duration: 0.4, ease: 'power2.inOut', onComplete: () => terminar(null) })
+      gsap.to(medio, { opacity: 0, scale: 0.9, duration: 0.4, ease: 'power2.inOut', onComplete: () => terminar(null) })
     }
   }
 
@@ -230,7 +258,7 @@ export function crearVisor(opciones: OpcionesVisor) {
   visor.querySelector('.visor-siguiente')?.addEventListener('click', () => vecina(1))
   visor.querySelector('.visor-cerrar')?.addEventListener('click', cerrar)
   fondo.addEventListener('click', cerrar)
-  imagen.addEventListener('click', cerrar)
+  medio.addEventListener('click', cerrar)
   visor.addEventListener('cancel', (e) => {
     e.preventDefault()
     cerrar()
@@ -243,7 +271,7 @@ export function crearVisor(opciones: OpcionesVisor) {
     if (!abierto) return
     const gsap = motor()
     const destino = tamanoAbierto(imagenes[indiceActual])
-    if (gsap) gsap.set(imagen, { width: destino.ancho, height: destino.alto })
+    if (gsap) gsap.set(medio, { width: destino.ancho, height: destino.alto })
     else ajustarTamano()
   })
 

@@ -2,6 +2,8 @@
 import { getCollection } from 'astro:content'
 import { Image } from 'astro:assets'
 import type { ImageMetadata } from 'astro'
+import Animacion from './Animacion.astro'
+import { animacionDe } from '../lib/animaciones'
 
 const proyectos = await getCollection('proyectos')
 
@@ -11,32 +13,46 @@ const imagenes = import.meta.glob<{ default: ImageMetadata }>(
   { eager: true }
 )
 
-const slides = proyectos.flatMap((proyecto) => {
-  if (!proyecto.data.carpeta) return []
+const slides = (
+  await Promise.all(
+    proyectos.flatMap((proyecto) => {
+      if (!proyecto.data.carpeta) return []
 
-  const prefijo = `/src/assets${proyecto.data.carpeta}/`
+      const prefijo = `/src/assets${proyecto.data.carpeta}/`
 
-  return Object.entries(imagenes)
-    .filter(([ruta]) => ruta.startsWith(prefijo))
-    .map(([, modulo]) => ({
-      imagen: modulo.default,
-      href: `/proyectos/${proyecto.id}`,
-      titulo: proyecto.data.titulo,
-    }))
-}).sort(() => Math.random() - 0.5)
+      return Object.entries(imagenes)
+        .filter(([ruta]) => ruta.startsWith(prefijo))
+        .map(async ([ruta, modulo]) => ({
+          imagen: modulo.default,
+          // Las animaciones pesadas con MP4 se muestran como video, sin versión animada en WebP
+          animacion: /\.gif$/i.test(ruta) && (await animacionDe(ruta)) ? (ruta.split('/').pop() ?? ruta) : null,
+          href: `/proyectos/${proyecto.id}`,
+          titulo: proyecto.data.titulo,
+        }))
+    })
+  )
+).sort(() => Math.random() - 0.5)
 ---
 
 <div class="slider-wrapper">
   <div class="slider-track">
     {slides.map((slide) => (
       <a href={slide.href} class="slide">
-        <Image src={slide.imagen} alt={slide.titulo} height={428} densities={[1, 2]} loading="lazy" />
+        {slide.animacion ? (
+          <Animacion nombre={slide.animacion} alt={slide.titulo} />
+        ) : (
+          <Image src={slide.imagen} alt={slide.titulo} height={428} densities={[1, 2]} loading="lazy" />
+        )}
       </a>
     ))}
     {/* Copia para el bucle, fuera del tabulado y de los lectores de pantalla */}
     {slides.map((slide) => (
       <a href={slide.href} class="slide slide-copia" aria-hidden="true" tabindex="-1">
-        <Image src={slide.imagen} alt="" height={428} densities={[1, 2]} loading="lazy" />
+        {slide.animacion ? (
+          <Animacion nombre={slide.animacion} alt="" />
+        ) : (
+          <Image src={slide.imagen} alt="" height={428} densities={[1, 2]} loading="lazy" />
+        )}
       </a>
     ))}
   </div>
@@ -73,7 +89,8 @@ const slides = proyectos.flatMap((proyecto) => {
     display: block;
   }
 
-  .slide img {
+  .slide img,
+  .slide :global(video) {
     height: 100%;
     width: auto;
     object-fit: cover;

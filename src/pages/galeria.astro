@@ -7,6 +7,7 @@ import NavSecundario from '../components/NavSecundario.astro'
 import Visor from '../components/Visor.astro'
 import { crearAleatorio } from '../scripts/aleatorio'
 import { analizarAnimacion, rutaPoster } from '../lib/posters'
+import { animacionDe } from '../lib/animaciones'
 import { readFileSync } from 'node:fs'
 
 // Semilla del orden de las fotos
@@ -79,10 +80,25 @@ while (mezcla.length) {
 const fotos = await Promise.all(
   orden.map(async (foto) => {
     const animacion = /\.gif$/i.test(foto.ruta) ? await analizarAnimacion(foto.ruta) : null
+    // Las animaciones con video no generan versión animada grande: el visor usa el MP4
+    const video = /\.gif$/i.test(foto.ruta) ? await animacionDe(foto.ruta) : null
+    if (video) {
+      // Transformación mínima: Astro borra de dist/ el GIF original solo si lo transformó alguna vez (leer .src la registra)
+      void (await getImage({ src: foto.imagen, width: 1, format: 'png' })).src
+      return {
+        ...foto,
+        grande: video.poster,
+        video: video.mp4,
+        ancho: video.ancho,
+        alto: video.alto,
+        poster: { src: video.poster },
+      }
+    }
     const grande = await getImage({ src: foto.imagen, width: 1600 })
     return {
       ...foto,
-      grande,
+      grande: grande.src,
+      video: undefined,
       ancho: Number(grande.attributes.width),
       alto: Number(grande.attributes.height),
       poster: animacion?.pesada ? { src: rutaPoster(foto.ruta) } : null,
@@ -110,7 +126,8 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
           aria-label={`Ver imagen de ${foto.titulo}`}
           data-titulo={foto.titulo}
           data-href={foto.href}
-          data-grande={foto.grande.src}
+          data-grande={foto.grande}
+          data-video={foto.video}
           data-ancho={foto.ancho}
           data-alto={foto.alto}
           data-pesada={foto.poster ? '' : undefined}
@@ -274,6 +291,7 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     titulo: string
     href: string
     grande: string
+    video?: string
     ancho: number
     alto: number
     src: string
@@ -292,6 +310,7 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
       titulo: boton.dataset.titulo ?? '',
       href: boton.dataset.href ?? '/proyectos',
       grande: boton.dataset.grande ?? '',
+      video: boton.dataset.video,
       ancho: Number(boton.dataset.ancho),
       alto: Number(boton.dataset.alto),
       src: img?.getAttribute('src') ?? '',
@@ -337,6 +356,7 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     imagenes: datos.map((dato) => ({
       src: dato.src,
       grande: dato.grande,
+      video: dato.video,
       ancho: dato.ancho,
       alto: dato.alto,
       alt: `Imagen de ${dato.titulo}`,
