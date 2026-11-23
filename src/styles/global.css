@@ -100,6 +100,14 @@ body {
   line-height: var(--text-lg);
 }
 
+/* Página de una sola pantalla (prop sinScroll del Layout); sin JavaScript o con movimiento reducido, scroll normal */
+@media (prefers-reduced-motion: no-preference) {
+  .js body.sin-scroll {
+    height: 100svh;
+    overflow: hidden;
+  }
+}
+
 main {
   display: flex;
   justify-content: center;

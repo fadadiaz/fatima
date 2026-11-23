@@ -4,7 +4,6 @@ import { Image, getImage } from 'astro:assets'
 import type { ImageMetadata } from 'astro'
 import Layout from '../layouts/Layout.astro'
 import NavSecundario from '../components/NavSecundario.astro'
-import Footer from '../components/Footer.astro'
 import { crearAleatorio } from '../scripts/aleatorio'
 
 // Semilla del orden de las fotos
@@ -84,8 +83,9 @@ const fotos = await Promise.all(
 <Layout
   titulo="Galería - Fátima Díaz"
   descripcion="Galería de imágenes de los proyectos de Fátima Díaz, diseñadora gráfica y web en Buenos Aires."
+  sinScroll
 >
-  <NavSecundario />
+  <NavSecundario transparente />
   <main>
     <h1 class="galeria-titulo">Galería</h1>
 
@@ -122,17 +122,15 @@ const fotos = await Promise.all(
   <dialog class="visor" aria-label="Visor de imágenes">
     <div class="visor-fondo"></div>
     <img class="visor-imagen" alt="" draggable="false" />
+    <button type="button" class="subrayado visor-control visor-cerrar">cerrar</button>
     <div class="visor-barra">
-      <a class="visor-titulo" href="/proyectos"></a>
+      <p class="visor-proyecto"><a class="visor-titulo" href="/proyectos"></a></p>
       <div class="visor-controles">
-        <button type="button" class="subrayado visor-anterior">anterior</button>
-        <button type="button" class="subrayado visor-siguiente">siguiente</button>
-        <button type="button" class="subrayado visor-cerrar">cerrar</button>
+        <button type="button" class="subrayado visor-control visor-anterior">anterior</button>
+        <button type="button" class="subrayado visor-control visor-siguiente">siguiente</button>
       </div>
     </div>
   </dialog>
-
-  <Footer />
 </Layout>
 
 <style>
@@ -259,10 +257,20 @@ const fotos = await Promise.all(
     background: transparent;
   }
 
+  /* Desenfoque de todo lo que queda detrás, menú incluido */
   .visor-fondo {
-    position: absolute;
+    position: fixed;
     inset: 0;
-    background-color: color-mix(in srgb, var(--fa-white) 92%, transparent);
+    background: transparent;
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
+  }
+
+  /* Respaldo sin backdrop-filter: fondo del sitio semitransparente */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .visor-fondo {
+      background-color: color-mix(in srgb, var(--fa-white) 85%, transparent);
+    }
   }
 
   .visor-imagen {
@@ -275,37 +283,68 @@ const fotos = await Promise.all(
     user-select: none;
   }
 
+  .visor-control,
+  .visor-titulo {
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    line-height: var(--text-lg);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .visor-cerrar {
+    position: fixed;
+    top: var(--space-24);
+    right: var(--space-48);
+  }
+
+  /* Escritorio: título en el 60% izquierdo, anterior y siguiente en el 40% derecho */
   .visor-barra {
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
     align-items: flex-end;
-    gap: var(--space-16);
     padding: var(--space-24) var(--space-48);
-    font-family: var(--font-mono);
-    font-size: var(--text-base);
-    line-height: var(--text-lg);
   }
 
-  .visor-titulo {
-    max-width: min(32rem, 100%);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  /* El enlace queda inline dentro del párrafo, con su subrayado por línea */
+  .visor-proyecto {
+    flex: 0 0 60%;
+    padding-right: var(--space-24);
   }
 
   .visor-controles {
+    flex: 1 1 40%;
     display: flex;
+    justify-content: flex-end;
     gap: var(--space-24);
-    margin-left: auto;
   }
 
+  /* Celular: título en su fila, y debajo anterior y siguiente en los extremos */
   @media (max-width: 768px) {
+    .visor-cerrar {
+      top: var(--space-16);
+      right: var(--space-16);
+    }
+
     .visor-barra {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-16);
       padding: var(--space-16);
+    }
+
+    .visor-proyecto {
+      flex: none;
+      padding-right: 0;
+    }
+
+    .visor-controles {
+      flex: none;
+      width: 100%;
+      justify-content: space-between;
     }
   }
 </style>
@@ -327,7 +366,7 @@ const fotos = await Promise.all(
     semilla: 7, // desfase vertical de cada celda
     pasoTeclado: 120, // px por pulsación de flecha
     zoomDuracion: 0.6, // s
-    fondoDuracion: 0.8, // s
+    desenfoqueDuracion: 0.4, // s
     expandido: { alto: 0.8, ancho: 0.86 }, // parte de la ventana que ocupa la imagen abierta
     aparicionMaxima: 1500, // ms de espera máxima antes de mostrar el lienzo
   }
@@ -449,9 +488,7 @@ const fotos = await Promise.all(
     }
 
     animandoVisor = true
-    gsap.fromTo(fondo, { opacity: 0 }, { opacity: 1, duration: CONFIG.fondoDuracion, ease: 'power2.inOut' })
-    const otras = [...(capa?.children ?? [])].filter((el) => el !== boton)
-    gsap.to(otras, { opacity: 0.15, duration: CONFIG.fondoDuracion, ease: 'power2.inOut' })
+    gsap.fromTo(fondo, { opacity: 0 }, { opacity: 1, duration: CONFIG.desenfoqueDuracion, ease: 'power2.inOut' })
     boton.style.visibility = 'hidden'
     gsap.set(imagen, { xPercent: -50, yPercent: -50, opacity: 1, scale: 1 })
     gsap.fromTo(
@@ -551,13 +588,7 @@ const fotos = await Promise.all(
     animandoVisor = true
     const destino = destinoDeCierre()
     tituloSale()
-    gsap.to(fondo, { opacity: 0, duration: CONFIG.fondoDuracion, ease: 'power2.inOut' })
-    gsap.to([...(capa?.children ?? [])], {
-      opacity: 1,
-      duration: CONFIG.fondoDuracion,
-      delay: 0.3,
-      ease: 'power2.inOut',
-    })
+    gsap.to(fondo, { opacity: 0, duration: CONFIG.desenfoqueDuracion, ease: 'power2.inOut' })
     if (destino) {
       if (origen && destino !== origen) origen.style.visibility = ''
       destino.style.visibility = 'hidden'
@@ -773,6 +804,7 @@ const fotos = await Promise.all(
       // Sin GSAP: queda el mosaico
       lienzo.remove()
       document.querySelector<HTMLElement>('.galeria')?.style.setProperty('display', 'grid')
+      document.body.classList.remove('sin-scroll')
       return
     }
 

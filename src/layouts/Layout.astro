@@ -6,12 +6,15 @@ interface Props {
   titulo?: string
   descripcion?: string
   imagen?: string
+  // Página de una sola pantalla, sin scroll
+  sinScroll?: boolean
 }
 
 const {
   titulo = 'Fátima Díaz - Diseño gráfico, web y herramientas digitales',
   descripcion = 'Fátima Díaz, diseñadora en Buenos Aires. Marcas, publicaciones, páginas web y herramientas digitales. Disponible para trabajo full-time, remoto o híbrido.',
   imagen = '/og-image.jpg',
+  sinScroll = false,
 } = Astro.props
 
 const url = new URL(Astro.url.pathname, Astro.site)
@@ -48,7 +51,7 @@ const imagenUrl = new URL(imagen, Astro.site)
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-straight/css/uicons-regular-straight.css">
   </head>
 
-  <body>
+  <body class:list={{ 'sin-scroll': sinScroll }}>
     <CursorPersonalizado />
     <slot />
     <script>

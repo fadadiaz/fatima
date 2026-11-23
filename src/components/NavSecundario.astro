@@ -1,6 +1,7 @@
 ---
 import MenuMobile from './MenuMobile.astro'
-const { flotante = false, bg = 'bg-pink' } = Astro.props
+// transparente: sin fondo de color en el menú; el menú plegable conserva su fondo
+const { flotante = false, bg = 'bg-pink', transparente = false } = Astro.props
 const ruta = Astro.url.pathname.replace(/\/$/, '') || '/'
 
 // Página actual: 'page' en la página exacta, 'true' en sus subpáginas
@@ -9,7 +10,7 @@ const actual = (destino: string) =>
 ---
 
 <header
-  class={`header-alt min-padding ${flotante ? 'nav-flotante' : bg}`}
+  class={`header-alt min-padding ${flotante ? 'nav-flotante' : transparente ? 'transparente' : bg}`}
   aria-hidden={flotante ? 'true' : undefined}
   inert={flotante}
 >
