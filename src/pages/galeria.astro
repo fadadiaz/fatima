@@ -4,6 +4,7 @@ import { Image, getImage } from 'astro:assets'
 import type { ImageMetadata } from 'astro'
 import Layout from '../layouts/Layout.astro'
 import NavSecundario from '../components/NavSecundario.astro'
+import Visor from '../components/Visor.astro'
 import { crearAleatorio } from '../scripts/aleatorio'
 
 // Semilla del orden de las fotos
@@ -119,26 +120,10 @@ const fotos = await Promise.all(
     </div>
   </main>
 
-  <dialog class="visor" aria-label="Visor de imágenes">
-    <div class="visor-fondo"></div>
-    <img class="visor-imagen" alt="" draggable="false" />
-    <button type="button" class="subrayado visor-control visor-cerrar">cerrar</button>
-    <div class="visor-barra">
-      <p class="visor-proyecto"><a class="visor-titulo" href="/proyectos"></a></p>
-      <div class="visor-controles">
-        <button type="button" class="subrayado visor-control visor-anterior">anterior</button>
-        <button type="button" class="subrayado visor-control visor-siguiente">siguiente</button>
-      </div>
-    </div>
-  </dialog>
+  <Visor conTitulo />
 </Layout>
 
 <style>
-  /* Opacidad de las fotos del lienzo con el visor abierto (0 a 1) */
-  :global(:root) {
-    --visor-opacidad-fondo: 0.35;
-  }
-
   /* Título para lectores de pantalla y buscadores */
   .galeria-titulo {
     position: absolute;
@@ -247,123 +232,12 @@ const fotos = await Promise.all(
   .lienzo :global(.lienzo-foto:hover img) {
     transform: scale(var(--escala-hover, 1));
   }
-
-  /* Visor a pantalla completa */
-  .visor {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100svh;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    padding: 0;
-    border: none;
-    overflow: hidden;
-    background: transparent;
-    color: var(--fa-black);
-  }
-
-  .visor::backdrop {
-    background: transparent;
-  }
-
-  /* Desenfoque de todo lo que queda detrás, menú incluido */
-  .visor-fondo {
-    position: fixed;
-    inset: 0;
-    background: transparent;
-    -webkit-backdrop-filter: blur(15px);
-    backdrop-filter: blur(15px);
-  }
-
-  /* Respaldo sin backdrop-filter: fondo del sitio semitransparente */
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .visor-fondo {
-      background-color: color-mix(in srgb, var(--fa-white) 85%, transparent);
-    }
-  }
-
-  .visor-imagen {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    display: block;
-    object-fit: cover;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .visor-control,
-  .visor-titulo {
-    font-family: var(--font-mono);
-    font-size: var(--text-base);
-    line-height: var(--text-lg);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .visor-cerrar {
-    position: fixed;
-    top: var(--space-24);
-    right: var(--space-48);
-  }
-
-  /* Escritorio: título en el 60% izquierdo, anterior y siguiente en el 40% derecho */
-  .visor-barra {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: flex-end;
-    padding: var(--space-24) var(--space-48);
-  }
-
-  /* El enlace queda inline dentro del párrafo, con su subrayado por línea */
-  .visor-proyecto {
-    flex: 0 0 60%;
-    padding-right: var(--space-24);
-  }
-
-  .visor-controles {
-    flex: 1 1 40%;
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-24);
-  }
-
-  /* Celular: título en su fila, y debajo anterior y siguiente en los extremos */
-  @media (max-width: 768px) {
-    .visor-cerrar {
-      top: var(--space-16);
-      right: var(--space-16);
-    }
-
-    .visor-barra {
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--space-16);
-      padding: var(--space-16);
-    }
-
-    .visor-proyecto {
-      flex: none;
-      padding-right: 0;
-    }
-
-    .visor-controles {
-      flex: none;
-      width: 100%;
-      justify-content: space-between;
-    }
-  }
 </style>
 
 <script>
   // Lienzo infinito adaptado de Infinite Draggable Image Gallery, de Filip Zrnzevic (MIT, ver licencias/)
-  import { enmascarar } from '../scripts/mascara'
   import { crearAleatorio } from '../scripts/aleatorio'
+  import { crearVisor } from '../scripts/visor'
 
   const CONFIG = {
     itemAncho: { vw: 17, min: 160, max: 360, vwMovil: 44 }, // ancho de las fotos
@@ -371,17 +245,13 @@ const fotos = await Promise.all(
     huecoV: { vw: 3.5, vwMovil: 4 }, // espacio vertical mínimo entre fotos
     hoverScale: 1.03,
     dragEase: 0.075, // suavizado del arrastre
-    momentumFactor: 200, // inercia al soltar
+    momentumFactor: 200, // inercia al soltar y al terminar de usar la rueda
     columnas: 11, // salto de imagen entre filas
     paso: 7, // salto de imagen entre columnas; se ajusta para que sea coprimo con la cantidad de imágenes
     semilla: 7, // desfase vertical de cada celda
     pasoTeclado: 120, // px por pulsación de flecha
-    zoomDuracion: 0.6, // s
-    desenfoqueDuracion: 0.4, // s
-    expandido: { alto: 0.8, ancho: 0.86 }, // parte de la ventana que ocupa la imagen abierta
     aparicionMaxima: 1500, // ms de espera máxima antes de mostrar el lienzo
   }
-
 
   interface Dato {
     titulo: string
@@ -410,166 +280,26 @@ const fotos = await Promise.all(
 
   const lienzo = document.querySelector<HTMLElement>('.lienzo')
   const capa = lienzo?.querySelector<HTMLElement>('.lienzo-capa')
-  const visor = document.querySelector<HTMLDialogElement>('.visor')
-  const fondo = visor?.querySelector<HTMLElement>('.visor-fondo')
-  const imagen = visor?.querySelector<HTMLImageElement>('.visor-imagen')
-  const titulo = visor?.querySelector<HTMLAnchorElement>('.visor-titulo')
   const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
   const movil = window.matchMedia('(max-width: 768px)')
 
   type Gsap = typeof import('gsap').gsap
   let gsap: Gsap | null = null
 
-  // Estado del visor
-  let abierto = false
-  let animandoVisor = false
-  let indiceActual = 0
-  let origen: HTMLElement | null = null
-
   const limitar = (valor: number, min: number, max: number) => Math.min(max, Math.max(min, valor))
 
-  // Tamaño de la imagen abierta: el mayor que entra en la ventana con su proporción
-  function tamanoAbierto(dato: Dato) {
-    const escala = Math.min(
-      (window.innerWidth * CONFIG.expandido.ancho) / dato.ancho,
-      (window.innerHeight * CONFIG.expandido.alto) / dato.alto
-    )
-    return { ancho: dato.ancho * escala, alto: dato.alto * escala }
-  }
-
-  function palabrasTitulo() {
-    return titulo ? [...titulo.querySelectorAll('.mascara-texto')] : []
-  }
-
-  // Imagen y nombre del proyecto en el visor; la miniatura se ve hasta que carga la grande
-  function cargar(indice: number) {
-    if (!imagen || !titulo) return
-    indiceActual = (indice + N) % N
-    const dato = datos[indiceActual]
-    imagen.removeAttribute('srcset')
-    imagen.src = dato.src
-    imagen.alt = `Imagen de ${dato.titulo}`
-    const grande = new Image()
-    grande.src = dato.grande
-    grande.decode().then(
-      () => {
-        if (datos[indiceActual] === dato) imagen.src = dato.grande
-      },
-      () => {}
-    )
-    titulo.href = dato.href
-    titulo.textContent = dato.titulo
-    if (gsap) {
-      enmascarar(titulo)
-      gsap.set(palabrasTitulo(), { yPercent: 120 })
-    }
-  }
-
-  function tituloEntra(retraso = 0) {
-    if (!gsap) return
-    gsap.to(palabrasTitulo(), {
-      yPercent: 0,
-      duration: 0.6,
-      stagger: 0.04,
-      delay: retraso,
-      ease: 'mascara',
-    })
-  }
-
-  function tituloSale() {
-    if (!gsap) return null
-    return gsap.to(palabrasTitulo(), { yPercent: -120, duration: 0.35, stagger: 0.015, ease: 'power3.in' })
-  }
-
-  function abrir(boton: HTMLElement, indice: number) {
-    if (!visor || !imagen || !fondo || abierto) return
-    abierto = true
-    origen = boton
-    const caja = boton.getBoundingClientRect()
-    cargar(indice)
-    const destino = tamanoAbierto(datos[indiceActual])
-    visor.showModal()
-
-    if (!gsap) {
-      Object.assign(imagen.style, {
-        width: `${destino.ancho}px`,
-        height: `${destino.alto}px`,
-        transform: 'translate(-50%, -50%)',
-      })
-      return
-    }
-
-    animandoVisor = true
-    gsap.fromTo(fondo, { opacity: 0 }, { opacity: 1, duration: CONFIG.desenfoqueDuracion, ease: 'power2.inOut' })
-    boton.style.visibility = 'hidden'
-    lienzo?.classList.add('atenuado')
-    gsap.set(imagen, { xPercent: -50, yPercent: -50, opacity: 1, scale: 1 })
-    gsap.fromTo(
-      imagen,
-      {
-        width: caja.width,
-        height: caja.height,
-        x: caja.left + caja.width / 2 - window.innerWidth / 2,
-        y: caja.top + caja.height / 2 - window.innerHeight / 2,
-      },
-      {
-        width: destino.ancho,
-        height: destino.alto,
-        x: 0,
-        y: 0,
-        duration: CONFIG.zoomDuracion,
-        ease: 'hop',
-        onComplete: () => {
-          animandoVisor = false
-        },
-      }
-    )
-    tituloEntra(0.5)
-  }
-
-  // Imagen vecina en el orden de la galería, con la misma transición
-  function vecina(paso: number) {
-    if (!abierto || animandoVisor || !imagen) return
-    if (!gsap) {
-      cargar(indiceActual + paso)
-      const destino = tamanoAbierto(datos[indiceActual])
-      Object.assign(imagen.style, { width: `${destino.ancho}px`, height: `${destino.alto}px` })
-      return
-    }
-    animandoVisor = true
-    const salida = tituloSale()
-    const siguiente = () => {
-      cargar(indiceActual + paso)
-      const destino = tamanoAbierto(datos[indiceActual])
-      gsap!.to(imagen, {
-        width: destino.ancho,
-        height: destino.alto,
-        duration: CONFIG.zoomDuracion,
-        ease: 'hop',
-        onComplete: () => {
-          animandoVisor = false
-        },
-      })
-      tituloEntra(0.2)
-    }
-    if (salida) salida.eventCallback('onComplete', siguiente)
-    else siguiente()
-  }
-
   // Foto del lienzo hacia la que vuelve la imagen al cerrar: la de origen o la más cercana con la misma imagen
-  function destinoDeCierre() {
+  function destinoDeCierre(indice: number, origen: HTMLElement | null) {
     if (!lienzo || !capa) return null
     const marco = lienzo.getBoundingClientRect()
     const dentro = (caja: DOMRect) =>
       caja.right > marco.left && caja.left < marco.right && caja.bottom > marco.top && caja.top < marco.bottom
-    if (origen && Number(origen.dataset.indice) === indiceActual && dentro(origen.getBoundingClientRect())) {
-      return origen
-    }
+    if (origen && Number(origen.dataset.indice) === indice && dentro(origen.getBoundingClientRect())) return origen
     const centroX = marco.left + marco.width / 2
     const centroY = marco.top + marco.height / 2
     let mejor: HTMLElement | null = null
     let distancia = Infinity
-    capa.querySelectorAll<HTMLElement>(`.lienzo-foto[data-indice="${indiceActual}"]`).forEach((foto) => {
+    capa.querySelectorAll<HTMLElement>(`.lienzo-foto[data-indice="${indice}"]`).forEach((foto) => {
       const caja = foto.getBoundingClientRect()
       if (!dentro(caja)) return
       const d = Math.hypot(caja.left + caja.width / 2 - centroX, caja.top + caja.height / 2 - centroY)
@@ -581,68 +311,28 @@ const fotos = await Promise.all(
     return mejor as HTMLElement | null
   }
 
-  function cerrar() {
-    if (!visor || !imagen || !fondo || !abierto || (animandoVisor && gsap)) return
-    const terminar = (destino: HTMLElement | null) => {
-      visor.close()
-      if (origen) origen.style.visibility = ''
-      if (destino) destino.style.visibility = ''
-      abierto = false
-      animandoVisor = false
-      origen?.focus({ preventScroll: true })
-      pedir()
-    }
-
-    if (!gsap) {
-      terminar(null)
-      return
-    }
-
-    animandoVisor = true
-    const destino = destinoDeCierre()
-    tituloSale()
-    lienzo?.classList.remove('atenuado')
-    gsap.to(fondo, { opacity: 0, duration: CONFIG.desenfoqueDuracion, ease: 'power2.inOut' })
-    if (destino) {
-      if (origen && destino !== origen) origen.style.visibility = ''
-      destino.style.visibility = 'hidden'
-      const caja = destino.getBoundingClientRect()
-      gsap.to(imagen, {
-        width: caja.width,
-        height: caja.height,
-        x: caja.left + caja.width / 2 - window.innerWidth / 2,
-        y: caja.top + caja.height / 2 - window.innerHeight / 2,
-        duration: CONFIG.zoomDuracion,
-        ease: 'hop',
-        onComplete: () => terminar(destino),
-      })
-    } else {
-      gsap.to(imagen, { opacity: 0, scale: 0.9, duration: 0.4, ease: 'power2.inOut', onComplete: () => terminar(null) })
-    }
-  }
-
-  if (visor && titulo) {
-    // .subrayado se agrega después de la carga: el texto del enlace cambia con cada imagen
-    titulo.classList.add('subrayado')
-    visor.querySelector('.visor-anterior')?.addEventListener('click', () => vecina(-1))
-    visor.querySelector('.visor-siguiente')?.addEventListener('click', () => vecina(1))
-    visor.querySelector('.visor-cerrar')?.addEventListener('click', cerrar)
-    fondo?.addEventListener('click', cerrar)
-    imagen?.addEventListener('click', cerrar)
-    visor.addEventListener('cancel', (e) => {
-      e.preventDefault()
-      cerrar()
-    })
-    visor.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft') vecina(-1)
-      if (e.key === 'ArrowRight') vecina(1)
-    })
-  }
+  const visor = crearVisor({
+    imagenes: datos.map((dato) => ({
+      src: dato.src,
+      grande: dato.grande,
+      ancho: dato.ancho,
+      alto: dato.alto,
+      alt: `Imagen de ${dato.titulo}`,
+      titulo: dato.titulo,
+      href: dato.href,
+    })),
+    motor: () => gsap,
+    destinoDeCierre,
+    alAbrir: () => lienzo?.classList.add('atenuado'),
+    alCerrar: () => lienzo?.classList.remove('atenuado'),
+    alTerminar: () => pedir(),
+  })
+  const abierto = () => visor?.abierto() ?? false
 
   // Mosaico con movimiento reducido: mismo visor, sin animaciones
   mosaico.forEach((boton, i) => {
     boton.dataset.indice = String(i)
-    boton.addEventListener('click', () => abrir(boton, i))
+    boton.addEventListener('click', () => visor?.abrir(boton, i))
   })
 
   // Lienzo infinito
@@ -715,7 +405,7 @@ const fotos = await Promise.all(
 
     boton.addEventListener('click', (e) => {
       if (e.detail !== 0 && movio) return
-      abrir(boton, indice)
+      visor?.abrir(boton, indice)
     })
     return boton
   }
@@ -741,6 +431,7 @@ const fotos = await Promise.all(
       }
     }
     // La foto enfocada y la de origen del visor no se destruyen
+    const origen = visor?.origen()
     fotosLienzo.forEach((foto, clave) => {
       if (vigentes.has(clave) || foto === document.activeElement || foto === origen) return
       foto.remove()
@@ -750,7 +441,7 @@ const fotos = await Promise.all(
 
   function cuadro() {
     if (!capa) return
-    if (!abierto) {
+    if (!abierto()) {
       actualX += (objetivoX - actualX) * CONFIG.dragEase
       actualY += (objetivoY - actualY) * CONFIG.dragEase
       if (!arrastrando && Math.abs(objetivoX - actualX) < 0.1 && Math.abs(objetivoY - actualY) < 0.1) {
@@ -767,7 +458,7 @@ const fotos = await Promise.all(
       }
     }
     const quieto = actualX === objetivoX && actualY === objetivoY && !arrastrando
-    if (quieto || abierto) {
+    if (quieto || abierto()) {
       actualizarVisibles()
       animando = false
       return
@@ -783,7 +474,7 @@ const fotos = await Promise.all(
   }
 
   function reconstruir() {
-    if (!capa || abierto) return
+    if (!capa || abierto()) return
     const enfocada = (document.activeElement as HTMLElement | null)?.dataset?.clave
     medir()
     capa.replaceChildren()
@@ -835,7 +526,7 @@ const fotos = await Promise.all(
 
     // Arrastre con mouse y con el dedo
     lienzo.addEventListener('pointerdown', (e) => {
-      if (abierto || (e.pointerType === 'mouse' && e.button !== 0)) return
+      if (abierto() || (e.pointerType === 'mouse' && e.button !== 0)) return
       arrastrando = true
       movio = false
       inicioX = punteroX = e.clientX
@@ -878,6 +569,43 @@ const fotos = await Promise.all(
     window.addEventListener('pointercancel', soltar)
     lienzo.addEventListener('dragstart', (e) => e.preventDefault())
 
+    // Rueda: vertical con el mouse, las dos direcciones con el trackpad y horizontal con Shift
+    let ruedaVelocidadX = 0
+    let ruedaVelocidadY = 0
+    let ruedaTiempo = 0
+    let ruedaFin: number | undefined
+    lienzo.addEventListener(
+      'wheel',
+      (e) => {
+        if (abierto()) return
+        e.preventDefault()
+        const escala = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? lienzo.clientHeight : 1
+        let dx = e.deltaX * escala
+        let dy = e.deltaY * escala
+        if (e.shiftKey && dx === 0) {
+          dx = dy
+          dy = 0
+        }
+        const ahora = performance.now()
+        const dt = Math.max(10, ahora - ruedaTiempo)
+        ruedaTiempo = ahora
+        ruedaVelocidadX = -dx / dt
+        ruedaVelocidadY = -dy / dt
+        objetivoX -= dx
+        objetivoY -= dy
+        pedir()
+        // Inercia al terminar de girar la rueda
+        window.clearTimeout(ruedaFin)
+        ruedaFin = window.setTimeout(() => {
+          if (movimientoReducido.matches) return
+          objetivoX += ruedaVelocidadX * CONFIG.momentumFactor
+          objetivoY += ruedaVelocidadY * CONFIG.momentumFactor
+          pedir()
+        }, 60)
+      },
+      { passive: false }
+    )
+
     // Flechas: mueven el lienzo con suavizado
     const direcciones: Record<string, [number, number]> = {
       ArrowLeft: [1, 0],
@@ -887,7 +615,7 @@ const fotos = await Promise.all(
     }
     lienzo.addEventListener('keydown', (e) => {
       const direccion = direcciones[e.key]
-      if (!direccion || abierto) return
+      if (!direccion || abierto()) return
       e.preventDefault()
       objetivoX += direccion[0] * CONFIG.pasoTeclado
       objetivoY += direccion[1] * CONFIG.pasoTeclado
@@ -897,7 +625,7 @@ const fotos = await Promise.all(
     // Una foto enfocada fuera de pantalla se trae al centro
     lienzo.addEventListener('focusin', (e) => {
       const foto = (e.target as HTMLElement).closest<HTMLElement>('.lienzo-foto')
-      if (!foto || !foto.matches(':focus-visible') || abierto) return
+      if (!foto || !foto.matches(':focus-visible') || abierto()) return
       const marco = lienzo.getBoundingClientRect()
       const caja = foto.getBoundingClientRect()
       const fuera =
@@ -911,13 +639,7 @@ const fotos = await Promise.all(
     let espera: number | undefined
     window.addEventListener('resize', () => {
       window.clearTimeout(espera)
-      espera = window.setTimeout(() => {
-        if (abierto && imagen && gsap) {
-          const destino = tamanoAbierto(datos[indiceActual])
-          gsap.set(imagen, { width: destino.ancho, height: destino.alto })
-        }
-        reconstruir()
-      }, 150)
+      espera = window.setTimeout(reconstruir, 150)
     })
   }
 

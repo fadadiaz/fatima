@@ -1,0 +1,152 @@
+---
+// Visor de imágenes a pantalla completa (galería y proyectos); la lógica está en scripts/visor.ts
+interface Props {
+  // Nombre del proyecto como enlace, a la izquierda de la barra
+  conTitulo?: boolean
+}
+
+const { conTitulo = false } = Astro.props
+---
+
+<dialog class="visor" aria-label="Visor de imágenes">
+  <div class="visor-fondo"></div>
+  <img class="visor-imagen" alt="" draggable="false" />
+  <button type="button" class="subrayado visor-control visor-cerrar">cerrar</button>
+  <div class="visor-barra">
+    {conTitulo && <p class="visor-proyecto"><a class="visor-titulo" href="/proyectos"></a></p>}
+    <div class="visor-controles">
+      <button type="button" class="subrayado visor-control visor-anterior">anterior</button>
+      <button type="button" class="subrayado visor-control visor-siguiente">siguiente</button>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  /* Opacidad de lo que queda detrás del visor abierto (0 a 1) */
+  :global(:root) {
+    --visor-opacidad-fondo: 0.35;
+  }
+
+  .visor {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100svh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+    background: transparent;
+    color: var(--fa-black);
+  }
+
+  .visor::backdrop {
+    background: transparent;
+  }
+
+  /* Desenfoque de todo lo que queda detrás, menú incluido */
+  .visor-fondo {
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
+  }
+
+  /* Respaldo sin backdrop-filter: fondo del sitio semitransparente */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .visor-fondo {
+      background-color: color-mix(in srgb, var(--fa-white) 85%, transparent);
+    }
+  }
+
+  .visor-imagen {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: block;
+    object-fit: cover;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Sin GSAP: fundido con CSS */
+  .visor.sin-motor .visor-fondo,
+  .visor.sin-motor .visor-imagen {
+    transition: opacity 400ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .visor.sin-motor .visor-fondo,
+    .visor.sin-motor .visor-imagen {
+      transition: none;
+    }
+  }
+
+  .visor-control,
+  .visor-titulo {
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    line-height: var(--text-lg);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .visor-cerrar {
+    position: fixed;
+    top: var(--space-24);
+    right: var(--space-48);
+  }
+
+  /* Escritorio: título en el 60% izquierdo, anterior y siguiente en el 40% derecho */
+  .visor-barra {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: var(--space-24) var(--space-48);
+  }
+
+  /* El enlace queda inline dentro del párrafo, con su subrayado por línea */
+  .visor-proyecto {
+    flex: 0 0 60%;
+    padding-right: var(--space-24);
+  }
+
+  .visor-controles {
+    flex: 1 1 40%;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-24);
+  }
+
+  /* Celular: título en su fila, y debajo anterior y siguiente en los extremos */
+  @media (max-width: 768px) {
+    .visor-cerrar {
+      top: var(--space-16);
+      right: var(--space-16);
+    }
+
+    .visor-barra {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-16);
+      padding: var(--space-16);
+    }
+
+    .visor-proyecto {
+      flex: none;
+      padding-right: 0;
+    }
+
+    .visor-controles {
+      flex: none;
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+</style>
