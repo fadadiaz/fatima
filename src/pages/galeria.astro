@@ -117,7 +117,6 @@ const fotos = await Promise.all(
     <div class="lienzo" role="region" tabindex="0" aria-label="Galería de imágenes">
       <div class="lienzo-capa"></div>
     </div>
-    <div class="galeria-velo" aria-hidden="true"></div>
   </main>
 
   <dialog class="visor" aria-label="Visor de imágenes">
@@ -135,9 +134,9 @@ const fotos = await Promise.all(
 </Layout>
 
 <style>
-  /* Atenuación de las fotos detrás del menú (0 a 1) */
+  /* Opacidad de las fotos del lienzo con el visor abierto (0 a 1) */
   :global(:root) {
-    --velo-opacidad: 0.7;
+    --visor-opacidad-fondo: 0.7;
   }
 
   /* Título para lectores de pantalla y buscadores */
@@ -202,24 +201,9 @@ const fotos = await Promise.all(
       display: none;
     }
 
-    :global(.js) .lienzo,
-    :global(.js) .galeria-velo {
+    :global(.js) .lienzo {
       display: block;
     }
-  }
-
-  /* Velo entre el lienzo y el menú: atenúa las fotos para que el menú se lea */
-  .galeria-velo {
-    --velo-color: color-mix(in srgb, var(--fa-white) calc(var(--velo-opacidad) * 100%), transparent);
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: calc(var(--alto-menu, 0px) + 40px);
-    z-index: 40;
-    pointer-events: none;
-    background: linear-gradient(to bottom, var(--velo-color) 0, var(--velo-color) var(--alto-menu, 0px), transparent 100%);
   }
 
   .lienzo.listo {
@@ -244,6 +228,12 @@ const fotos = await Promise.all(
     display: block;
     overflow: hidden;
     cursor: pointer;
+    transition: opacity 400ms ease;
+  }
+
+  /* Fotos atenuadas detrás del visor abierto */
+  .lienzo.atenuado :global(.lienzo-foto) {
+    opacity: var(--visor-opacidad-fondo);
   }
 
   .lienzo :global(.lienzo-foto img) {
@@ -377,8 +367,8 @@ const fotos = await Promise.all(
 
   const CONFIG = {
     itemAncho: { vw: 17, min: 160, max: 360, vwMovil: 44 }, // ancho de las fotos
-    huecoH: { vw: 9, vwMovil: 12 }, // espacio horizontal entre fotos
-    huecoV: { vw: 8, vwMovil: 10 }, // espacio vertical mínimo entre fotos
+    huecoH: { vw: 4, vwMovil: 5 }, // espacio horizontal entre fotos
+    huecoV: { vw: 3.5, vwMovil: 4 }, // espacio vertical mínimo entre fotos
     hoverScale: 1.03,
     dragEase: 0.075, // suavizado del arrastre
     momentumFactor: 200, // inercia al soltar
@@ -392,28 +382,11 @@ const fotos = await Promise.all(
     aparicionMaxima: 1500, // ms de espera máxima antes de mostrar el lienzo
   }
 
-  // Lectura temporal de parámetros por URL para probar el espaciado y el velo
-  const parametros = new URLSearchParams(window.location.search)
-  const ESPACIOS: Record<string, { h: [number, number]; v: [number, number] }> = {
-    '1': { h: [6, 8], v: [5, 6] },
-    '2': { h: [4, 5], v: [3.5, 4] },
-    '3': { h: [2, 3], v: [2, 2.5] },
+  // Lectura temporal de ?velo=0.6, 0.7 u 0.8 para probar la atenuación del fondo del visor
+  const velo = new URLSearchParams(window.location.search).get('velo')
+  if (velo && ['0.6', '0.7', '0.8'].includes(velo)) {
+    document.documentElement.style.setProperty('--visor-opacidad-fondo', velo)
   }
-  const espacio = ESPACIOS[parametros.get('espacio') ?? '']
-  if (espacio) {
-    CONFIG.huecoH = { vw: espacio.h[0], vwMovil: espacio.h[1] }
-    CONFIG.huecoV = { vw: espacio.v[0], vwMovil: espacio.v[1] }
-  }
-  const numeroDeUrl = (clave: string) => {
-    const valor = parseFloat(parametros.get(clave) ?? '')
-    return Number.isFinite(valor) && valor >= 0 ? valor : null
-  }
-  const huecoManualH = numeroDeUrl('huecoh')
-  const huecoManualV = numeroDeUrl('huecov')
-  if (huecoManualH !== null) CONFIG.huecoH = { vw: huecoManualH, vwMovil: huecoManualH }
-  if (huecoManualV !== null) CONFIG.huecoV = { vw: huecoManualV, vwMovil: huecoManualV }
-  const velo = parametros.get('velo')
-  if (velo && ['0.6', '0.7', '0.8'].includes(velo)) document.documentElement.style.setProperty('--velo-opacidad', velo)
 
   interface Dato {
     titulo: string
@@ -534,6 +507,7 @@ const fotos = await Promise.all(
     animandoVisor = true
     gsap.fromTo(fondo, { opacity: 0 }, { opacity: 1, duration: CONFIG.desenfoqueDuracion, ease: 'power2.inOut' })
     boton.style.visibility = 'hidden'
+    lienzo?.classList.add('atenuado')
     gsap.set(imagen, { xPercent: -50, yPercent: -50, opacity: 1, scale: 1 })
     gsap.fromTo(
       imagen,
@@ -632,6 +606,7 @@ const fotos = await Promise.all(
     animandoVisor = true
     const destino = destinoDeCierre()
     tituloSale()
+    lienzo?.classList.remove('atenuado')
     gsap.to(fondo, { opacity: 0, duration: CONFIG.desenfoqueDuracion, ease: 'power2.inOut' })
     if (destino) {
       if (origen && destino !== origen) origen.style.visibility = ''
@@ -847,7 +822,6 @@ const fotos = await Promise.all(
     } catch {
       // Sin GSAP: queda el mosaico
       lienzo.remove()
-      document.querySelector('.galeria-velo')?.remove()
       document.querySelector<HTMLElement>('.galeria')?.style.setProperty('display', 'grid')
       document.body.classList.remove('sin-scroll')
       return
@@ -855,8 +829,6 @@ const fotos = await Promise.all(
 
     while (mcd(paso, N) !== 1) paso++
     lienzo.style.setProperty('--escala-hover', String(CONFIG.hoverScale))
-    const menu = document.querySelector<HTMLElement>('.header-alt')?.offsetHeight ?? 0
-    document.body.style.setProperty('--alto-menu', `${menu}px`)
 
     medir()
     // La primera foto arranca en el centro del lienzo
@@ -945,7 +917,6 @@ const fotos = await Promise.all(
     window.addEventListener('resize', () => {
       window.clearTimeout(espera)
       espera = window.setTimeout(() => {
-        document.body.style.setProperty('--alto-menu', `${document.querySelector<HTMLElement>('.header-alt')?.offsetHeight ?? 0}px`)
         if (abierto && imagen && gsap) {
           const destino = tamanoAbierto(datos[indiceActual])
           gsap.set(imagen, { width: destino.ancho, height: destino.alto })
