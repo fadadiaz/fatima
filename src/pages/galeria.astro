@@ -132,7 +132,20 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
           data-alto={foto.alto}
           data-pesada={foto.poster ? '' : undefined}
         >
-          {foto.poster ? (
+          {foto.video ? (
+            <video
+              class="galeria-video"
+              data-src={foto.video}
+              poster={foto.poster?.src}
+              width={MINIATURA}
+              height={altoMiniatura(foto)}
+              muted
+              loop
+              playsinline
+              preload="none"
+              aria-hidden="true"
+            />
+          ) : foto.poster ? (
             <img
               src={foto.poster.src}
               alt=""
@@ -186,7 +199,7 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     -webkit-user-drag: none;
   }
 
-  .galeria-foto :global(img) {
+  .galeria-foto :global(:is(img, video)) {
     display: block;
     width: 100%;
     height: auto;
@@ -255,7 +268,7 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     opacity: var(--visor-opacidad-fondo);
   }
 
-  .lienzo :global(.lienzo-foto img) {
+  .lienzo :global(.lienzo-foto :is(img, video)) {
     display: block;
     width: 100%;
     height: 100%;
@@ -263,7 +276,7 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     transition: transform 0.3s ease;
   }
 
-  .lienzo :global(.lienzo-foto:hover img) {
+  .lienzo :global(.lienzo-foto:hover :is(img, video)) {
     transform: scale(var(--escala-hover, 1));
   }
 </style>
@@ -306,6 +319,7 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
   const mosaico = [...document.querySelectorAll<HTMLButtonElement>('.galeria-foto')]
   const datos: Dato[] = mosaico.map((boton) => {
     const img = boton.querySelector('img')
+    const videoMosaico = boton.querySelector('video')
     return {
       titulo: boton.dataset.titulo ?? '',
       href: boton.dataset.href ?? '/proyectos',
@@ -313,7 +327,7 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
       video: boton.dataset.video,
       ancho: Number(boton.dataset.ancho),
       alto: Number(boton.dataset.alto),
-      src: img?.getAttribute('src') ?? '',
+      src: img?.getAttribute('src') ?? videoMosaico?.getAttribute('poster') ?? '',
       srcset: img?.getAttribute('srcset') ?? '',
     }
   })
@@ -323,6 +337,50 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
   const capa = lienzo?.querySelector<HTMLElement>('.lienzo-capa')
   const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
   const movil = window.matchMedia('(max-width: 768px)')
+
+  // Videos de las animaciones: con movimiento reducido o ahorro de datos, solo el póster
+  const ahorroDeDatos = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true
+  const conVideo = !movimientoReducido.matches && !ahorroDeDatos
+  const VIDEOS_EN_LIENZO = 2 // reproducciones simultáneas como máximo
+  const CERCA_VIDEO = 300 // px fuera de la pantalla en los que ya se pide el MP4
+
+  // Libera el video: deja de decodificar y vuelve a mostrar el póster
+  const liberarVideo = (video: HTMLVideoElement) => {
+    if (!video.getAttribute('src')) return
+    video.pause()
+    video.removeAttribute('src')
+    video.load()
+  }
+
+  // Mosaico: cada video se pide cerca de la pantalla y se reproduce solo mientras se ve
+  if (conVideo) {
+    const cerca = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          const video = entry.target as HTMLVideoElement
+          video.src = video.dataset.src ?? ''
+          cerca.unobserve(video)
+        })
+      },
+      { rootMargin: `${CERCA_VIDEO}px 0px` }
+    )
+    const visible = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target as HTMLVideoElement
+        if (entry.isIntersecting && video.getAttribute('src')) video.play().catch(() => {})
+        else video.pause()
+      })
+    })
+    document.querySelectorAll<HTMLVideoElement>('.galeria-video').forEach((video) => {
+      cerca.observe(video)
+      visible.observe(video)
+      video.addEventListener('loadeddata', () => {
+        const caja = video.getBoundingClientRect()
+        if (caja.bottom > 0 && caja.top < window.innerHeight) video.play().catch(() => {})
+      })
+    })
+  }
 
   type Gsap = typeof import('gsap').gsap
   let gsap: Gsap | null = null
@@ -365,9 +423,15 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     })),
     motor: () => gsap,
     destinoDeCierre,
-    alAbrir: () => lienzo?.classList.add('atenuado'),
+    alAbrir: () => {
+      lienzo?.classList.add('atenuado')
+      capa?.querySelectorAll('video').forEach((video) => video.pause())
+    },
     alCerrar: () => lienzo?.classList.remove('atenuado'),
-    alTerminar: () => pedir(),
+    alTerminar: () => {
+      pedir()
+      gestionarVideos()
+    },
   })
   const abierto = () => visor?.abierto() ?? false
 
@@ -437,15 +501,31 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
       height: `${alto}px`,
     })
 
-    const img = document.createElement('img')
-    img.src = dato.src
-    if (dato.srcset) img.srcset = dato.srcset
-    img.alt = ''
-    img.width = Math.round(medidas.ancho)
-    img.height = Math.round(alto)
-    img.draggable = false
-    img.decoding = 'async'
-    boton.append(img)
+    if (dato.video && conVideo) {
+      // Animación pesada: video con póster; el MP4 lo asigna gestionarVideos
+      const video = document.createElement('video')
+      video.className = 'lienzo-video'
+      video.dataset.src = dato.video
+      video.poster = dato.src
+      video.width = Math.round(medidas.ancho)
+      video.height = Math.round(alto)
+      video.muted = true
+      video.loop = true
+      video.playsInline = true
+      video.preload = 'none'
+      video.setAttribute('aria-hidden', 'true')
+      boton.append(video)
+    } else {
+      const img = document.createElement('img')
+      img.src = dato.src
+      if (dato.srcset) img.srcset = dato.srcset
+      img.alt = ''
+      img.width = Math.round(medidas.ancho)
+      img.height = Math.round(alto)
+      img.draggable = false
+      img.decoding = 'async'
+      boton.append(img)
+    }
 
     boton.addEventListener('click', (e) => {
       if (e.detail !== 0 && movio) return
@@ -478,8 +558,48 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     const origen = visor?.origen()
     fotosLienzo.forEach((foto, clave) => {
       if (vigentes.has(clave) || foto === document.activeElement || foto === origen) return
+      const video = foto.querySelector('video')
+      if (video) liberarVideo(video)
       foto.remove()
       fotosLienzo.delete(clave)
+    })
+    gestionarVideos()
+  }
+
+  // Videos del lienzo: solo los más cercanos al centro tienen MP4 y se reproducen mientras se ven; los demás muestran el póster
+  function gestionarVideos() {
+    if (!capa || !conVideo || !gsap) return
+    const videos = [...capa.querySelectorAll<HTMLVideoElement>('video.lienzo-video')]
+    if (!videos.length) return
+    if (abierto()) {
+      videos.forEach((video) => video.pause())
+      return
+    }
+    const ancho = window.innerWidth
+    const alto = window.innerHeight
+    const candidatos = videos
+      .map((video) => {
+        const caja = video.getBoundingClientRect()
+        return {
+          video,
+          cerca:
+            caja.right > -CERCA_VIDEO && caja.left < ancho + CERCA_VIDEO && caja.bottom > -CERCA_VIDEO && caja.top < alto + CERCA_VIDEO,
+          visible: caja.right > 0 && caja.left < ancho && caja.bottom > 0 && caja.top < alto,
+          distancia: Math.hypot(caja.left + caja.width / 2 - ancho / 2, caja.top + caja.height / 2 - alto / 2),
+        }
+      })
+      .filter((candidato) => candidato.cerca)
+      .sort((a, b) => a.distancia - b.distancia)
+      .slice(0, VIDEOS_EN_LIENZO)
+    videos.forEach((video) => {
+      const elegido = candidatos.find((candidato) => candidato.video === video)
+      if (!elegido) {
+        liberarVideo(video)
+        return
+      }
+      if (!video.getAttribute('src')) video.src = video.dataset.src ?? ''
+      if (elegido.visible) video.play().catch(() => {})
+      else video.pause()
     })
   }
 
@@ -521,6 +641,7 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     if (!capa || abierto()) return
     const enfocada = (document.activeElement as HTMLElement | null)?.dataset?.clave
     medir()
+    capa.querySelectorAll('video').forEach(liberarVideo)
     capa.replaceChildren()
     fotosLienzo.clear()
     actualizarVisibles()
