@@ -9,6 +9,7 @@ import { crearAleatorio } from '../scripts/aleatorio'
 import { analizarAnimacion, rutaPoster } from '../lib/posters'
 import { animacionDe } from '../lib/animaciones'
 import { readFileSync } from 'node:fs'
+import { ANCHOS_PROYECTO, CALIDAD_PROYECTO } from '../lib/imagenes'
 
 // Semilla del orden de las fotos
 const SEMILLA_ORDEN = 7
@@ -16,6 +17,8 @@ const SEMILLA_ORDEN = 7
 const CARGA_INMEDIATA = 6
 // Ancho de las miniaturas en px; con densities sale también al doble
 const MINIATURA = 360
+// Ancho máximo de la versión que carga el zoom del visor
+const ANCHO_ZOOM = ANCHOS_PROYECTO.at(-1) ?? 2592
 
 const proyectos = await getCollection('proyectos')
 
@@ -88,6 +91,8 @@ const fotos = await Promise.all(
       return {
         ...foto,
         grande: video.poster,
+        zoom: undefined,
+        anchoZoom: undefined,
         video: video.mp4,
         ancho: video.ancho,
         alto: video.alto,
@@ -95,9 +100,15 @@ const fotos = await Promise.all(
       }
     }
     const grande = await getImage({ src: foto.imagen, width: 1600 })
+    // Versión para el zoom: la mayor de los proyectos, o el original si es más chico (los GIF usan la grande)
+    const zoom = /\.gif$/i.test(foto.ruta)
+      ? null
+      : (await getImage({ src: foto.imagen, widths: [ANCHO_ZOOM], sizes: '100vw', quality: CALIDAD_PROYECTO })).srcSet.values.at(-1)
     return {
       ...foto,
       grande: grande.src,
+      zoom: zoom?.url,
+      anchoZoom: zoom ? Number.parseFloat(zoom.descriptor ?? '') || undefined : undefined,
       video: undefined,
       ancho: Number(grande.attributes.width),
       alto: Number(grande.attributes.height),
@@ -127,6 +138,8 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
           data-titulo={foto.titulo}
           data-href={foto.href}
           data-grande={foto.grande}
+          data-zoom={foto.zoom}
+          data-ancho-zoom={foto.anchoZoom}
           data-video={foto.video}
           data-ancho={foto.ancho}
           data-alto={foto.alto}
@@ -304,6 +317,8 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     titulo: string
     href: string
     grande: string
+    zoom?: string
+    anchoZoom?: number
     video?: string
     ancho: number
     alto: number
@@ -324,6 +339,8 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
       titulo: boton.dataset.titulo ?? '',
       href: boton.dataset.href ?? '/proyectos',
       grande: boton.dataset.grande ?? '',
+      zoom: boton.dataset.zoom,
+      anchoZoom: Number(boton.dataset.anchoZoom) || undefined,
       video: boton.dataset.video,
       ancho: Number(boton.dataset.ancho),
       alto: Number(boton.dataset.alto),
@@ -414,6 +431,8 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     imagenes: datos.map((dato) => ({
       src: dato.src,
       grande: dato.grande,
+      zoom: dato.zoom,
+      anchoZoom: dato.anchoZoom,
       video: dato.video,
       ancho: dato.ancho,
       alto: dato.alto,

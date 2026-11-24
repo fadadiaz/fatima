@@ -293,20 +293,26 @@ const ogImagen = await getImage({
 
 <script>
   import { crearVisor } from '../../scripts/visor'
+  import { ANCHOS_PROYECTO } from '../../lib/imagenes'
 
   // Ancho de la versión que abre el visor: alcanza para pantalla completa sin bajar el original
   const ANCHO_VISOR = 1800
+  // Ancho máximo de la versión que carga el zoom
+  const ANCHO_ZOOM = ANCHOS_PROYECTO.at(-1) ?? 2592
 
-  // Imagen grande: la mayor del srcset que no pase de ANCHO_VISOR, o el src si no hay srcset
-  const mayor = (img: HTMLImageElement) => {
+  // La mayor versión del srcset que no pase del ancho dado, o el src si no hay srcset
+  const mayor = (img: HTMLImageElement, limite: number) => {
     const candidatas = (img.getAttribute('srcset') ?? '')
       .split(',')
       .map((parte) => parte.trim().split(/\s+/))
       .filter(([url]) => url)
       .map(([url, ancho]) => ({ url, ancho: parseFloat(ancho) || 0 }))
       .sort((a, b) => b.ancho - a.ancho)
-    const elegida = candidatas.find((candidata) => candidata.ancho <= ANCHO_VISOR) ?? candidatas.at(-1)
-    return elegida?.url ?? img.getAttribute('src') ?? ''
+    const elegida = candidatas.find((candidata) => candidata.ancho <= limite) ?? candidatas.at(-1)
+    return {
+      url: elegida?.url ?? img.getAttribute('src') ?? '',
+      ancho: elegida?.ancho || Number(img.getAttribute('width')) || img.naturalWidth,
+    }
   }
 
   const cuerpo = document.querySelector<HTMLElement>('.proyecto-body')
@@ -327,7 +333,9 @@ const ogImagen = await getImage({
           }
         : {
             src: foto.getAttribute('src') ?? '',
-            grande: mayor(foto),
+            grande: mayor(foto, ANCHO_VISOR).url,
+            zoom: mayor(foto, ANCHO_ZOOM).url,
+            anchoZoom: mayor(foto, ANCHO_ZOOM).ancho,
             ancho: Number(foto.getAttribute('width')) || foto.naturalWidth || 1,
             alto: Number(foto.getAttribute('height')) || foto.naturalHeight || 1,
             alt: foto.alt,

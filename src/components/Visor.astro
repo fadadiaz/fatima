@@ -12,7 +12,8 @@ const { conTitulo = false } = Astro.props
   <div class="visor-fondo"></div>
   <!-- Las capas (imagen o video) las crea scripts/visor.ts -->
   <div class="visor-medio"></div>
-  <button type="button" class="subrayado visor-control visor-cerrar">cerrar</button>
+  <!-- autofocus: la imagen también es enfocable y queda antes en el orden -->
+  <button type="button" class="subrayado visor-control visor-cerrar" autofocus>cerrar</button>
   <div class="visor-barra">
     {conTitulo && <p class="visor-proyecto"><a class="visor-titulo" href="/proyectos"></a></p>}
     <div class="visor-controles">
@@ -35,6 +36,9 @@ const { conTitulo = false } = Astro.props
     /* Fundido cruzado al cambiar de imagen y fundido de la miniatura a la versión grande */
     --visor-cruzado: 400ms;
     --visor-grande: 200ms;
+    /* Zoom al hacer clic sobre la imagen */
+    --visor-zoom-tiempo: 400ms;
+    --visor-zoom-curva: cubic-bezier(0.22, 1, 0.36, 1);
     position: fixed;
     inset: 0;
     width: 100vw;
@@ -113,8 +117,32 @@ const { conTitulo = false } = Astro.props
     opacity: 1;
   }
 
+  /* Zoom: solo las imágenes; los videos no se amplían */
+  .visor-medio :global(.visor-capa) {
+    cursor: zoom-in;
+    touch-action: none;
+  }
+
+  .visor-medio :global(.visor-capa.ampliada) {
+    cursor: grab;
+  }
+
+  .visor-medio :global(.visor-capa.arrastrando) {
+    cursor: grabbing;
+  }
+
+  .visor-medio :global(.visor-capa.zoom-animado) {
+    transition: transform var(--visor-zoom-tiempo) var(--visor-zoom-curva);
+  }
+
+  .visor-medio :global(.visor-capa-video) {
+    cursor: default;
+    touch-action: auto;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .visor-medio :global(.visor-grande) {
+    .visor-medio :global(.visor-grande),
+    .visor-medio :global(.visor-capa.zoom-animado) {
       transition: none;
     }
   }
