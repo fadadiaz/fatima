@@ -25,18 +25,24 @@ export interface OpcionesVisor {
   alTerminar?: () => void
 }
 
+type Capa = HTMLImageElement | HTMLVideoElement
+
 const ZOOM = 0.6 // s
 const DESENFOQUE = 0.4 // s
 const EXPANDIDO = { alto: 0.8, ancho: 0.86 } // parte de la ventana que ocupa la imagen abierta
+const ESPERA_DECODIFICACION = 400 // ms máximos antes de cambiar de imagen
+
+// Lectura temporal de ?transicion=1, 2 o 3 para comparar las transiciones entre imágenes
+const TRANSICION = ['1', '2', '3'].includes(new URLSearchParams(window.location.search).get('transicion') ?? '')
+  ? Number(new URLSearchParams(window.location.search).get('transicion'))
+  : 1
 
 export function crearVisor(opciones: OpcionesVisor) {
   const visor = document.querySelector<HTMLDialogElement>('.visor')
   const fondo = visor?.querySelector<HTMLElement>('.visor-fondo')
   const medio = visor?.querySelector<HTMLElement>('.visor-medio')
-  const imagen = visor?.querySelector<HTMLImageElement>('.visor-imagen')
-  const video = visor?.querySelector<HTMLVideoElement>('.visor-video')
   const titulo = visor?.querySelector<HTMLAnchorElement>('.visor-titulo') ?? null
-  if (!visor || !fondo || !medio || !imagen || !video || !opciones.imagenes.length) return null
+  if (!visor || !fondo || !medio || !opciones.imagenes.length) return null
 
   const imagenes = opciones.imagenes
   const N = imagenes.length
@@ -57,55 +63,76 @@ export function crearVisor(opciones: OpcionesVisor) {
     return { ancho: dato.ancho * escala, alto: dato.alto * escala }
   }
 
+  const capaActual = () => medio!.querySelector<Capa>('.visor-capa')
   const palabrasTitulo = () => (titulo ? [...titulo.querySelectorAll('.mascara-texto')] : [])
 
-  function detenerVideo() {
-    video!.pause()
-    video!.hidden = true
-    video!.removeAttribute('src')
-    video!.load()
+  // Capa de una imagen: video en bucle para las animaciones pesadas (con movimiento reducido, solo el póster)
+  function crearCapa(dato: ImagenVisor): Capa {
+    if (dato.video && !movimientoReducido.matches) {
+      const video = document.createElement('video')
+      video.className = 'visor-capa'
+      video.muted = true
+      video.loop = true
+      video.playsInline = true
+      video.poster = dato.src
+      video.width = dato.ancho
+      video.height = dato.alto
+      video.setAttribute('role', 'img')
+      video.setAttribute('aria-label', dato.alt)
+      video.src = dato.video
+      return video
+    }
+    const imagen = document.createElement('img')
+    imagen.className = 'visor-capa'
+    imagen.alt = dato.alt
+    imagen.width = dato.ancho
+    imagen.height = dato.alto
+    imagen.draggable = false
+    imagen.src = dato.src
+    // La miniatura se ve hasta que la grande está decodificada
+    const grande = new Image()
+    grande.src = dato.grande
+    grande.decode().then(
+      () => {
+        imagen.src = dato.grande
+      },
+      () => {}
+    )
+    return imagen
   }
 
-  function cargar(indice: number) {
-    indiceActual = (indice + N) % N
-    const dato = imagenes[indiceActual]
+  // Espera a que la capa pueda mostrarse, como máximo ESPERA_DECODIFICACION
+  function lista(capa: Capa) {
+    const tope = new Promise((resolver) => window.setTimeout(resolver, ESPERA_DECODIFICACION))
+    const carga =
+      capa instanceof HTMLImageElement
+        ? capa.decode().catch(() => {})
+        : new Promise((resolver) => capa.addEventListener('loadeddata', resolver, { once: true }))
+    return Promise.race([carga, tope])
+  }
 
-    // Animaciones pesadas: video en bucle con el póster hasta que arranca (con movimiento reducido, solo el póster)
-    if (dato.video && !movimientoReducido.matches) {
-      imagen!.hidden = true
-      video!.hidden = false
-      video!.poster = dato.src
-      video!.width = dato.ancho
-      video!.height = dato.alto
-      video!.setAttribute('aria-label', dato.alt)
-      video!.src = dato.video
-      video!.play().catch(() => {})
-    } else {
-      detenerVideo()
-      imagen!.hidden = false
-      imagen!.removeAttribute('srcset')
-      imagen!.src = dato.src
-      imagen!.alt = dato.alt
-      imagen!.width = dato.ancho
-      imagen!.height = dato.alto
-      const grande = new Image()
-      grande.src = dato.grande
-      grande.decode().then(
-        () => {
-          if (imagenes[indiceActual] === dato) imagen!.src = dato.grande
-        },
-        () => {}
-      )
+  const reproducir = (capa: Capa | null) => {
+    if (capa instanceof HTMLVideoElement) capa.play().catch(() => {})
+  }
+
+  // Libera la capa: pausa el video y deja de decodificarlo
+  function liberar(capa: Capa | null) {
+    if (capa instanceof HTMLVideoElement) {
+      capa.pause()
+      capa.removeAttribute('src')
+      capa.load()
     }
+    capa?.remove()
+  }
 
-    if (titulo && dato.titulo) {
-      titulo.href = dato.href ?? '/proyectos'
-      titulo.textContent = dato.titulo
-      const gsap = motor()
-      if (gsap) {
-        enmascarar(titulo)
-        gsap.set(palabrasTitulo(), { yPercent: 120 })
-      }
+  function ponerTitulo(dato: ImagenVisor) {
+    if (!titulo || !dato.titulo) return
+    titulo.href = dato.href ?? '/proyectos'
+    titulo.textContent = dato.titulo
+    const gsap = motor()
+    if (gsap) {
+      enmascarar(titulo)
+      gsap.set(palabrasTitulo(), { yPercent: 120 })
     }
   }
 
@@ -119,7 +146,9 @@ export function crearVisor(opciones: OpcionesVisor) {
 
   function ajustarTamano() {
     const destino = tamanoAbierto(imagenes[indiceActual])
-    Object.assign(medio!.style, { width: `${destino.ancho}px`, height: `${destino.alto}px` })
+    const gsap = motor()
+    if (gsap) gsap.set(medio, { width: destino.ancho, height: destino.alto })
+    else Object.assign(medio!.style, { width: `${destino.ancho}px`, height: `${destino.alto}px` })
   }
 
   function abrir(boton: HTMLElement, indice: number) {
@@ -127,8 +156,14 @@ export function crearVisor(opciones: OpcionesVisor) {
     abierto = true
     origen = boton
     const caja = boton.getBoundingClientRect()
-    cargar(indice)
-    const destino = tamanoAbierto(imagenes[indiceActual])
+    indiceActual = (indice + N) % N
+    const dato = imagenes[indiceActual]
+    liberar(capaActual())
+    const capa = crearCapa(dato)
+    medio!.append(capa)
+    ponerTitulo(dato)
+    reproducir(capa)
+    const destino = tamanoAbierto(dato)
     const gsap = motor()
     visor!.classList.toggle('sin-motor', !gsap)
     opciones.alAbrir?.()
@@ -174,41 +209,112 @@ export function crearVisor(opciones: OpcionesVisor) {
     tituloEntra(0.5)
   }
 
-  // Imagen vecina en el orden de la lista, con la misma transición
-  function vecina(paso: number) {
+  // Lee una duración de las variables CSS del visor, en ms
+  const duracion = (nombre: string) => parseFloat(getComputedStyle(visor!).getPropertyValue(nombre)) || 0
+
+  // Animaciones de la saliente y la entrante según la opción elegida; solo transform, opacity y clip-path
+  function animarCambio(saliente: Capa, entrante: Capa, paso: number) {
+    const estilo = getComputedStyle(visor!)
+    const curva = estilo.getPropertyValue('--visor-curva').trim() || 'ease'
+    const distancia = parseFloat(estilo.getPropertyValue('--visor-distancia')) * (paso > 0 ? 1 : -1)
+    const relleno = { fill: 'both' as FillMode }
+
+    if (TRANSICION === 2) {
+      // Persiana lateral: la entrante se descubre encima; la saliente se retira al final
+      const total = duracion('--visor-persiana')
+      const retiro = duracion('--visor-retiro')
+      const desde = paso > 0 ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)'
+      return [
+        entrante.animate({ clipPath: [desde, 'inset(0)'] }, { duration: total, easing: curva, ...relleno }),
+        saliente.animate({ opacity: [1, 0] }, { duration: retiro, delay: total - retiro, easing: curva, ...relleno }),
+      ]
+    }
+
+    if (TRANSICION === 3) {
+      // Fundido cruzado
+      const total = duracion('--visor-cruzado')
+      return [
+        saliente.animate({ opacity: [1, 0] }, { duration: total, easing: 'ease-in-out', ...relleno }),
+        entrante.animate({ opacity: [0, 1] }, { duration: total, easing: 'ease-in-out', ...relleno }),
+      ]
+    }
+
+    // Fundido con desplazamiento; con "anterior", las direcciones se invierten
+    return [
+      saliente.animate(
+        { opacity: [1, 0], transform: ['translateX(0)', `translateX(${-distancia}px)`] },
+        { duration: duracion('--visor-salida'), easing: curva, ...relleno }
+      ),
+      entrante.animate(
+        { opacity: [0, 1], transform: [`translateX(${distancia}px)`, 'translateX(0)'] },
+        { duration: duracion('--visor-entrada'), delay: duracion('--visor-retraso'), easing: curva, ...relleno }
+      ),
+    ]
+  }
+
+  // Imagen vecina en el orden de la lista: las dos capas se apilan centradas, sin recortes ni cambios de tamaño
+  async function vecina(paso: number) {
     if (!abierto || animando) return
-    const gsap = motor()
-    if (!gsap) {
-      cargar(indiceActual + paso)
+    const saliente = capaActual()
+    const datoSaliente = imagenes[indiceActual]
+    indiceActual = (indiceActual + paso + N) % N
+    const dato = imagenes[indiceActual]
+    const entrante = crearCapa(dato)
+
+    if (!saliente || movimientoReducido.matches) {
+      // Cambio instantáneo
+      liberar(saliente)
+      medio!.append(entrante)
       ajustarTamano()
+      ponerTitulo(dato)
+      tituloEntra()
+      reproducir(entrante)
       return
     }
+
     animando = true
-    const siguiente = () => {
-      cargar(indiceActual + paso)
-      const destino = tamanoAbierto(imagenes[indiceActual])
-      gsap.to(medio, {
-        width: destino.ancho,
-        height: destino.alto,
-        duration: ZOOM,
-        ease: 'hop',
-        onComplete: () => {
-          animando = false
-        },
-      })
-      tituloEntra(0.2)
-    }
-    const salida = tituloSale()
-    if (salida) salida.eventCallback('onComplete', siguiente)
-    else siguiente()
+    if (saliente instanceof HTMLVideoElement) saliente.pause()
+    const tamanoSaliente = tamanoAbierto(datoSaliente)
+    const tamanoEntrante = tamanoAbierto(dato)
+    saliente.classList.add('apilada')
+    Object.assign(saliente.style, { width: `${tamanoSaliente.ancho}px`, height: `${tamanoSaliente.alto}px` })
+    entrante.classList.add('apilada')
+    Object.assign(entrante.style, {
+      width: `${tamanoEntrante.ancho}px`,
+      height: `${tamanoEntrante.alto}px`,
+      opacity: '0',
+    })
+    medio!.append(entrante)
+
+    const salidaTitulo = tituloSale()
+    await lista(entrante)
+    entrante.style.opacity = ''
+    const animaciones = animarCambio(saliente, entrante, paso)
+    if (salidaTitulo) salidaTitulo.eventCallback('onComplete', () => {
+      ponerTitulo(dato)
+      tituloEntra(0.1)
+    })
+    else ponerTitulo(dato)
+
+    await Promise.all(animaciones.map((animacion) => animacion.finished.catch(() => {})))
+    liberar(saliente)
+    // El contenedor toma el tamaño de la nueva imagen recién al terminar; la capa vuelve a ocuparlo entero
+    ajustarTamano()
+    animaciones.forEach((animacion) => animacion.cancel())
+    entrante.classList.remove('apilada')
+    entrante.style.width = ''
+    entrante.style.height = ''
+    reproducir(entrante)
+    animando = false
   }
 
   function cerrar() {
     if (!abierto || animando) return
-    video!.pause()
+    const capa = capaActual()
+    if (capa instanceof HTMLVideoElement) capa.pause()
     const terminar = (destino: HTMLElement | null) => {
       visor!.close()
-      detenerVideo()
+      liberar(capaActual())
       if (origen) origen.style.visibility = ''
       if (destino) destino.style.visibility = ''
       abierto = false
@@ -268,11 +374,7 @@ export function crearVisor(opciones: OpcionesVisor) {
     if (e.key === 'ArrowRight') vecina(1)
   })
   window.addEventListener('resize', () => {
-    if (!abierto) return
-    const gsap = motor()
-    const destino = tamanoAbierto(imagenes[indiceActual])
-    if (gsap) gsap.set(medio, { width: destino.ancho, height: destino.alto })
-    else ajustarTamano()
+    if (abierto && !animando) ajustarTamano()
   })
 
   return {

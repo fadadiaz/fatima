@@ -10,10 +10,8 @@ const { conTitulo = false } = Astro.props
 
 <dialog class="visor" aria-label="Visor de imágenes">
   <div class="visor-fondo"></div>
-  <div class="visor-medio">
-    <img class="visor-imagen" alt="" draggable="false" />
-    <video class="visor-video" muted loop playsinline preload="none" role="img" hidden></video>
-  </div>
+  <!-- Las capas (imagen o video) las crea scripts/visor.ts -->
+  <div class="visor-medio"></div>
   <button type="button" class="subrayado visor-control visor-cerrar">cerrar</button>
   <div class="visor-barra">
     {conTitulo && <p class="visor-proyecto"><a class="visor-titulo" href="/proyectos"></a></p>}
@@ -31,6 +29,15 @@ const { conTitulo = false } = Astro.props
   }
 
   .visor {
+    /* Transición al cambiar de imagen (opciones 1, 2 y 3 de scripts/visor.ts) */
+    --visor-curva: cubic-bezier(0.22, 1, 0.36, 1);
+    --visor-distancia: 24px;
+    --visor-salida: 350ms;
+    --visor-entrada: 450ms;
+    --visor-retraso: 100ms;
+    --visor-persiana: 600ms;
+    --visor-retiro: 200ms;
+    --visor-cruzado: 400ms;
     position: fixed;
     inset: 0;
     width: 100vw;
@@ -65,7 +72,7 @@ const { conTitulo = false } = Astro.props
     }
   }
 
-  /* Contenedor que se anima; adentro, la imagen o el video de las animaciones pesadas */
+  /* Contenedor que se anima al abrir y cerrar; adentro, una capa por imagen o video */
   .visor-medio {
     position: absolute;
     left: 50%;
@@ -74,17 +81,19 @@ const { conTitulo = false } = Astro.props
     user-select: none;
   }
 
-  .visor-imagen,
-  .visor-video {
+  .visor-medio :global(.visor-capa) {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
 
-  .visor-imagen[hidden],
-  .visor-video[hidden] {
-    display: none;
+  /* Al cambiar de imagen: las dos capas centradas, cada una con su tamaño; el centrado usa translate y las animaciones, transform */
+  .visor-medio :global(.visor-capa.apilada) {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
   }
 
   /* Sin GSAP: fundido con CSS */
