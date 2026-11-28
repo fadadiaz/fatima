@@ -8,6 +8,8 @@ interface Props {
   imagen?: string
   // Página de una sola pantalla, sin scroll
   sinScroll?: boolean
+  // Página fuera de los buscadores
+  noindex?: boolean
 }
 
 const {
@@ -15,6 +17,7 @@ const {
   descripcion = 'Fátima Díaz, diseñadora en Buenos Aires. Marcas, publicaciones, páginas web y herramientas digitales. Disponible para trabajo full-time, remoto o híbrido.',
   imagen = '/og-image.jpg',
   sinScroll = false,
+  noindex = false,
 } = Astro.props
 
 const url = new URL(Astro.url.pathname, Astro.site)
@@ -33,6 +36,7 @@ const imagenUrl = new URL(imagen, Astro.site)
     <link rel="canonical" href={url}>
 
     <meta name="description" content={descripcion}>
+    {noindex && <meta name="robots" content="noindex">}
     <meta name="author" content="Fátima">
     <meta property="og:title" content={titulo}>
     <meta property="og:description" content={descripcion}>

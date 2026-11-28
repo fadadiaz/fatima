@@ -6,7 +6,8 @@ import mdx from '@astrojs/mdx';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://fatima.com.ar',
-  integrations: [sitemap(), mdx()],
+  // /gracias queda fuera del sitemap
+  integrations: [sitemap({ filter: (pagina) => !pagina.includes('/gracias') }), mdx()],
   vite: {
     server: {
       allowedHosts: true
