@@ -33,12 +33,6 @@ const { conTitulo = false } = Astro.props
     /* Caja máxima de la imagen abierta; cada imagen la llena según su proporción */
     --visor-ancho-max: 86vw;
     --visor-alto-max: 80svh;
-    /* Fundido cruzado al cambiar de imagen y fundido de la miniatura a la versión grande */
-    --visor-cruzado: 400ms;
-    --visor-grande: 200ms;
-    /* Zoom al hacer clic sobre la imagen */
-    --visor-zoom-tiempo: 400ms;
-    --visor-zoom-curva: cubic-bezier(0.22, 1, 0.36, 1);
     position: fixed;
     inset: 0;
     width: 100vw;
@@ -110,7 +104,7 @@ const { conTitulo = false } = Astro.props
 
   .visor-medio :global(.visor-grande) {
     opacity: 0;
-    transition: opacity var(--visor-grande) ease;
+    transition: opacity var(--duracion-corta) ease;
   }
 
   .visor-medio :global(.visor-grande.cargada) {
@@ -132,7 +126,7 @@ const { conTitulo = false } = Astro.props
   }
 
   .visor-medio :global(.visor-capa.zoom-animado) {
-    transition: transform var(--visor-zoom-tiempo) var(--visor-zoom-curva);
+    transition: transform var(--duracion-media) var(--curva-suave);
   }
 
   .visor-medio :global(.visor-capa-video) {

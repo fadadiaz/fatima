@@ -2,6 +2,9 @@
 import Layout from '../layouts/Layout.astro'
 import NavSecundario from '../components/NavSecundario.astro'
 import CorreoGrande from '../components/CorreoGrande.astro'
+
+// Temas del selector de área, en el orden en que se recorren
+const areas = ['identidad visual', 'diseño web', 'diseño editorial', 'herramientas digitales', 'otra cosa']
 ---
 
 <Layout
@@ -10,44 +13,900 @@ import CorreoGrande from '../components/CorreoGrande.astro'
 >
   <div class="pantalla-contacto bg-green">
     <NavSecundario bg="bg-green" />
-    <main class="contacto min-padding">
-      <h1 class="font-alt">¡Hablemos!</h1>
-      <CorreoGrande />
+    <main class="margin-main">
+      <h1 class="solo-lectores">Contacto</h1>
+
+      <section class="contacto min-padding">
+        <form
+          class="contacto-form"
+          name="contacto"
+          method="POST"
+          action="/gracias"
+          data-netlify="true"
+          netlify-honeypot="campo-extra"
+        >
+          <div class="contacto-frases">
+            <div class="frase">
+              <label for="nombre">hola, soy</label>
+              <span class="campo">
+                <span class="campo-control">
+                  <input
+                    id="nombre"
+                    name="nombre"
+                    type="text"
+                    autocomplete="name"
+                    placeholder=" "
+                    required
+                    minlength="2"
+                  >
+                  <span class="campo-ayuda" aria-hidden="true">tu nombre</span>
+                </span>
+                <span class="campo-error" id="error-nombre"></span>
+              </span>
+            </div>
+
+            <div class="frase">
+              <label for="correo">mi correo es</label>
+              <span class="campo">
+                <span class="campo-control">
+                  <input
+                    id="correo"
+                    name="correo"
+                    type="email"
+                    autocomplete="email"
+                    placeholder=" "
+                    required
+                    pattern={'[^\\s@]+@[^\\s@]+\\.[^\\s@]+'}
+                  >
+                  <span class="campo-ayuda" aria-hidden="true">tu correo</span>
+                </span>
+                <span class="campo-error" id="error-correo"></span>
+              </span>
+            </div>
+
+            <div class="frase frase-area">
+              <label for="area-select">quiero hablar de</label>
+              <span class="campo-area">
+                <!-- Sin JavaScript: select; con JavaScript: botón que recorre los temas y campo oculto -->
+                <select class="area-select" id="area-select" name="area">
+                  <option value=""></option>
+                  {areas.map((area) => <option value={area}>{area}</option>)}
+                </select>
+                <button
+                  type="button"
+                  class="area-boton"
+                  data-estado="sin-elegir"
+                  data-areas={JSON.stringify(areas)}
+                >
+                  <!-- Todas las opciones apiladas y ocultas reservan el ancho de la más larga; el script suma el texto neutro -->
+                  <span class="area-ventana">
+                    {areas.map((area) => (
+                      <span class="area-medida" aria-hidden="true">{area === 'otra cosa' ? `${area}:` : area}</span>
+                    ))}
+                    <span class="area-texto"></span>
+                  </span>
+                </button>
+                <input class="area-valor" type="hidden" name="area" value="" disabled>
+                <span class="area-aviso solo-lectores" aria-live="polite"></span>
+              </span>
+            </div>
+
+            <div class="fila-otra">
+              <div class="fila-otra-interior">
+                <div class="frase">
+                  <span class="campo">
+                    <label class="solo-lectores" for="otra">Otra cosa: ¿de qué se trata?</label>
+                    <span class="campo-control">
+                      <input
+                        id="otra"
+                        name="otra"
+                        type="text"
+                        placeholder="contame"
+                        minlength="3"
+                      >
+                    </span>
+                    <span class="campo-error" id="error-otra"></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="contacto-acciones">
+            <div class="interruptor">
+              <input id="llamada" name="llamada" type="checkbox" value="si" role="switch">
+              <label for="llamada">prefiero que hablemos por llamada</label>
+            </div>
+
+            <button type="submit" class="btn btn-alt btn-fill btn-xl contacto-enviar">Enviar</button>
+
+            <p class="contacto-estado" role="status" tabindex="-1"></p>
+
+            <div class="contacto-alternativa">
+              <CorreoGrande />
+            </div>
+          </div>
+
+          <!-- Nombre del formulario para Netlify, mensaje armado por el script y campo trampa contra spam -->
+          <input type="hidden" name="form-name" value="contacto">
+          <input class="contacto-mensaje" type="hidden" name="mensaje" value="">
+          <p class="solo-lectores" aria-hidden="true">
+            <label>No completar: <input name="campo-extra" tabindex="-1" autocomplete="off"></label>
+          </p>
+        </form>
+
+        <p class="contacto-anuncio solo-lectores" aria-live="polite"></p>
+      </section>
     </main>
   </div>
 </Layout>
 
 <style>
-  /* Pantalla única en verde, con el menú incluido */
+  /* Medidas sin equivalente en la escala: línea de los campos, línea con foco, alto del error y margen de la perilla */
   .pantalla-contacto {
+    --contacto-linea: 1px;
+    --contacto-linea-foco: 2px;
+    --contacto-error-alto: calc(var(--text-sm) * 1.4);
+    --interruptor-margen: calc(var(--space-4) - var(--contacto-linea));
     min-height: 100svh;
     display: flex;
     flex-direction: column;
   }
 
-  /* Título y correo centrados en el espacio que deja el menú */
+  /* Mismo contenedor que el pie: todo el ancho con los márgenes de .min-padding */
   .contacto {
-    flex: 1;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    gap: var(--space-48);
-    padding-block: var(--space-48);
+    gap: var(--space-64);
   }
 
-  .contacto h1 {
-    font-size: var(--text-2xl);
+  .contacto-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-32);
+  }
+
+  /* Enviado: quedan la confirmación y el correo */
+  .contacto-form.enviado :is(.contacto-frases, .interruptor, .contacto-enviar) {
+    display: none;
+  }
+
+  /* Frases sin espacio entre filas; el ancho lo marca la fila del área con su valor más largo */
+  .contacto-frases {
+    width: fit-content;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Las demás filas no aportan ancho propio: llegan hasta el de la fila del área */
+  .contacto-frases > .frase:not(.frase-area),
+  .fila-otra {
+    contain: inline-size;
+  }
+
+  /* Mismo espacio que reserva el error de los otros campos */
+  .frase-area {
+    padding-bottom: calc(var(--space-8) + var(--contacto-error-alto));
+  }
+
+  /* Cambio de opción: la fila pasa de su alto anterior al nuevo (alturas que mide el script) */
+  .frase-area.animando-alto {
+    overflow: clip;
+    transition: height var(--subrayado-duracion) var(--curva-suave);
+  }
+
+  /* Ancho del formulario, para que el correo llegue al borde derecho de las frases */
+  .contacto-acciones {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-32);
+  }
+
+  /* Si la frase y el ancho mínimo del campo no entran en la línea, el campo baja a todo el ancho */
+  .frase {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-24);
+    font-family: var(--font-grotesk);
+    font-size: var(--text-5xl);
     font-weight: 400;
-    line-height: var(--text-2xl);
+    line-height: 1.1;
+    letter-spacing: -0.06em;
   }
 
-  /* El correo conserva su ancho máximo, centrado */
-  .contacto > :global(.correo) {
+  /* Tamaños de frase por ancho, para que el valor más largo del área entre sin partirse */
+  @media (max-width: 1199px) {
+    .frase {
+      font-size: var(--text-4xl);
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .frase {
+      font-size: var(--text-3xl);
+    }
+  }
+
+  .frase > label {
+    flex: 0 1 auto;
+  }
+
+  .campo {
+    flex: 1 1 var(--ancho-320);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Ayuda dentro del campo, apoyada sobre la línea; desaparece al escribir */
+  .campo-control {
+    position: relative;
+    display: flex;
+  }
+
+  .campo input,
+  .area-select {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    font: inherit;
+    letter-spacing: normal;
+    color: inherit;
+    background: none;
+    border: 0;
+    border-bottom: var(--contacto-linea) solid currentColor;
+    border-radius: 0;
+    outline: none;
+  }
+
+  /* Foco: línea de 2px sin mover el contenido */
+  .campo input:focus,
+  .area-select:focus {
+    box-shadow: 0 calc(var(--contacto-linea-foco) - var(--contacto-linea)) 0 currentColor;
+  }
+
+  /* Interletra de las frases solo con un valor real (clase del script); vacío queda normal y la vista previa del autocompletado no la hereda */
+  .campo input.con-valor,
+  .area-select {
+    letter-spacing: -0.06em;
+  }
+
+  /* El placeholder recupera la interletra de las frases, en em sobre su propio tamaño */
+  .campo input::placeholder {
+    color: inherit;
+    letter-spacing: -0.06em;
+    opacity: 0.5;
+  }
+
+  /* Autocompletado: texto y fondo del sitio en lugar del celeste del navegador */
+  .campo input:-webkit-autofill,
+  .campo input:-webkit-autofill:hover,
+  .campo input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--fa-black);
+    box-shadow: inset 0 0 0 1000px var(--fa-green);
+  }
+
+  .campo input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--fa-black);
+    box-shadow:
+      inset 0 0 0 1000px var(--fa-green),
+      0 calc(var(--contacto-linea-foco) - var(--contacto-linea)) 0 currentColor;
+  }
+
+  /* Ayuda oculta mientras el navegador completa el campo */
+  .campo input:-webkit-autofill + .campo-ayuda {
+    display: none;
+  }
+
+  /* Vista previa del autocompletado con el tamaño del campo */
+  .campo input:-webkit-autofill::first-line {
+    font-family: var(--font-grotesk);
+    font-size: inherit;
+  }
+
+  .campo-ayuda {
+    position: absolute;
+    left: 0;
+    bottom: var(--space-8);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1;
+    letter-spacing: normal;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .campo input:not(:placeholder-shown) + .campo-ayuda {
+    display: none;
+  }
+
+  /* Error con alto fijo de una línea, reservado aunque esté vacío */
+  .campo-error {
+    display: block;
+    height: var(--contacto-error-alto);
+    margin-top: var(--space-8);
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--contacto-error-alto);
+    letter-spacing: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .interruptor input:focus-visible {
+    outline: 2px solid var(--fa-black);
+    outline-offset: 3px;
+  }
+
+  /* Área: valor en una sola línea; si no entra junto a la frase, baja entero */
+  .campo-area {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    display: flex;
+  }
+
+  .area-boton,
+  :global(.js) .area-select {
+    display: none;
+  }
+
+  :global(.js) .area-boton {
+    display: inline-flex;
+    max-width: 100%;
+    font: inherit;
+    letter-spacing: -0.06em;
+    color: inherit;
+    text-align: left;
+  }
+
+  .area-boton[data-estado='sin-elegir'] {
+    opacity: 0.5;
+  }
+
+  /* Ventana del roll: el texto viejo sube y el nuevo entra desde abajo; margen extra para acentos y subrayado */
+  .area-ventana {
+    display: inline-grid;
+    overflow: hidden;
+    padding-block: 0.1em 0.3em;
+    margin-block: -0.1em -0.3em;
+  }
+
+  /* Global: la medida del texto neutro la crea el script */
+  .area-ventana > :global(.area-medida) {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+    visibility: hidden;
+  }
+
+  /* Subrayado del texto, siempre presente */
+  .area-ventana > :global(.area-texto) {
+    grid-area: 1 / 1;
+    justify-self: start;
+    white-space: nowrap;
+    text-decoration: underline;
+    text-decoration-thickness: from-font;
+    text-decoration-skip-ink: auto;
+    text-underline-offset: 0.12em;
+    transition: translate 450ms var(--curva-suave);
+  }
+
+  .area-ventana > :global(.area-texto.entrando) {
+    translate: 0 110%;
+  }
+
+  .area-ventana > :global(.area-texto.saliendo) {
+    translate: 0 -110%;
+  }
+
+  /* Texto nuevo: el subrayado aparece con un fundido */
+  .area-ventana > :global(.area-texto.nuevo) {
+    animation: subrayado-aparecer var(--subrayado-duracion) ease-in-out both;
+  }
+
+  @keyframes subrayado-aparecer {
+    from { text-decoration-color: transparent; }
+    to { text-decoration-color: currentColor; }
+  }
+
+  /* Fila de "otra cosa": aparece con altura y opacidad */
+  .fila-otra {
     width: 100%;
   }
 
-  .contacto :global(.correo-imagen) {
-    margin-inline: auto;
+  :global(.js) .fila-otra {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      grid-template-rows var(--subrayado-duracion) ease,
+      opacity var(--subrayado-duracion) ease,
+      visibility 0s linear var(--subrayado-duracion);
+  }
+
+  :global(.js) .fila-otra.visible {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition:
+      grid-template-rows var(--subrayado-duracion) ease,
+      opacity var(--subrayado-duracion) ease;
+  }
+
+  :global(.js) .fila-otra-interior {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .fila-otra .campo {
+    flex-basis: 100%;
+  }
+
+  /* Interruptor de llamada */
+  .interruptor {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+
+  .interruptor input {
+    appearance: none;
+    flex: none;
+    position: relative;
+    width: var(--space-32);
+    height: var(--space-16);
+    border: var(--contacto-linea) solid currentColor;
+    border-radius: var(--space-16);
+    cursor: pointer;
+  }
+
+  .interruptor input::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: var(--interruptor-margen);
+    width: var(--space-8);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background-color: var(--fa-black);
+    translate: 0 -50%;
+    transition: left var(--duracion-corta) ease;
+  }
+
+  .interruptor input:checked {
+    background-color: var(--fa-black);
+  }
+
+  .interruptor input:checked::before {
+    left: calc(100% - var(--space-8) - var(--interruptor-margen));
+    background-color: var(--fa-white);
+  }
+
+  .interruptor label {
+    cursor: pointer;
+  }
+
+  .contacto-enviar:disabled {
+    cursor: progress;
+  }
+
+  .contacto-estado {
+    font-family: var(--font-grotesk);
+    font-size: var(--text-xl);
+    line-height: 1.2;
+  }
+
+  .contacto-estado:empty {
+    display: none;
+  }
+
+  /* Correo chico, con menor jerarquía; mantiene la distancia que tenía con el botón */
+  .contacto-alternativa {
+    align-self: stretch;
+    margin-top: var(--space-32);
+  }
+
+  /* Correo a la derecha; su menú se limita al ancho del contenedor y de la pantalla */
+  .contacto-alternativa :global(.correo-imagen) {
+    width: var(--ancho-320);
+    margin-left: auto;
+  }
+
+  .contacto-alternativa :global(.correo-imagen img) {
+    width: 100%;
+  }
+
+  /* Celular: la frase arriba y el campo debajo, a todo el ancho */
+  @media (max-width: 768px) {
+    .contacto-form {
+      align-self: stretch;
+    }
+
+    .contacto-frases {
+      width: 100%;
+    }
+
+    /* Una sola línea: el ancho lo da el contenedor y no el ancho propio del input */
+    .frase {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      align-items: stretch;
+      /* 8px más los 16px de relleno superior del campo: 24px hasta su texto */
+      gap: var(--space-8);
+      font-size: var(--text-2-5xl);
+    }
+
+    /* El valor del área puede partirse, con cada renglón subrayado */
+    .area-ventana {
+      position: relative;
+      min-width: 0;
+    }
+
+    /* Alto del valor actual, sin estirarse */
+    .area-ventana > :global(.area-texto) {
+      align-self: start;
+      white-space: normal;
+    }
+
+    /* El texto que sale no ocupa lugar: la fila ya mide lo que mide el nuevo */
+    .area-ventana > :global(.area-texto.saliendo) {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Las opciones ocultas no reservan ancho ni alto en celular */
+    .area-ventana > :global(.area-medida) {
+      display: none;
+    }
+
+    /* Campos más altos hacia arriba, con el texto apoyado sobre la línea */
+    .campo input {
+      width: 100%;
+      max-width: 100%;
+      min-height: var(--btn-height-movil);
+      padding-top: var(--space-16);
+    }
+
+    /* "contame" va debajo del valor del área, no de una frase: sin relleno superior */
+    .fila-otra .campo input {
+      padding-top: 0;
+    }
+
+    :global(.js) .area-boton {
+      min-height: var(--btn-height-movil);
+      padding-top: var(--space-16);
+    }
+
+    .contacto-enviar {
+      width: 100%;
+      justify-content: center;
+    }
+
+    :global(.js) .area-boton {
+      align-items: center;
+    }
+
+    /* En columna, el campo toma el alto de su contenido y no el ancho base de escritorio */
+    .campo,
+    .fila-otra .campo {
+      flex: none;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    /* Error dentro de los 24px entre la línea del campo y la frase siguiente */
+    .campo-error {
+      margin-top: var(--space-4);
+      height: calc(var(--space-24) - var(--space-4));
+      line-height: calc(var(--space-24) - var(--space-4));
+    }
+
+    .frase-area {
+      padding-bottom: var(--space-24);
+    }
+
+    .campo-ayuda {
+      bottom: var(--space-4);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) .fila-otra,
+    :global(.js) .fila-otra.visible,
+    .area-ventana > :global(.area-texto),
+    .interruptor input::before {
+      transition: none;
+    }
+
+    .area-boton :global(.area-texto) {
+      animation: none !important;
+    }
   }
 </style>
+
+<script>
+  const TEXTO_LISTO = 'Listo, recibí tu mensaje. Te respondo pronto.'
+  const TEXTO_NEUTRO = 'una idea'
+  const TEXTO_ERROR = 'No se pudo enviar. Probá de nuevo o escribime a hola@fatima.com.ar.'
+  const AREA_OTRA = 'otra cosa'
+
+  const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+  const form = document.querySelector<HTMLFormElement>('.contacto-form')
+  const estado = document.querySelector<HTMLElement>('.contacto-estado')
+  const anuncio = document.querySelector<HTMLElement>('.contacto-anuncio')
+  const nombre = form?.querySelector<HTMLInputElement>('#nombre')
+  const correo = form?.querySelector<HTMLInputElement>('#correo')
+  const otra = form?.querySelector<HTMLInputElement>('#otra')
+  const filaOtra = form?.querySelector<HTMLElement>('.fila-otra')
+  const llamada = form?.querySelector<HTMLInputElement>('#llamada')
+  const enviar = form?.querySelector<HTMLButtonElement>('.contacto-enviar')
+  const select = form?.querySelector<HTMLSelectElement>('.area-select')
+  const areaBoton = form?.querySelector<HTMLButtonElement>('.area-boton')
+  const areaVentana = areaBoton?.querySelector<HTMLElement>('.area-ventana')
+  const areaValor = form?.querySelector<HTMLInputElement>('.area-valor')
+  const areaAviso = form?.querySelector<HTMLElement>('.area-aviso')
+  const mensaje = form?.querySelector<HTMLInputElement>('.contacto-mensaje')
+
+  if (
+    form && estado && anuncio && nombre && correo && otra && filaOtra && llamada && enviar &&
+    select && areaBoton && areaVentana && areaValor && areaAviso && mensaje
+  ) {
+    if (new URLSearchParams(window.location.search).get('llamada') === '1') llamada.checked = true
+
+    // Con JavaScript, el campo oculto reemplaza al select
+    select.disabled = true
+    areaValor.disabled = false
+    otra.disabled = true
+
+    // Clase con-valor solo con texto escrito o autocompletado; la vista previa del navegador no cambia el valor
+    const marcarValor = (campo: HTMLInputElement) => campo.classList.toggle('con-valor', campo.value !== '')
+    ;[nombre, correo, otra].forEach((campo) => {
+      marcarValor(campo)
+      campo.addEventListener('input', () => marcarValor(campo))
+      campo.addEventListener('change', () => marcarValor(campo))
+    })
+
+    // Anuncio en la región aria-live; se vacía antes para repetir un mismo mensaje
+    const anunciar = (texto: string) => {
+      anuncio.textContent = ''
+      window.requestAnimationFrame(() => { anuncio.textContent = texto })
+    }
+
+    // Validación propia: cada regla devuelve el mensaje de error, o vacío si el valor es válido
+    const VACIO = 'Completá este campo'
+    const reglas: { campo: HTMLInputElement; error: () => string }[] = [
+      { campo: nombre, error: () => (nombre.value.trim().length >= 2 ? '' : VACIO) },
+      {
+        campo: correo,
+        error: () => {
+          const valor = correo.value.trim()
+          if (!valor) return VACIO
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor) ? '' : 'Correo no válido'
+        },
+      },
+      { campo: otra, error: () => (otra.disabled || otra.value.trim().length >= 3 ? '' : VACIO) },
+    ]
+
+    // Mensaje bajo el campo, con aria-invalid y aria-describedby solo mientras hay error
+    const marcar = (campo: HTMLInputElement, mensaje: string) => {
+      const error = form.querySelector<HTMLElement>(`#error-${campo.id}`)
+      if (!error) return
+      error.textContent = mensaje
+      if (mensaje) {
+        campo.setAttribute('aria-invalid', 'true')
+        campo.setAttribute('aria-describedby', error.id)
+        campo.dataset.revisar = 'true'
+      } else {
+        campo.removeAttribute('aria-invalid')
+        campo.removeAttribute('aria-describedby')
+      }
+    }
+
+    // Al salir del campo; después del primer error, en cada tecla
+    reglas.forEach(({ campo, error }) => {
+      campo.addEventListener('blur', () => {
+        const mensaje = error()
+        marcar(campo, mensaje)
+        if (mensaje) anunciar(mensaje)
+      })
+      campo.addEventListener('input', () => {
+        if (campo.dataset.revisar) marcar(campo, error())
+      })
+    })
+
+    // Área: gris con el texto neutro y luego cada tema; el ciclo vuelve al gris
+    const opciones: string[] = JSON.parse(areaBoton.dataset.areas ?? '[]')
+    let posicion = -1
+
+    // Texto neutro: visible al inicio y sumado a las medidas que reservan el ancho
+    const medidaNeutra = document.createElement('span')
+    medidaNeutra.className = 'area-medida'
+    medidaNeutra.setAttribute('aria-hidden', 'true')
+    medidaNeutra.textContent = TEXTO_NEUTRO
+    areaVentana.prepend(medidaNeutra)
+    const textoInicial = areaVentana.querySelector<HTMLElement>('.area-texto')
+    if (textoInicial) textoInicial.textContent = TEXTO_NEUTRO
+
+    // Texto nuevo desde abajo y el viejo hacia arriba; el subrayado del nuevo aparece con un fundido
+    const mostrarTexto = (texto: string) => {
+      const nuevo = document.createElement('span')
+      nuevo.className = 'area-texto nuevo'
+      nuevo.textContent = texto
+      const viejos = [...areaVentana.querySelectorAll<HTMLElement>('.area-texto')]
+
+      if (movimientoReducido.matches) {
+        viejos.forEach((viejo) => viejo.remove())
+        areaVentana.append(nuevo)
+        return
+      }
+
+      nuevo.classList.add('entrando')
+      areaVentana.append(nuevo)
+      nuevo.getBoundingClientRect()
+      nuevo.classList.remove('entrando')
+      viejos.forEach((viejo) => {
+        viejo.classList.add('saliendo')
+        viejo.addEventListener('transitionend', (evento) => {
+          if (evento.propertyName === 'translate') viejo.remove()
+        })
+      })
+    }
+
+    // Texto visible: "otra cosa" lleva dos puntos, porque sigue en el campo de abajo
+    const etiqueta = (texto: string) => (texto === AREA_OTRA ? `${texto}:` : texto)
+
+    const visible = (pos: number) => (pos < 0 ? TEXTO_NEUTRO : etiqueta(opciones[pos]))
+
+    // Alto de la fila del área en celular: se mide antes y después del cambio, y se anima entre los dos
+    const movil = window.matchMedia('(max-width: 768px)')
+    const filaArea = areaBoton.closest<HTMLElement>('.frase-area')
+    const terminarAlto = () => {
+      filaArea?.classList.remove('animando-alto')
+      filaArea?.style.removeProperty('height')
+    }
+    filaArea?.addEventListener('transitionend', (evento) => {
+      if (evento.target === filaArea && evento.propertyName === 'height') terminarAlto()
+    })
+
+    const conAlto = (cambio: () => void) => {
+      if (!filaArea || movimientoReducido.matches || !movil.matches) {
+        cambio()
+        return
+      }
+      const antes = filaArea.getBoundingClientRect().height
+      terminarAlto()
+      cambio()
+      const despues = filaArea.getBoundingClientRect().height
+      if (Math.abs(antes - despues) < 0.5) return
+      filaArea.style.height = `${antes}px`
+      filaArea.getBoundingClientRect()
+      filaArea.classList.add('animando-alto')
+      filaArea.style.height = `${despues}px`
+    }
+
+    const aplicar = (nueva: number) => {
+      const textoAntes = visible(posicion)
+      posicion = nueva
+      const elegido = posicion >= 0
+      const valor = elegido ? opciones[posicion] : ''
+      if (visible(posicion) !== textoAntes) conAlto(() => mostrarTexto(visible(posicion)))
+
+      areaValor.value = valor
+      areaBoton.dataset.estado = elegido ? 'elegido' : 'sin-elegir'
+      areaBoton.setAttribute(
+        'aria-label',
+        elegido
+          ? `Quiero hablar de: ${valor}. Tocá para cambiar`
+          : `Quiero hablar de: ${TEXTO_NEUTRO} (sin elegir). Tocá para elegir un tema`
+      )
+      areaAviso.textContent = elegido ? valor : `${TEXTO_NEUTRO}, sin elegir`
+
+      // Campo de "otra cosa": visible solo con ese tema; al salir se vacía
+      const conOtra = valor === AREA_OTRA
+      filaOtra.classList.toggle('visible', conOtra)
+      otra.disabled = !conOtra
+      if (!conOtra) {
+        otra.value = ''
+        marcarValor(otra)
+        marcar(otra, '')
+        delete otra.dataset.revisar
+      }
+    }
+
+    areaBoton.setAttribute('aria-label', `Quiero hablar de: ${TEXTO_NEUTRO} (sin elegir). Tocá para elegir un tema`)
+
+    // Mensaje en una línea, con una oración por dato
+    const conPunto = (texto: string) => (/[.!?]$/.test(texto) ? texto : `${texto}.`)
+    const armarMensaje = () => {
+      const opcion = posicion < 0 ? TEXTO_NEUTRO : opciones[posicion]
+      const tema = opcion === AREA_OTRA
+        ? `Quiero hablar de otra cosa: ${conPunto(otra.value.trim())}`
+        : `Quiero hablar de ${opcion}.`
+      const oraciones = [
+        `Hola, soy ${nombre.value.trim()}.`,
+        `Mi correo es ${correo.value.trim()}.`,
+        tema,
+      ]
+      if (llamada.checked) oraciones.push('Prefiero que hablemos por llamada.')
+      return oraciones.join(' ')
+    }
+
+    const avanzar = (paso: number) => {
+      const total = opciones.length + 1
+      aplicar(((posicion + 1 + paso + total) % total) - 1)
+    }
+
+    // Clic o toque: siguiente; con Shift, anterior. El teclado se maneja aparte
+    areaBoton.addEventListener('click', (e) => {
+      if (e.detail === 0) return
+      avanzar(e.shiftKey ? -1 : 1)
+    })
+
+    areaBoton.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        avanzar(e.shiftKey ? -1 : 1)
+      } else if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault()
+        if (posicion !== -1) aplicar(-1)
+      }
+    })
+
+    areaBoton.addEventListener('keyup', (e) => {
+      if (e.key === ' ') e.preventDefault()
+    })
+
+    form.noValidate = true
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const errores = reglas
+        .map(({ campo, error }) => ({ campo, mensaje: error() }))
+        .filter(({ campo, mensaje }) => {
+          marcar(campo, mensaje)
+          return mensaje
+        })
+      if (errores.length) {
+        errores[0].campo.focus()
+        anunciar(errores.map(({ mensaje }) => mensaje).join('. '))
+        return
+      }
+
+      mensaje.value = armarMensaje()
+      const cuerpo = new URLSearchParams()
+      new FormData(form).forEach((valor, clave) => cuerpo.append(clave, String(valor)))
+
+      enviar.disabled = true
+      estado.textContent = ''
+      try {
+        const respuesta = await fetch('/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: cuerpo.toString(),
+        })
+        if (!respuesta.ok) throw new Error(String(respuesta.status))
+        form.classList.add('enviado')
+        estado.textContent = TEXTO_LISTO
+        estado.focus()
+      } catch {
+        estado.textContent = TEXTO_ERROR
+        enviar.disabled = false
+      }
+    })
+  }
+</script>

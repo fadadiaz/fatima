@@ -4,6 +4,7 @@ import type { CollectionEntry } from 'astro:content'
 import { Image } from 'astro:assets'
 import Layout from '../layouts/Layout.astro'
 import NavSecundario from '../components/NavSecundario.astro'
+import TextoManuscrito from '../components/TextoManuscrito.astro'
 import Footer from '../components/Footer.astro'
 
 const proyectos = await getCollection('proyectos')
@@ -17,7 +18,7 @@ const proyectos = await getCollection('proyectos')
   <main class="margin-main">
     <header class="max-width min-padding">
       <div class="subtitulo">
-        <h1>Proyectos</h1>
+        <h1><TextoManuscrito texto="Proyectos" /></h1>
         <button id="btn-azar" type="button" class="btn btn-pink">Al azar <i class="fi fi-rs-dice-alt"></i></button>
       </div>
     </header>
@@ -141,10 +142,9 @@ const proyectos = await getCollection('proyectos')
   /* Una y dos columnas: la fecha debajo del título */
   @media (max-width: 1023px) {
     .proyecto-card-info {
-      --separacion-fecha: var(--space-4);
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--separacion-fecha);
+      gap: var(--space-4);
     }
 
     .proyecto-card-info h3 {

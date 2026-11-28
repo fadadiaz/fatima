@@ -35,6 +35,13 @@
   --space-48: 48px;
   --space-64: 64px;
   
+  --ancho-320: 320px; /* Ancho mínimo de campo y correo chico de contacto */
+
+  --duracion-corta: 200ms;
+  --duracion-media: 400ms;
+  --curva-suave: cubic-bezier(0.22, 1, 0.36, 1);
+  --entrada-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
+
   --max-width: 1392px;
   --max-width-5-col: 552px;
 
@@ -279,7 +286,6 @@ button {
 [data-entrada-palabras] {
   --entrada-duracion: 500ms;
   --entrada-retraso: 15ms;
-  --entrada-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -401,30 +407,14 @@ button {
   color: var(--btn-fg);
 }
 
-/* BOTON MINI: naranja, compacto y sin corchetes; en celular toma el alto táctil de .btn */
-.btn-mini {
-  --btn-mini-alto: var(--space-24);
-  --btn-mini-ancho: fit-content;
-  --btn-mini-relleno: var(--space-8);
-  min-height: var(--btn-mini-alto);
-  width: var(--btn-mini-ancho);
-  padding-inline: var(--btn-mini-relleno);
-  border: none;
-  background-color: var(--fa-orange);
-}
-
-.btn-mini::before,
-.btn-mini::after {
-  content: none;
-  display: none;
-}
-
-/* En celular, relleno mayor para compensar en parte el espacio de los corchetes */
-@media (max-width: 768px), (hover: none) {
-  .btn-mini {
-    --btn-mini-relleno-movil: var(--space-16);
-    padding-inline: var(--btn-mini-relleno-movil);
-  }
+/* BOTON GRANDE: el doble de las medidas de .btn */
+.btn.btn-xl {
+  font-size: var(--text-2xl);
+  line-height: var(--text-2-5xl);
+  min-height: var(--space-64);
+  border-width: var(--space-8);
+  padding-inline: var(--space-8);
+  gap: var(--space-8);
 }
 
 /* BOTON CON CORCHETES SIEMPRE VISIBLES */
@@ -586,12 +576,19 @@ button {
   gap: var(--space-16);
 }
 
-/* Título manuscrito; Schoolbell solo tiene peso 400, sin negrita sintética */
+/* Título en Space Mono con letras sueltas en Schoolbell (TextoManuscrito); sin negrita sintética */
 .subtitulo :is(h1, h2) {
-  font-family: var(--font-alt);
+  font-family: var(--font-mono);
   font-size: 1.3rem; /* sin variable en la escala */
   text-transform: lowercase;
   font-weight: 400;
   font-synthesis: none;
   letter-spacing: 0.05em;
+}
+
+/* Letra manuscrita suelta, sin cambiar la altura de la línea */
+.manuscrita {
+  font-family: var(--font-alt);
+  font-size: 1.15em;
+  line-height: 0;
 }

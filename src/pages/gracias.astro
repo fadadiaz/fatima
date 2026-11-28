@@ -1,0 +1,38 @@
+---
+import Layout from '../layouts/Layout.astro'
+import NavSecundario from '../components/NavSecundario.astro'
+---
+
+<Layout
+  titulo="Gracias - Fátima Díaz"
+  descripcion="Mensaje recibido."
+>
+  <div class="pantalla-gracias bg-green">
+    <NavSecundario bg="bg-green" />
+    <main class="gracias min-padding">
+      <h1>Gracias</h1>
+      <p>Listo, recibí tu mensaje. Te respondo pronto.</p>
+    </main>
+  </div>
+</Layout>
+
+<style>
+  .pantalla-gracias {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .gracias {
+    flex: 1;
+    align-items: flex-start;
+    gap: var(--space-16);
+    padding-block: var(--space-48);
+  }
+
+  .gracias p {
+    font-family: var(--font-grotesk);
+    font-size: var(--text-xl);
+    line-height: 1.2;
+  }
+</style>

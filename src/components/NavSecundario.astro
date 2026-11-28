@@ -44,12 +44,6 @@ const actual = (destino: string) =>
 
   /* Menú flotante del inicio */
   .nav-flotante {
-    --duracion-entrada: 400ms;
-    --retraso-entrada: 60ms;
-    --duracion-salida: 250ms;
-    --retraso-salida: 40ms;
-    --distancia: 8px;
-    --curva: cubic-bezier(0.22, 1, 0.36, 1);
     position: fixed;
     background-color: transparent;
   }
@@ -73,27 +67,27 @@ const actual = (destino: string) =>
   .nav-flotante .nav-alt-full > a,
   .nav-flotante .nav-alt-mobile > a,
   .nav-flotante .nav-alt-mobile > :global(.btn-burger) {
-    --demora-salida: calc((var(--n) - 1 - var(--i)) * var(--retraso-salida));
+    --demora-salida: calc((var(--n) - 1 - var(--i)) * 40ms);
     opacity: 0;
-    translate: 0 calc(-1 * var(--distancia));
-    transform: translateY(var(--distancia));
+    translate: 0 calc(-1 * var(--space-8));
+    transform: translateY(var(--space-8));
     transition:
-      opacity var(--duracion-salida) var(--curva) var(--demora-salida),
-      translate var(--duracion-salida) var(--curva) var(--demora-salida),
-      transform 0s linear calc(var(--demora-salida) + var(--duracion-salida));
+      opacity 250ms var(--curva-suave) var(--demora-salida),
+      translate 250ms var(--curva-suave) var(--demora-salida),
+      transform 0s linear calc(var(--demora-salida) + 250ms);
   }
 
   /* Entrada */
   .nav-flotante.is-visible .nav-alt-full > a,
   .nav-flotante.is-visible .nav-alt-mobile > a,
   .nav-flotante.is-visible .nav-alt-mobile > :global(.btn-burger) {
-    --demora-entrada: calc(var(--i) * var(--retraso-entrada));
+    --demora-entrada: calc(var(--i) * 60ms);
     opacity: 1;
     translate: none;
     transform: none;
     transition:
-      opacity var(--duracion-entrada) var(--curva) var(--demora-entrada),
-      transform var(--duracion-entrada) var(--curva) var(--demora-entrada),
+      opacity var(--duracion-media) var(--curva-suave) var(--demora-entrada),
+      transform var(--duracion-media) var(--curva-suave) var(--demora-entrada),
       translate 0s;
   }
 

@@ -23,7 +23,7 @@ const grupo = (clase: string) => {
 
 export function prepararRoll(boton: HTMLElement) {
   if (boton.classList.contains('btn-tag')) return
-  const conCorchetes = !boton.matches('.btn-alt, .btn-corchetes, .btn-mini')
+  const conCorchetes = !boton.matches('.btn-alt, .btn-corchetes')
   let indice = conCorchetes ? 1 : 0
 
   const procesar = (nodo: Node) => {

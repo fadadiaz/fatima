@@ -1,0 +1,37 @@
+---
+// Texto con letras sueltas en Schoolbell: por regla de largo de palabra, o las marcadas entre asteriscos (*a*)
+interface Props {
+  texto: string
+}
+
+const { texto } = Astro.props
+const lectura = texto.replaceAll('*', '')
+
+type Parte = { texto: string; manuscrita: boolean }
+const partes: Parte[] = []
+
+const agregar = (caracter: string, manuscrita: boolean) => {
+  const ultima = partes.at(-1)
+  if (ultima && !manuscrita && !ultima.manuscrita) ultima.texto += caracter
+  else partes.push({ texto: caracter, manuscrita })
+}
+
+if (/\*[^*]+\*/.test(texto)) {
+  texto.split(/(\*[^*]+\*)/).forEach((tramo) => {
+    if (/^\*[^*]+\*$/.test(tramo)) partes.push({ texto: tramo.slice(1, -1), manuscrita: true })
+    else if (tramo) partes.push({ texto: tramo, manuscrita: false })
+  })
+} else {
+  // Hasta 3 letras, ninguna; de 4 a 7, la del medio; de 8 o más, la del tercio y la de los dos tercios
+  texto.normalize('NFC').split(/(\s+)/).forEach((palabra) => {
+    const caracteres = [...palabra]
+    const letras = caracteres.flatMap((caracter, i) => (/\p{L}/u.test(caracter) ? [i] : []))
+    const n = letras.length
+    const elegidas = n >= 8 ? [Math.floor(n / 3), Math.floor((2 * n) / 3)] : n >= 4 ? [Math.floor((n - 1) / 2)] : []
+    const posiciones = new Set(elegidas.map((k) => letras[k]))
+    caracteres.forEach((caracter, i) => agregar(caracter, posiciones.has(i)))
+  })
+}
+---
+
+<span class="solo-lectores">{lectura}</span><span aria-hidden="true">{partes.map((parte) => (parte.manuscrita ? <span class="manuscrita">{parte.texto}</span> : parte.texto))}</span>

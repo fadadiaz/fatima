@@ -6,12 +6,11 @@ import BotonLlamada from './BotonLlamada.astro'
 <footer id="contacto" class="bg-green min-padding h-80">
 
   <div class="hook">
-    <p data-entrada-palabras>Estoy disponible para proyectos independientes, colaboraciones o trabajo full-time.</p>
+    <p class="hook-escritorio" data-entrada-palabras>Estoy disponible para proyectos independientes.</p>
+    <p class="hook-movil" data-entrada-palabras>Disponible para proyectos independientes.</p>
     <BotonLlamada />
   </div>
-  <CorreoGrande>
-    <BotonLlamada slot="llamada" />
-  </CorreoGrande>
+  <CorreoGrande />
 
 </footer>
 
@@ -43,10 +42,18 @@ footer {
     gap: var(--space-16);
 }
 
-/* Celular y sin hover: el botón de llamada pasa a la fila de acciones del correo */
-@media (max-width: 719px), (hover: none) {
-    .hook > :global(.btn) {
+/* Texto de disponibilidad según el ancho; display: none lo saca también de los lectores de pantalla */
+.hook-movil {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hook-escritorio {
         display: none;
+    }
+
+    .hook-movil {
+        display: block;
     }
 }
 </style>

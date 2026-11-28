@@ -159,7 +159,7 @@ export function crearVisor(opciones: OpcionesVisor) {
 
   const conZoom = (capa: HTMLElement | null): capa is HTMLElement => !!capa && !capa.classList.contains('visor-capa-video')
   const tiempoZoom = () =>
-    movimientoReducido.matches ? 0 : parseFloat(getComputedStyle(visor!).getPropertyValue('--visor-zoom-tiempo')) || 400
+    movimientoReducido.matches ? 0 : parseFloat(getComputedStyle(visor!).getPropertyValue('--duracion-media')) || 400
 
   // Imagen como botón de zoom; los videos no lo son
   function actualizarBoton() {
@@ -335,7 +335,7 @@ export function crearVisor(opciones: OpcionesVisor) {
     const salidaTitulo = tituloSale()
     await lista(entrante)
     entrante.style.opacity = ''
-    const duracion = parseFloat(getComputedStyle(visor!).getPropertyValue('--visor-cruzado')) || 400
+    const duracion = parseFloat(getComputedStyle(visor!).getPropertyValue('--duracion-media')) || 400
     const animaciones = [
       saliente.animate({ opacity: [1, 0] }, { duration: duracion, easing: 'ease-in-out', fill: 'both' }),
       entrante.animate({ opacity: [0, 1] }, { duration: duracion, easing: 'ease-in-out', fill: 'both' }),

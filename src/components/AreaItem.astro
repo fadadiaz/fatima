@@ -128,19 +128,16 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
     visibility: visible;
   }
 
-  /* Palabras que suben desde una máscara (nombre y descripción) */
+  /* Palabras que suben desde una máscara (nombre y descripción); el script lee las duraciones de la descripción */
   .areas-item {
-    --nombre-duracion: 600ms;
-    --nombre-retraso: 40ms;
     --descripcion-entrada: 500ms;
     --descripcion-salida: 350ms;
     --descripcion-retraso: 15ms;
-    --mascara-curva: cubic-bezier(0.165, 0.84, 0.44, 1);
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .areas-categoria :global(.mascara-texto) {
-      transition: translate var(--nombre-duracion) var(--mascara-curva) calc(var(--p) * var(--nombre-retraso));
+      transition: translate 600ms var(--entrada-curva) calc(var(--p) * 40ms);
     }
 
     .areas-categoria.por-entrar :global(.mascara-texto),
@@ -150,12 +147,12 @@ const idDescripcion = `descripcion-${Math.random().toString(36).slice(2, 8)}`
 
     .areas-item.abierta .areas-descripcion :global(.mascara-texto) {
       translate: none;
-      transition: translate var(--descripcion-entrada) var(--mascara-curva) calc(var(--p) * var(--descripcion-retraso));
+      transition: translate var(--descripcion-entrada) var(--entrada-curva) calc(var(--p) * var(--descripcion-retraso));
     }
 
     .areas-item.cerrando .areas-descripcion :global(.mascara-texto) {
       translate: 0 -120%;
-      transition: translate var(--descripcion-salida) var(--mascara-curva) calc(var(--p) * var(--descripcion-retraso));
+      transition: translate var(--descripcion-salida) var(--entrada-curva) calc(var(--p) * var(--descripcion-retraso));
     }
   }
 

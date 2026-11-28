@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro'
 import NavSecundario from '../components/NavSecundario.astro'
 import AreaItem from '../components/AreaItem.astro'
 import Slider from '../components/Slider.astro'
+import TextoManuscrito from '../components/TextoManuscrito.astro'
 import { Image } from 'astro:assets'
 import emojiPin from '../assets/emojis/emoji_u1f4cd_3d.png'
 import emojiComputadora from '../assets/emojis/emoji_u1f4bb_3d.png'
@@ -82,7 +83,7 @@ const areas = [
     </section>
     <section id="areas" data-cursor="/cursor-proyectos.gif" class="font-grotesk max-width min-padding">
       <div class="subtitulo">
-        <h2>Especialidades</h2>
+        <h2><TextoManuscrito texto="Especialidades" /></h2>
       </div>
       {areas.map((area) => (
         <AreaItem texto={area.texto} descripcion={area.descripcion} tags={area.tags} />
@@ -91,7 +92,7 @@ const areas = [
     <section id="slider-proyectos">
       <div class="max-width min-padding">
         <div class="subtitulo">
-          <h2>Proyectos</h2>
+          <h2><TextoManuscrito texto="Proyectos" /></h2>
           <div class="subtitulo-acciones">
             <a class="btn btn-pink" href="/proyectos" aria-label="Ver todos los proyectos">Todos</a>
             <a class="btn btn-pink" href="/galeria" aria-label="Ver la galería de imágenes">Galería</a>

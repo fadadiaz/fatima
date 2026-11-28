@@ -1,9 +1,9 @@
 ---
-// Correo grande con subrayado y opciones de escribir y copiar (pie y contacto)
+// Correo grande con subrayado y menú de enviar y copiar (pie y contacto)
 
 // Textos de las acciones del correo
-const TEXTO_ESCRIBIR = 'escribir'
-const TEXTO_COPIAR = 'copiar'
+const TEXTO_ENVIAR = 'enviar email'
+const TEXTO_COPIAR = 'copiar email'
 const TEXTO_COPIADO = 'copiado'
 
 const correo = 'hola@fatima.com.ar'
@@ -31,18 +31,12 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
       <rect x={linea.corteFin} y={linea.y} width={linea.ancho - linea.corteFin} height={linea.alto} />
     </svg>
   </button>
-  <div class="correo-opciones" id={idOpciones}>
-    <!-- Botón de llamada en la fila de acciones, solo en celular y sin hover -->
-    <div class="correo-llamada"><slot name="llamada" /></div>
-    <a
-      class="btn btn-mini correo-escribir"
-      href={`mailto:${correo}`}
-      aria-label={`Escribir un correo a ${correo}`}
-    >{TEXTO_ESCRIBIR}</a>
+  <div class="correo-opciones" id={idOpciones} role="group" aria-label="Opciones de contacto">
+    <a class="btn btn-alt correo-enviar" href={`mailto:${correo}`}>{TEXTO_ENVIAR}</a>
+    <span class="correo-separador" aria-hidden="true"></span>
     <button
       type="button"
-      class="btn btn-mini correo-copiar"
-      aria-label="Copiar el correo"
+      class="btn btn-alt correo-copiar"
       data-correo={correo}
       data-texto={TEXTO_COPIAR}
       data-copiado={TEXTO_COPIADO}
@@ -64,6 +58,16 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
     max-width: 100%;
 }
 
+/* Sin JavaScript, el correo es un enlace mailto */
+.correo-boton,
+:global(.js) .correo-enlace {
+    display: none;
+}
+
+:global(.js) .correo-boton {
+    display: block;
+}
+
 /* Subrayado superpuesto al SVG */
 .correo-linea {
     position: absolute;
@@ -72,7 +76,6 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
     height: 100%;
     fill: var(--fa-black);
     pointer-events: none;
-    --linea-duracion: 300ms;
     clip-path: inset(0 100% 0 0);
 }
 
@@ -80,34 +83,78 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
 .correo-boton:focus-visible .correo-linea,
 .correo.abierto .correo-linea {
     clip-path: inset(0);
-    transition: clip-path var(--linea-duracion) ease-in-out;
+    transition: clip-path var(--subrayado-duracion) ease-in-out;
 }
 
 /* Salida hacia la derecha */
 .correo-linea.saliendo {
     clip-path: inset(0 0 0 100%);
-    transition: clip-path var(--linea-duracion) ease-in-out;
+    transition: clip-path var(--subrayado-duracion) ease-in-out;
 }
 
-/* Opciones del correo superpuestas en el centro */
+/* Popover: --panel-x, --punta-y y --cola-x los calcula el script; el triángulo mide --space-16 de ancho y --space-8 de alto */
 .correo-opciones {
+    --popover-linea-alto: 50%;
+    --popover-punta-min: 25%;
+    --popover-punta-max: 75%;
+    --popover-separacion: 6px;
+    --popover-desplazamiento: 6px;
     position: absolute;
-    inset: 0;
+    z-index: 10;
+    left: var(--panel-x, 0);
+    top: var(--punta-y, 0);
+    translate: 0 calc(-100% - var(--space-8));
+    width: max-content;
     display: flex;
-    justify-content: center;
     align-items: center;
     gap: var(--space-8);
+    padding: var(--space-4) var(--space-16);
+    background-color: var(--fa-white);
+    color: var(--fa-black);
+    visibility: hidden;
     opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
+    transform: translateY(var(--popover-desplazamiento));
+    transition:
+        opacity var(--duracion-corta) ease,
+        transform var(--duracion-corta) ease,
+        visibility 0s linear var(--duracion-corta);
 }
 
 .correo.abierto .correo-opciones {
+    visibility: visible;
     opacity: 1;
+    transform: none;
+    transition:
+        opacity var(--duracion-corta) ease,
+        transform var(--duracion-corta) ease;
 }
 
-.correo.abierto .correo-opciones .btn {
-    pointer-events: auto;
+/* Triángulo con la punta en --cola-x */
+.correo-opciones::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: calc(var(--cola-x, 50%) - var(--space-16) / 2);
+    width: var(--space-16);
+    height: var(--space-8);
+    background-color: var(--fa-white);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.correo-opciones .btn {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-transform: lowercase;
+    justify-content: center;
+    min-height: var(--btn-height);
+}
+
+/* Línea entre los botones, centrada y con el alto relativo al del panel */
+.correo-separador {
+    align-self: stretch;
+    width: 1px;
+    margin-block: calc(-1 * var(--space-4));
+    background: linear-gradient(currentColor, currentColor) center / 100% var(--popover-linea-alto) no-repeat;
 }
 
 .aviso-copiado {
@@ -119,50 +166,15 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
     white-space: nowrap;
 }
 
-/* Escritorio */
-@media (hover: hover) and (min-width: 769px) {
-  .correo-enlace {
-    display: none;
-  }
-
-  /* Opciones centradas en el punto del clic; --x y --y las calcula el script */
-  .correo-opciones.en-punto {
-    inset: auto;
-    left: var(--x);
-    top: var(--y);
-    translate: -50% -50%;
-  }
-}
-
-/* Celular */
-@media (max-width: 768px), (hover: none) {
-  .correo-boton {
-    display: none;
-  }
-
+/* Celular: panel al 90% de la pantalla y botones con alto táctil */
+@media (max-width: 768px) {
   .correo-opciones {
-    position: static;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    margin-top: var(--space-16);
-    gap: 12px;
-    opacity: 1;
+    width: min(90vw, 100%);
   }
 
-  .correo-opciones .btn,
-  .correo-opciones :global(.btn) {
-    pointer-events: auto;
-  }
-}
-
-.correo-llamada {
-  display: none;
-}
-
-/* Celular y sin hover: llamada, escribir y copiar en una sola fila */
-@media (max-width: 719px), (hover: none) {
-  .correo-llamada {
-    display: contents;
+  .correo-opciones .btn {
+    flex: 1;
+    min-height: var(--btn-height-movil);
   }
 }
 
@@ -170,8 +182,13 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
   .correo-boton:hover .correo-linea,
   .correo-boton:focus-visible .correo-linea,
   .correo.abierto .correo-linea,
-  .correo-opciones {
+  .correo-opciones,
+  .correo.abierto .correo-opciones {
     transition: none;
+  }
+
+  .correo-opciones {
+    transform: none;
   }
 }
 </style>
@@ -179,18 +196,18 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
 <script>
   import { prepararRoll } from '../scripts/roll'
 
-  // Escritorio: hover y más de 768px, igual que en AreaItem
-  const escritorio = window.matchMedia('(hover: hover) and (min-width: 769px)')
+  const movil = window.matchMedia('(max-width: 768px)')
   const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)')
 
   document.querySelectorAll<HTMLElement>('.correo').forEach((bloque) => {
     const boton = bloque.querySelector<HTMLButtonElement>('.correo-boton')
+    const imagen = boton?.querySelector('img')
     const linea = bloque.querySelector<SVGElement>('.correo-linea')
-    const escribir = bloque.querySelector<HTMLAnchorElement>('.correo-escribir')
+    const enviar = bloque.querySelector<HTMLAnchorElement>('.correo-enviar')
     const copiar = bloque.querySelector<HTMLButtonElement>('.correo-copiar')
     const aviso = bloque.querySelector('.aviso-copiado')
     const opciones = bloque.querySelector<HTMLElement>('.correo-opciones')
-    if (!boton || !linea || !escribir || !copiar || !opciones) return
+    if (!boton || !imagen || !linea || !enviar || !copiar || !opciones) return
 
     const textoCopiar = copiar.dataset.texto ?? ''
     let espera: number | undefined
@@ -225,25 +242,71 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
       revisarLinea()
     }
 
-    // Con puntero, las opciones se centran en el clic sin salirse del correo ni de la ventana; con teclado, en el centro
+    // Cierre al elegir una opción; el foco vuelve al correo si estaba en el panel
+    const cerrar = () => {
+      const conFoco = opciones.contains(document.activeElement)
+      marcar(false)
+      if (conFoco) boton.focus()
+    }
+
+    const medida = (nombre: string) => parseFloat(getComputedStyle(opciones).getPropertyValue(nombre)) || 0
+
+    // Altura de la punta: en celular, sobre el texto; en escritorio, la del clic dentro del rango mínimo y máximo
+    const alturaPunta = (e: MouseEvent, texto: DOMRect) => {
+      if (movil.matches) return -medida('--popover-separacion')
+      if (e.detail === 0) return texto.height / 2
+      const minimo = (texto.height * medida('--popover-punta-min')) / 100
+      const maximo = (texto.height * medida('--popover-punta-max')) / 100
+      return Math.max(minimo, Math.min(e.clientY - texto.top, maximo))
+    }
+
+    // Punta en el clic (en x) o en el centro con teclado; panel dentro de la ventana y del correo
     const ubicar = (e: MouseEvent) => {
-      if (e.detail === 0) {
-        opciones.classList.remove('en-punto')
-        return
-      }
-      // La clase va antes de medir: así el ancho es el de los botones y no el del correo
-      opciones.classList.add('en-punto')
       const caja = bloque.getBoundingClientRect()
-      const mitad = opciones.offsetWidth / 2
-      const minimo = Math.max(mitad, mitad - caja.left)
-      const maximo = Math.min(caja.width - mitad, window.innerWidth - mitad - caja.left)
-      const x = Math.min(Math.max(e.clientX - caja.left, minimo), maximo)
-      opciones.style.setProperty('--x', `${x}px`)
-      opciones.style.setProperty('--y', `${e.clientY - caja.top}px`)
+      const texto = imagen.getBoundingClientRect()
+      const punta = {
+        x: e.detail === 0 ? texto.left + texto.width / 2 - caja.left : e.clientX - caja.left,
+        y: texto.top - caja.top + alturaPunta(e, texto),
+      }
+
+      const ancho = opciones.offsetWidth
+      // Margen de la cola (--space-16) más la mitad de su ancho (--space-16)
+      const borde = medida('--space-16') * 1.5
+      const ventana = document.documentElement.clientWidth
+      const centro = texto.left + texto.width / 2 - caja.left
+
+      let x: number
+      if (movil.matches) x = (ventana - ancho) / 2 - caja.left
+      else if (e.detail === 0) x = punta.x - ancho / 2
+      else if (punta.x < centro) x = punta.x - borde
+      else x = punta.x - ancho + borde
+
+      const minimo = Math.max(0, -caja.left)
+      const maximo = Math.min(caja.width, ventana - caja.left) - ancho
+      x = Math.max(minimo, Math.min(x, maximo))
+      const cola = Math.max(borde, Math.min(punta.x - x, ancho - borde))
+
+      opciones.style.setProperty('--panel-x', `${x}px`)
+      opciones.style.setProperty('--punta-y', `${punta.y}px`)
+      opciones.style.setProperty('--cola-x', `${cola}px`)
+    }
+
+    // Texto original de copiar, repuesto al abrir para que no cambie durante el fundido de salida
+    const reponerCopiar = () => {
+      window.clearTimeout(espera)
+      copiar.style.minWidth = ''
+      if (aviso) aviso.textContent = ''
+      if (copiar.dataset.estado) {
+        delete copiar.dataset.estado
+        ponerTexto(textoCopiar)
+      }
     }
 
     boton.addEventListener('click', (e) => {
-      if (!abierto()) ubicar(e)
+      if (!abierto()) {
+        reponerCopiar()
+        ubicar(e)
+      }
       marcar(!abierto())
     })
 
@@ -258,15 +321,14 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
       if (abierto() && !bloque.contains(e.target as Node)) marcar(false)
     })
 
-    escribir.addEventListener('click', () => {
-      if (escritorio.matches) marcar(false)
-    })
+    enviar.addEventListener('click', cerrar)
 
-    escritorio.addEventListener('change', (e) => {
-      if (!e.matches) marcar(false)
-    })
+    movil.addEventListener('change', () => marcar(false))
 
+    // El botón conserva su ancho para que el panel no cambie de tamaño con el texto nuevo
     copiar.addEventListener('click', async () => {
+      if (!movil.matches) copiar.style.minWidth = `${copiar.offsetWidth}px`
+      copiar.dataset.estado = 'cambiado'
       try {
         await navigator.clipboard.writeText(copiar.dataset.correo ?? '')
         ponerTexto(copiar.dataset.copiado ?? '')
@@ -275,11 +337,7 @@ const idOpciones = `correo-opciones-${Math.random().toString(36).slice(2, 8)}`
         ponerTexto('no se pudo copiar')
       }
       window.clearTimeout(espera)
-      espera = window.setTimeout(() => {
-        ponerTexto(textoCopiar)
-        if (aviso) aviso.textContent = ''
-        if (escritorio.matches) marcar(false)
-      }, 2000)
+      espera = window.setTimeout(cerrar, 2000)
     })
   })
 </script>
