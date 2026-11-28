@@ -143,7 +143,6 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
           data-video={foto.video}
           data-ancho={foto.ancho}
           data-alto={foto.alto}
-          data-pesada={foto.poster ? '' : undefined}
         >
           {foto.video ? (
             <video
@@ -324,11 +323,6 @@ const altoMiniatura = (foto: (typeof fotos)[number]) => Math.round((MINIATURA * 
     alto: number
     src: string
     srcset: string
-  }
-
-  // Lectura temporal de ?sinpesadas=1: quita del mosaico, del lienzo y del visor las animaciones pesadas
-  if (new URLSearchParams(window.location.search).get('sinpesadas') === '1') {
-    document.querySelectorAll('.galeria-foto[data-pesada]').forEach((boton) => boton.remove())
   }
 
   const mosaico = [...document.querySelectorAll<HTMLButtonElement>('.galeria-foto')]

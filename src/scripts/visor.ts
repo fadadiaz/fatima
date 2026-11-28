@@ -483,11 +483,12 @@ export function crearVisor(opciones: OpcionesVisor) {
     else cerrar()
   })
 
+  // Las flechas mueven la vista: la imagen se desliza hacia el lado contrario
   const direcciones: Record<string, [number, number]> = {
-    ArrowLeft: [-1, 0],
-    ArrowRight: [1, 0],
-    ArrowUp: [0, -1],
-    ArrowDown: [0, 1],
+    ArrowLeft: [1, 0],
+    ArrowRight: [-1, 0],
+    ArrowUp: [0, 1],
+    ArrowDown: [0, -1],
   }
   visor.addEventListener('keydown', (e) => {
     const capa = capaActual()

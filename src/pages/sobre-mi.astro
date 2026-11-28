@@ -50,10 +50,19 @@ import fotoBio from '../assets/fatima-bio.png'
     gap: var(--space-24);
   }
 
+  /* Espacio entre el título y el primer párrafo */
   .bio-cuerpo {
     display: flex;
     flex-direction: column;
     gap: var(--space-16);
+    margin-top: var(--space-64);
+  }
+
+  /* Celular: 32px más los 16px de separación de .grid-12 */
+  @media (max-width: 768px) {
+    .bio-cuerpo {
+      margin-top: var(--space-32);
+    }
   }
 
   .bio h2 {
